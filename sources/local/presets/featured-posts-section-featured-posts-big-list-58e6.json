@@ -18,15 +18,15 @@
                 "subtitle": null,
                 "posts": [
                     {
-                        "$$ref": "content/pages/blog/how-to-write-a-blog-post-that-will-get-you-more-traffic.md",
+                        "$$ref": "content/pages/gallery/how-to-write-a-gallery-post-that-will-get-you-more-traffic.md",
                         "$$type": "PostLayout"
                     },
                     {
-                        "$$ref": "content/pages/blog/five-tips-for-starting-a-startup.md",
+                        "$$ref": "content/pages/gallery/five-tips-for-starting-a-startup.md",
                         "$$type": "PostLayout"
                     },
                     {
-                        "$$ref": "content/pages/blog/what-is-a-design-system.md",
+                        "$$ref": "content/pages/gallery/what-is-a-design-system.md",
                         "$$type": "PostLayout"
                     }
                 ],

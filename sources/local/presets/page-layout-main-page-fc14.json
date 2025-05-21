@@ -61,7 +61,12 @@
                             "self": {
                                 "alignItems": "center",
                                 "flexDirection": "row",
-                                "padding": ["pt-16", "pl-16", "pb-16", "pr-16"]
+                                "padding": [
+                                    "pt-16",
+                                    "pl-16",
+                                    "pb-16",
+                                    "pr-16"
+                                ]
                             }
                         },
                         "$$type": "GenericSection"
@@ -100,7 +105,12 @@
                                 "colors": "bg-neutralAlt-fg-dark",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-8", "pl-8", "pb-8", "pr-8"],
+                                        "padding": [
+                                            "pt-8",
+                                            "pl-8",
+                                            "pb-8",
+                                            "pr-8"
+                                        ],
                                         "borderRadius": "x-large",
                                         "flexDirection": "row",
                                         "justifyContent": "center",
@@ -126,7 +136,12 @@
                                 "colors": "bg-neutralAlt-fg-dark",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-8", "pl-8", "pb-8", "pr-8"],
+                                        "padding": [
+                                            "pt-8",
+                                            "pl-8",
+                                            "pb-8",
+                                            "pr-8"
+                                        ],
                                         "borderRadius": "x-large",
                                         "flexDirection": "row",
                                         "textAlign": "left",
@@ -152,7 +167,12 @@
                                 "colors": "bg-neutralAlt-fg-dark",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-8", "pl-8", "pb-8", "pr-8"],
+                                        "padding": [
+                                            "pt-8",
+                                            "pl-8",
+                                            "pb-8",
+                                            "pr-8"
+                                        ],
                                         "borderRadius": "x-large",
                                         "flexDirection": "row"
                                     }
@@ -189,7 +209,12 @@
                         "backgroundImage": null,
                         "styles": {
                             "self": {
-                                "padding": ["pb-16", "pt-16", "pl-16", "pr-16"],
+                                "padding": [
+                                    "pb-16",
+                                    "pt-16",
+                                    "pl-16",
+                                    "pr-16"
+                                ],
                                 "justifyContent": "center"
                             },
                             "subtitle": {
@@ -272,15 +297,15 @@
                         "subtitle": null,
                         "posts": [
                             {
-                                "$$ref": "content/pages/blog/case-study-1.md",
+                                "$$ref": "content/pages/gallery/case-study-1.md",
                                 "$$type": "PostLayout"
                             },
                             {
-                                "$$ref": "content/pages/blog/case-study-2.md",
+                                "$$ref": "content/pages/gallery/case-study-2.md",
                                 "$$type": "PostLayout"
                             },
                             {
-                                "$$ref": "content/pages/blog/case-study-3.md",
+                                "$$ref": "content/pages/gallery/case-study-3.md",
                                 "$$type": "PostLayout"
                             }
                         ],
@@ -296,7 +321,12 @@
                         "backgroundImage": null,
                         "styles": {
                             "self": {
-                                "padding": ["pt-16", "pl-16", "pb-16", "pr-16"],
+                                "padding": [
+                                    "pt-16",
+                                    "pl-16",
+                                    "pb-16",
+                                    "pr-16"
+                                ],
                                 "justifyContent": "center"
                             }
                         },
@@ -308,7 +338,12 @@
                         "colors": "bg-light-fg-dark",
                         "styles": {
                             "self": {
-                                "padding": ["pt-7", "pl-7", "pb-7", "pr-7"]
+                                "padding": [
+                                    "pt-7",
+                                    "pl-7",
+                                    "pb-7",
+                                    "pr-7"
+                                ]
                             }
                         },
                         "$$type": "DividerSection"
@@ -338,7 +373,12 @@
                             "elementId": null,
                             "styles": {
                                 "self": {
-                                    "padding": ["pt-2", "pb-2", "pl-2", "pr-2"],
+                                    "padding": [
+                                        "pt-2",
+                                        "pb-2",
+                                        "pl-2",
+                                        "pr-2"
+                                    ],
                                     "borderColor": "border-dark",
                                     "borderStyle": "solid",
                                     "borderWidth": 1,
@@ -396,7 +436,12 @@
                             "elementId": null,
                             "styles": {
                                 "self": {
-                                    "padding": ["pt-2", "pb-2", "pl-2", "pr-2"],
+                                    "padding": [
+                                        "pt-2",
+                                        "pb-2",
+                                        "pl-2",
+                                        "pr-2"
+                                    ],
                                     "borderColor": "border-dark",
                                     "borderStyle": "solid",
                                     "borderWidth": 1,
@@ -539,7 +584,12 @@
                         "colors": "bg-light-fg-dark",
                         "styles": {
                             "self": {
-                                "padding": ["pt-7", "pl-7", "pb-7", "pr-7"]
+                                "padding": [
+                                    "pt-7",
+                                    "pl-7",
+                                    "pb-7",
+                                    "pr-7"
+                                ]
                             }
                         },
                         "$$type": "DividerSection"
@@ -569,7 +619,12 @@
                                 "colors": "bg-neutralAlt-fg-dark",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-9", "pb-9", "pl-9", "pr-9"],
+                                        "padding": [
+                                            "pt-9",
+                                            "pb-9",
+                                            "pl-9",
+                                            "pr-9"
+                                        ],
                                         "textAlign": "left",
                                         "borderRadius": "large",
                                         "flexDirection": "row",
@@ -599,7 +654,12 @@
                                 "colors": "bg-dark-fg-light",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-9", "pb-9", "pl-9", "pr-9"],
+                                        "padding": [
+                                            "pt-9",
+                                            "pb-9",
+                                            "pl-9",
+                                            "pr-9"
+                                        ],
                                         "textAlign": "left",
                                         "borderRadius": "large",
                                         "flexDirection": "row",
@@ -658,7 +718,12 @@
                                 "colors": "bg-light-fg-dark",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-8", "pl-8", "pb-8", "pr-8"],
+                                        "padding": [
+                                            "pt-8",
+                                            "pl-8",
+                                            "pb-8",
+                                            "pr-8"
+                                        ],
                                         "borderRadius": "x-large",
                                         "flexDirection": "col"
                                     }
@@ -686,7 +751,12 @@
                                 "colors": "bg-light-fg-dark",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-8", "pl-8", "pb-8", "pr-8"],
+                                        "padding": [
+                                            "pt-8",
+                                            "pl-8",
+                                            "pb-8",
+                                            "pr-8"
+                                        ],
                                         "borderRadius": "x-large",
                                         "flexDirection": "col"
                                     }
@@ -714,7 +784,12 @@
                                 "colors": "bg-light-fg-dark",
                                 "styles": {
                                     "self": {
-                                        "padding": ["pt-8", "pl-8", "pb-8", "pr-8"],
+                                        "padding": [
+                                            "pt-8",
+                                            "pl-8",
+                                            "pb-8",
+                                            "pr-8"
+                                        ],
                                         "borderRadius": "x-large",
                                         "flexDirection": "col"
                                     }
@@ -730,7 +805,12 @@
                         "backgroundImage": null,
                         "styles": {
                             "self": {
-                                "padding": ["pt-16", "pl-8", "pb-16", "pr-8"],
+                                "padding": [
+                                    "pt-16",
+                                    "pl-8",
+                                    "pb-16",
+                                    "pr-8"
+                                ],
                                 "justifyContent": "center"
                             },
                             "subtitle": {
@@ -791,7 +871,12 @@
                             "elementId": "contact-form",
                             "styles": {
                                 "self": {
-                                    "padding": ["pt-6", "pb-6", "pl-6", "pr-6"],
+                                    "padding": [
+                                        "pt-6",
+                                        "pb-6",
+                                        "pl-6",
+                                        "pr-6"
+                                    ],
                                     "borderColor": "border-dark",
                                     "borderStyle": "solid",
                                     "borderWidth": 1,

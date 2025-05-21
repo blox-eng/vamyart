@@ -18,15 +18,15 @@
                 "subtitle": null,
                 "posts": [
                     {
-                        "$$ref": "content/pages/blog/life-of-our-development-team.md",
+                        "$$ref": "content/pages/gallery/life-of-our-development-team.md",
                         "$$type": "PostLayout"
                     },
                     {
-                        "$$ref": "content/pages/blog/surround-yourself-with-right-people.md",
+                        "$$ref": "content/pages/gallery/surround-yourself-with-right-people.md",
                         "$$type": "PostLayout"
                     },
                     {
-                        "$$ref": "content/pages/blog/top-twenty-ways-to-save-time.md",
+                        "$$ref": "content/pages/gallery/top-twenty-ways-to-save-time.md",
                         "$$type": "PostLayout"
                     }
                 ],

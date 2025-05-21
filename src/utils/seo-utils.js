@@ -46,7 +46,7 @@ export function seoGenerateTitle(page, site) {
 
 export function seoGenerateMetaDescription(page, site) {
     let metaDescription = null;
-    // Blog posts use the exceprt as the default meta description
+    // Gallery posts use the exceprt as the default meta description
     if (page.__metadata.modelName === 'PostLayout') {
         metaDescription = page.excerpt;
     }
@@ -63,7 +63,7 @@ export function seoGenerateOgImage(page, site) {
     if (site.defaultSocialImage) {
         ogImage = site.defaultSocialImage;
     }
-    // Blog posts use the featuredImage as the default og:image
+    // Gallery posts use the featuredImage as the default og:image
     if (page.__metadata.modelName === 'PostLayout') {
         if (page.featuredImage?.url) {
             ogImage = page.featuredImage.url;

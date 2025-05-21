@@ -5,8 +5,8 @@
             "label": "Post with recent posts",
             "locale": null,
             "data": {
-                "title": "This is a blog post with related posts",
-                "slug": "this-is-a-blog-post-with-related-posts",
+                "title": "This is a gallery post with related posts",
+                "slug": "this-is-a-gallery-post-with-related-posts",
                 "date": "2022-10-10",
                 "author": {
                     "$$ref": "content/data/person1.json",

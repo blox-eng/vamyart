@@ -1,9 +1,9 @@
 {
-    "name": "Rhonda Piper",
-    "role": "Job title",
+    "name": "Maeve Vamy",
+    "role": "Artist",
     "image": {
         "url": "/images/avatar1.svg",
-        "altText": "Rhonda Piper",
+        "altText": "Maeve Vamy",
         "styles": {
             "self": {
                 "borderRadius": "medium",
@@ -32,5 +32,5 @@
         }
     },
     "type": "Person",
-    "bio": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.\n"
+    "bio": "Painting from the bottom of my heart\n"
 }
