@@ -5,7 +5,7 @@ export const PostLayout: Model = {
     name: 'PostLayout',
     label: 'Post',
     labelField: 'title',
-    filePath: 'content/pages/blog/{slug}.md',
+    filePath: 'content/pages/gallery/{slug}.md',
     fieldGroups: [
         {
             name: 'thumbnail',
@@ -34,7 +34,7 @@ export const PostLayout: Model = {
             name: 'title',
             label: 'Title',
             required: true,
-            default: 'This is a blog post title',
+            default: 'This is a gallery post title',
             hidden: false,
             localized: false
         },
@@ -113,9 +113,9 @@ export const PostLayout: Model = {
         {
             type: 'boolean',
             name: 'isFeatured',
-            label: 'Exclude from blog feed',
+            label: 'Exclude from gallery feed',
             description:
-                "Enable this option to avoid a featured post (in a 'Featured posts' section) to appear duplicated in the blog page.",
+                "Enable this option to avoid a featured post (in a 'Featured posts' section) to appear duplicated in the gallery page.",
             required: false,
             default: false,
             hidden: false,

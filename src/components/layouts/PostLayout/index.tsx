@@ -70,7 +70,7 @@ export default function PostLayout(props) {
 function PostAuthor({ author, enableAnnotations }) {
     const authorName = author.name && <span {...(enableAnnotations && { 'data-sb-field-path': '.name' })}>{author.name}</span>;
     return author.slug ? (
-        <Link {...(enableAnnotations && { 'data-sb-field-path': 'author' })} href={`/blog/author/${author.slug}`}>
+        <Link {...(enableAnnotations && { 'data-sb-field-path': 'author' })} href={`/gallery/author/${author.slug}`}>
             {authorName}
         </Link>
     ) : (

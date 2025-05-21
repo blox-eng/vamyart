@@ -17,7 +17,7 @@ isFeatured: false
 isDraft: false
 seo:
   metaTitle: What is a Design System
-  metaDescription: You can add the excerpt and main keywords of your blog post here.
+  metaDescription: You can add the excerpt and main keywords of your gallery post here.
   socialImage: /images/abstract-feature3.svg
   type: Seo
 colors: bg-light-fg-dark

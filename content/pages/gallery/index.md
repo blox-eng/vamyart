@@ -1,16 +1,16 @@
 ---
-title: Blog
-slug: /blog
+title: Gallery
+slug: /gallery
 numOfPostsPerPage: 8
 enableSearch: true
 topSections:
   - title:
-      text: Featured Post
+      text: Bear Market
       color: text-dark
       type: TitleBlock
-    subtitle: This is the subtitle
+    subtitle: When things get though
     posts:
-      - content/pages/blog/top-ten-lessons-we-learned.md
+      - content/pages/gallery/top-ten-lessons-we-learned.md
     showThumbnail: true
     showExcerpt: true
     showDate: true
@@ -31,10 +31,8 @@ styles:
   title:
     textAlign: center
 seo:
-  metaTitle: Blog - Demo site
-  metaDescription: >-
-    This is the blog of the demo site where we post about technology, product,
-    and design.
+  metaTitle: Gallery - Vamy
+  metaDescription: Explore my gallery
   socialImage: /images/img-placeholder.svg
   type: Seo
 type: PostFeedLayout
