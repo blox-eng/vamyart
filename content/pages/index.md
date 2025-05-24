@@ -10,8 +10,8 @@ sections:
     subtitle: ''
     text: ''
     actions:
-      - label: Explore Gallery
-        altText: Explore Gallery
+      - label: Discover
+        altText: Discover
         url: /gallery
         showIcon: false
         icon: arrowRight
@@ -41,7 +41,7 @@ sections:
           - pr-16
   - type: FeaturedItemsSection
     title:
-      text: Techniques
+      text: Style
       color: text-dark
       styles:
         self:
@@ -52,10 +52,10 @@ sections:
       - type: FeaturedItem
         title: Oil
         subtitle: On Canvas
-        text: >-
-          Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-          accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae.
-          explicabo.
+        text: |
+          Oil painting doesn't apologize for its mess, or its refusal
+          to be rushed. Every brushstroke carries weight, every layer tells a
+          story, and every piece demands time to breathe.
         actions: []
         elementId: null
         colors: bg-neutralAlt-fg-dark
@@ -80,11 +80,11 @@ sections:
               borderRadius: x-large
         tagline: ''
       - title: Realism
-        subtitle: Unreal
-        text: >-
-          Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-          accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae.
-          explicabo.
+        subtitle: Unrealistic
+        text: |
+          No filters, no hiding, no pretending. Realism strips away the 
+          comfortable lies and serves you truth so sharp you'll question what's 
+          real and what's canvas.
         image:
           url: /images/icon2.svg
           altText: Featured icon two
@@ -105,11 +105,11 @@ sections:
             justifyContent: center
         type: FeaturedItem
       - title: Abstract
-        subtitle: Everything
-        text: >-
-          Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-          accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae.
-          explicabo.
+        subtitle: Surreal
+        text: >
+          Color doesn't need permission. Form doesn't need explanation. Abstract
+          art gives us what realism can't. Step into chaos that somehow makes
+          perfect sense.
         image:
           url: /images/icon3.svg
           altText: Featured icon three
@@ -128,8 +128,8 @@ sections:
             flexDirection: row
         type: FeaturedItem
     actions:
-      - label: Explore Gallery
-        altText: ''
+      - label: Look around
+        altText: look around
         url: /gallery
         showIcon: false
         icon: arrowRight
@@ -157,7 +157,7 @@ sections:
         justifyContent: center
       subtitle:
         textAlign: center
-  - subtitle: My works
+  - subtitle: Notable works
     images:
       - url: /images/empathy-logo.svg
         altText: Empathy logo
@@ -217,42 +217,32 @@ sections:
           - pb-7
           - pr-7
     type: DividerSection
-  - title: Divider
-    colors: bg-light-fg-dark
-    styles:
-      self:
-        padding:
-          - pt-7
-          - pl-7
-          - pb-7
-          - pr-7
-    type: DividerSection
   - title:
       text: Reach out
       color: text-dark
       type: TitleBlock
-    subtitle: Found something you fancy or just want to get in touch?
+    subtitle: ''
     text: ''
     media:
       fields:
         - name: name
           label: Name
           hideLabel: true
-          placeholder: What I should call you
+          placeholder: How they call you
           isRequired: true
           width: full
           type: TextFormControl
         - name: email
           label: Email
           hideLabel: true
-          placeholder: Your email
+          placeholder: How they contact you
           isRequired: true
           width: full
           type: EmailFormControl
         - name: message
           label: Message
           hideLabel: true
-          placeholder: What are you interested in
+          placeholder: What did you like
           width: full
           type: TextareaFormControl
           isRequired: true
@@ -278,7 +268,7 @@ sections:
         style: primary
         elementId: null
     badge:
-      label: You like my art
+      label: Like what you see?
       color: text-primary
       type: Badge
     colors: bg-light-fg-dark

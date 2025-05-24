@@ -1,6 +1,6 @@
 {
     "logo": {
-        "url": "/images/logo-dark.svg",
+        "url": "/images/vamy-black-sm.png",
         "altText": "Logo dark",
         "styles": {
             "self": {
@@ -24,12 +24,13 @@
     ],
     "secondaryLinks": [
         {
-            "label": "GET ART",
+            "label": "GET A PIECE",
             "url": "/get-art",
             "icon": "arrowRight",
             "iconPosition": "right",
             "style": "primary",
-            "type": "Button"
+            "type": "Button",
+            "altText": "get-a-piece"
         }
     ],
     "variant": "logo-left-primary-nav-right",
