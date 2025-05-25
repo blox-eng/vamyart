@@ -31,8 +31,8 @@ styles:
   title:
     textAlign: center
 seo:
-  metaTitle: Gallery - Vamy
-  metaDescription: Explore my gallery
+  metaTitle: Gallery - Maeve Vamy
+  metaDescription: 'Discover '
   socialImage: /images/img-placeholder.svg
   type: Seo
 type: PostFeedLayout

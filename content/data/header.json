@@ -13,7 +13,7 @@
     },
     "primaryLinks": [
         {
-            "label": "Gallery",
+            "label": "GALLERY",
             "altText": "Gallery",
             "url": "/gallery",
             "icon": "arrowRight",
@@ -25,7 +25,7 @@
     "secondaryLinks": [
         {
             "label": "GET A PIECE",
-            "url": "/get-art",
+            "url": "/get-a-piece",
             "icon": "arrowRight",
             "iconPosition": "right",
             "style": "primary",

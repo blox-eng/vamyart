@@ -10,7 +10,7 @@ sections:
     subtitle: ''
     text: ''
     actions:
-      - label: Discover
+      - label: DISCOVER
         altText: Discover
         url: /gallery
         showIcon: false
@@ -128,8 +128,8 @@ sections:
             flexDirection: row
         type: FeaturedItem
     actions:
-      - label: Look around
-        altText: look around
+      - label: SEE THE PIECES
+        altText: SEE THE PIECES
         url: /gallery
         showIcon: false
         icon: arrowRight
@@ -157,37 +157,6 @@ sections:
         justifyContent: center
       subtitle:
         textAlign: center
-  - subtitle: Notable works
-    images:
-      - url: /images/empathy-logo.svg
-        altText: Empathy logo
-        type: ImageBlock
-      - url: /images/wellster-logo.svg
-        altText: Wellster logo
-        type: ImageBlock
-      - url: /images/vise-logo.svg
-        altText: Vise logo
-        type: ImageBlock
-      - url: /images/telus-logo.svg
-        altText: Telus logo
-        type: ImageBlock
-      - url: /images/contenful-logo.svg
-        altText: Contentful logo
-        type: ImageBlock
-      - url: /images/sanity-logo.svg
-        altText: Sanity logo
-        type: ImageBlock
-      - url: /images/rangle-logo.svg
-        altText: Rangle logo
-        type: ImageBlock
-    motion: move-to-left
-    colors: bg-light-fg-dark
-    styles:
-      self:
-        justifyContent: center
-      subtitle:
-        textAlign: center
-    type: ImageGallerySection
   - posts:
       - content/pages/gallery/case-study-1.md
       - content/pages/gallery/case-study-2.md
@@ -207,6 +176,16 @@ sections:
         justifyContent: center
     type: FeaturedPostsSection
     hoverEffect: move-up
+    actions:
+      - type: Button
+        label: GET A PIECE
+        altText: ''
+        url: /get-a-piece
+        showIcon: false
+        icon: arrowRight
+        iconPosition: right
+        style: primary
+        elementId: ''
   - title: Divider
     colors: bg-light-fg-dark
     styles:
@@ -228,21 +207,21 @@ sections:
         - name: name
           label: Name
           hideLabel: true
-          placeholder: How they call you
+          placeholder: Your name
           isRequired: true
           width: full
           type: TextFormControl
         - name: email
           label: Email
           hideLabel: true
-          placeholder: How they contact you
+          placeholder: Your email
           isRequired: true
           width: full
           type: EmailFormControl
         - name: message
           label: Message
           hideLabel: true
-          placeholder: What did you like
+          placeholder: Your message
           width: full
           type: TextareaFormControl
           isRequired: true
@@ -275,9 +254,9 @@ sections:
     type: GenericSection
 seo:
   metaTitle: Vamy - Fine Arts
-  metaDescription: Welcome to the world of Vamy Art
+  metaDescription: Welcome to the world of Maeve Vamy
   socialImage: /images/main-hero.jpg
   type: Seo
-  addTitleSuffix: true
+  addTitleSuffix: false
 type: PageLayout
 ---

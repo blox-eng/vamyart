@@ -1,0 +1,95 @@
+{
+    "model": "GenericSection",
+    "srcType": "git",
+    "srcProjectId": "9a0364b9",
+    "presets": [
+        {
+            "label": "Reach out",
+            "locale": null,
+            "metadata": {
+                "categories": [
+                    "Sections"
+                ],
+                "canDelete": true
+            },
+            "data": {
+                "title": {
+                    "$$type": "TitleBlock",
+                    "text": "Reach out",
+                    "color": "text-dark",
+                    "styles": null
+                },
+                "subtitle": "",
+                "text": "",
+                "actions": [],
+                "media": {
+                    "$$type": "FormBlock",
+                    "fields": [
+                        {
+                            "$$type": "TextFormControl",
+                            "name": "name",
+                            "label": "Name",
+                            "hideLabel": true,
+                            "placeholder": "How they call you",
+                            "isRequired": true,
+                            "width": "full"
+                        },
+                        {
+                            "$$type": "EmailFormControl",
+                            "name": "email",
+                            "label": "Email",
+                            "hideLabel": true,
+                            "placeholder": "How they contact you",
+                            "isRequired": true,
+                            "width": "full"
+                        },
+                        {
+                            "$$type": "TextareaFormControl",
+                            "name": "message",
+                            "label": "Message",
+                            "hideLabel": true,
+                            "placeholder": "What did you like",
+                            "isRequired": true,
+                            "width": "full"
+                        }
+                    ],
+                    "submitButton": {
+                        "$$type": "SubmitButtonFormControl",
+                        "label": "Swoosh",
+                        "showIcon": false,
+                        "icon": "arrowRight",
+                        "iconPosition": "right",
+                        "style": "primary",
+                        "elementId": null
+                    },
+                    "elementId": "contact-form",
+                    "styles": {
+                        "self": {
+                            "padding": [
+                                "pt-6",
+                                "pb-6",
+                                "pl-6",
+                                "pr-6"
+                            ],
+                            "borderColor": "border-dark",
+                            "borderStyle": "solid",
+                            "borderWidth": 1,
+                            "borderRadius": "large"
+                        }
+                    }
+                },
+                "badge": {
+                    "$$type": "Badge",
+                    "label": "Like what you see?",
+                    "color": "text-primary",
+                    "styles": null
+                },
+                "elementId": null,
+                "colors": "bg-light-fg-dark",
+                "backgroundImage": null,
+                "styles": null
+            },
+            "thumbnail": "images/generic-section-reach-out-2dbb.png"
+        }
+    ]
+}

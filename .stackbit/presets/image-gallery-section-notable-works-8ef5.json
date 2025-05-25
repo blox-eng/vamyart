@@ -1,0 +1,107 @@
+{
+    "model": "ImageGallerySection",
+    "srcType": "git",
+    "srcProjectId": "9a0364b9",
+    "presets": [
+        {
+            "label": "Notable works",
+            "locale": null,
+            "metadata": {
+                "categories": [
+                    "Sections"
+                ],
+                "canDelete": true
+            },
+            "data": {
+                "title": null,
+                "subtitle": "Notable works",
+                "images": [
+                    {
+                        "$$type": "ImageBlock",
+                        "url": {
+                            "$$ref": "stackbit_asset_id:static:public/images/empathy-logo.svg",
+                            "$$type": "__asset_model"
+                        },
+                        "altText": "Empathy logo",
+                        "elementId": null,
+                        "styles": null
+                    },
+                    {
+                        "$$type": "ImageBlock",
+                        "url": {
+                            "$$ref": "stackbit_asset_id:static:public/images/wellster-logo.svg",
+                            "$$type": "__asset_model"
+                        },
+                        "altText": "Wellster logo",
+                        "elementId": null,
+                        "styles": null
+                    },
+                    {
+                        "$$type": "ImageBlock",
+                        "url": {
+                            "$$ref": "stackbit_asset_id:static:public/images/vise-logo.svg",
+                            "$$type": "__asset_model"
+                        },
+                        "altText": "Vise logo",
+                        "elementId": null,
+                        "styles": null
+                    },
+                    {
+                        "$$type": "ImageBlock",
+                        "url": {
+                            "$$ref": "stackbit_asset_id:static:public/images/telus-logo.svg",
+                            "$$type": "__asset_model"
+                        },
+                        "altText": "Telus logo",
+                        "elementId": null,
+                        "styles": null
+                    },
+                    {
+                        "$$type": "ImageBlock",
+                        "url": {
+                            "$$ref": "stackbit_asset_id:static:public/images/contenful-logo.svg",
+                            "$$type": "__asset_model"
+                        },
+                        "altText": "Contentful logo",
+                        "elementId": null,
+                        "styles": null
+                    },
+                    {
+                        "$$type": "ImageBlock",
+                        "url": {
+                            "$$ref": "stackbit_asset_id:static:public/images/sanity-logo.svg",
+                            "$$type": "__asset_model"
+                        },
+                        "altText": "Sanity logo",
+                        "elementId": null,
+                        "styles": null
+                    },
+                    {
+                        "$$type": "ImageBlock",
+                        "url": {
+                            "$$ref": "stackbit_asset_id:static:public/images/rangle-logo.svg",
+                            "$$type": "__asset_model"
+                        },
+                        "altText": "Rangle logo",
+                        "elementId": null,
+                        "styles": null
+                    }
+                ],
+                "badge": null,
+                "elementId": null,
+                "motion": "move-to-left",
+                "colors": "bg-light-fg-dark",
+                "backgroundImage": null,
+                "styles": {
+                    "self": {
+                        "justifyContent": "center"
+                    },
+                    "subtitle": {
+                        "textAlign": "center"
+                    }
+                }
+            },
+            "thumbnail": "images/image-gallery-section-notable-works-8ef5.png"
+        }
+    ]
+}
