@@ -23,15 +23,7 @@
     "legalLinks": [
         {
             "label": "Terms",
-            "url": "/",
-            "icon": "arrowRight",
-            "iconPosition": "right",
-            "style": "secondary",
-            "type": "Link"
-        },
-        {
-            "label": "Privacy",
-            "url": "/",
+            "url": "/terms",
             "icon": "arrowRight",
             "iconPosition": "right",
             "style": "secondary",
