@@ -15,16 +15,6 @@ featuredImage:
       borderRadius: x-large
   type: ImageBlock
 bottomSections:
-  - title: Divider
-    colors: bg-light-fg-dark
-    styles:
-      self:
-        padding:
-          - pt-7
-          - pl-7
-          - pb-7
-          - pr-7
-    type: DividerSection
   - items: []
     variant: small-list
     colors: bg-light-fg-dark
@@ -41,6 +31,26 @@ bottomSections:
       subtitle:
         textAlign: center
     type: FeaturedItemsSection
+  - type: GenericSection
+    subtitle: ''
+    text: ''
+    actions:
+      - type: Button
+        label: GET THIS PIECE
+        altText: ''
+        url: /get-a-piece
+        showIcon: false
+        icon: arrowRight
+        iconPosition: right
+        style: primary
+        elementId: ''
+    colors: bg-light-fg-dark
+    styles:
+      self:
+        flexDirection: row
+        justifyContent: center
+      subtitle:
+        textAlign: left
 isFeatured: false
 colors: bg-light-fg-dark
 styles:

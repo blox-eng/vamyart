@@ -33,6 +33,27 @@ styles:
     flexDirection: row
 type: PostLayout
 author: content/data/person1.json
+bottomSections:
+  - type: GenericSection
+    subtitle: ''
+    text: ''
+    actions:
+      - type: Button
+        label: GET THIS PIECE
+        altText: ''
+        url: /get-a-piece
+        showIcon: false
+        icon: arrowRight
+        iconPosition: right
+        style: primary
+        elementId: ''
+    colors: bg-light-fg-dark
+    styles:
+      self:
+        flexDirection: row
+        justifyContent: center
+      subtitle:
+        textAlign: left
 ---
 ![](/images/gray-painting-placeholder-no-frame-hang-2-vamy.png)
 
