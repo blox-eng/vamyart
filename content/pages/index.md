@@ -158,7 +158,6 @@ sections:
       subtitle:
         textAlign: center
   - posts:
-      - content/pages/gallery/case-study-3.md
       - content/pages/gallery/balloony.md
       - content/pages/gallery/doughnut-hole.md
       - content/pages/gallery/blue.md

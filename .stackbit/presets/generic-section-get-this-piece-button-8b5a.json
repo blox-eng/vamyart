@@ -1,0 +1,50 @@
+{
+    "model": "GenericSection",
+    "srcType": "git",
+    "srcProjectId": "9a0364b9",
+    "presets": [
+        {
+            "label": "Get this piece button",
+            "locale": null,
+            "metadata": {
+                "categories": [
+                    "Sections"
+                ],
+                "canDelete": true
+            },
+            "data": {
+                "title": null,
+                "subtitle": "",
+                "text": "",
+                "actions": [
+                    {
+                        "$$type": "Button",
+                        "label": "GET THIS PIECE",
+                        "altText": "",
+                        "url": "/get-a-piece",
+                        "showIcon": false,
+                        "icon": "arrowRight",
+                        "iconPosition": "right",
+                        "style": "primary",
+                        "elementId": ""
+                    }
+                ],
+                "media": null,
+                "badge": null,
+                "elementId": null,
+                "colors": "bg-light-fg-dark",
+                "backgroundImage": null,
+                "styles": {
+                    "self": {
+                        "flexDirection": "row",
+                        "justifyContent": "center"
+                    },
+                    "subtitle": {
+                        "textAlign": "left"
+                    }
+                }
+            },
+            "thumbnail": "images/generic-section-get-this-piece-button-8b5a.png"
+        }
+    ]
+}
