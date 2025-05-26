@@ -2,7 +2,7 @@
 title: Gallery
 slug: /gallery
 numOfPostsPerPage: 8
-enableSearch: true
+enableSearch: false
 topSections:
   - title:
       text: Bear Market

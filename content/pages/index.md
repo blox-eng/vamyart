@@ -20,7 +20,7 @@ sections:
         elementId: ''
         type: Button
     media:
-      url: /images/main-hero.svg
+      url: /images/gray-painting-placeholder-no-frame-hang-square-vamy.png
       altText: Unblock your team boost your time to production preview
       elementId: ''
       type: ImageBlock
@@ -104,8 +104,8 @@ sections:
             textAlign: left
             justifyContent: center
         type: FeaturedItem
-      - title: Abstract
-        subtitle: Surreal
+      - title: Surreal
+        subtitle: Vibes
         text: >
           Color doesn't need permission. Form doesn't need explanation. Abstract
           art gives us what realism can't. Step into chaos that somehow makes
@@ -158,9 +158,10 @@ sections:
       subtitle:
         textAlign: center
   - posts:
-      - content/pages/gallery/case-study-1.md
-      - content/pages/gallery/case-study-2.md
       - content/pages/gallery/case-study-3.md
+      - content/pages/gallery/balloony.md
+      - content/pages/gallery/doughnut-hole.md
+      - content/pages/gallery/blue.md
     showThumbnail: true
     showDate: true
     showAuthor: true
