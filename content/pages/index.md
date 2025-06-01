@@ -19,6 +19,15 @@ sections:
         style: secondary
         elementId: ''
         type: Button
+      - type: Link
+        label: Follow me
+        altText: Instagram
+        url: 'https://www.instagram.com/maevevamyart'
+        showIcon: true
+        icon: arrowRight
+        iconPosition: right
+        style: secondary
+        elementId: ''
     media:
       url: /images/gray-painting-placeholder-no-frame-hang-square-vamy.png
       altText: Unblock your team boost your time to production preview
@@ -128,8 +137,8 @@ sections:
             flexDirection: row
         type: FeaturedItem
     actions:
-      - label: SEE THE PIECES
-        altText: SEE THE PIECES
+      - label: CHECK OUT MY WORK
+        altText: CHECK OUT MY WORK
         url: /gallery
         showIcon: false
         icon: arrowRight
