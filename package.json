@@ -40,6 +40,10 @@
     },
     "devDependencies": {
         "@base2/pretty-print-object": "^1.0.2",
+        "@semantic-release/changelog": "^6.0.3",
+        "@semantic-release/commit-analyzer": "^13.0.1",
+        "@semantic-release/github": "^11.0.3",
+        "@semantic-release/release-notes-generator": "^14.0.3",
         "@stackbit/cms-git": "^1.0.32",
         "@stackbit/types": "^2.1.10",
         "@types/glob": "^8.1.0",
@@ -47,6 +51,7 @@
         "@types/react-dom": "^19.1.1",
         "autoprefixer": "^10.4.19",
         "prettier": "^3.3.2",
+        "semantic-release": "^24.2.5",
         "typescript": "^5.6.2"
     },
     "main": "next.config.js"
