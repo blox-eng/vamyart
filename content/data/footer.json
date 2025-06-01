@@ -8,14 +8,14 @@
     "socialLinks": [
         {
             "altText": "Email link",
-            "url": "/",
+            "url": "mailto:hello@vamy.art",
             "icon": "mail",
             "type": "Social"
         },
         {
             "type": "Social",
             "altText": "Instagram link",
-            "url": "/maevevamyart",
+            "url": "https://www.instagram.com/maevevamyart",
             "icon": "instagram",
             "elementId": ""
         }
