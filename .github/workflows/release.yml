@@ -1,8 +1,18 @@
 name: Release
 
 on:
-  workflow_run:
+  push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
 
 concurrency:
   group: release-${{ github.ref }}
