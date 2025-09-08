@@ -5,10 +5,10 @@ numOfPostsPerPage: 8
 enableSearch: false
 topSections:
   - title:
-      text: Bear Market
+      text: First Contact
       color: text-dark
       type: TitleBlock
-    subtitle: When things get though
+    subtitle: Beyond Space
     posts:
       - content/pages/gallery/top-ten-lessons-we-learned.md
     showThumbnail: true

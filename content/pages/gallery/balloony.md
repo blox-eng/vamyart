@@ -35,7 +35,7 @@ bottomSections:
         justifyContent: center
       subtitle:
         textAlign: left
-isFeatured: false
+isFeatured: true
 colors: bg-light-fg-dark
 styles:
   self:
@@ -51,7 +51,7 @@ styles:
     borderRadius: none
     flexDirection: col
 type: PostLayout
-isDraft: false
+isDraft: true
 author: content/data/person1.json
 ---
 ![](/images/gray-painting-placeholder-no-frame-hang-2-vamy.png)
