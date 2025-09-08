@@ -10,7 +10,7 @@ topSections:
       type: TitleBlock
     subtitle: Beyond Space
     posts:
-      - content/pages/gallery/top-ten-lessons-we-learned.md
+      - content/pages/gallery/first-contact.md
     showThumbnail: true
     showExcerpt: true
     showDate: true
