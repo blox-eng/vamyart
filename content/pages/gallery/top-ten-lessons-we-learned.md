@@ -1,21 +1,13 @@
 ---
-title: Bear Market
+title: First Contact
 slug: top-ten-lessons-we-learned
-date: '2025-01-02'
+date: '2025-09-08'
 excerpt: >-
-  Interdum posuere lorem ipsum dolor sit amet consectetur. Odio morbi quis
-  commodo odio aenean sed adipiscing diam donec. Vitae congue mauris rhoncus
-  aenean vel elit scelerisque mauris pellentesque. Porttitor massa id neque
-  aliquam vestibulum morbi blandit cursus. Vitae aliquet nec ullamcorper sit.
-  Gravida arcu ac tortor dignissim convallis aenean. Quisque sagittis purus sit
-  amet volutpat consequat mauris nunc congue. Est ultricies integer quis auctor.
-  Commodo quis imperdiet massa tincidunt nunc pulvinar sapien. Vel risus commodo
-  viverra maecenas accumsan lacus. Donec adipiscing tristique risus nec feugiat
-  in fermentum. Habitasse platea dictumst quisque sagittis purus sit. Quam
-  adipiscing vitae proin sagittis nisl rhoncus mattis rhoncus urna. Id leo in
-  vitae turpis massa sed.
+  This painting is inpisred by humanity's drive to break barriers and chase what
+  seems out of reach. To anyone out there with a dream: stay blod, aim high,
+  stay on aim, don't give up.
 featuredImage:
-  url: /images/gray-painting-placeholder-no-frame-hang-2-vamy.png
+  url: /images/first Contact_5807.jpg
   altText: Thumbnail
   type: ImageBlock
   styles:
@@ -39,7 +31,7 @@ bottomSections:
     text: ''
     actions:
       - type: Button
-        label: GET THIS PIECE
+        label: PREORDER A PRINT
         altText: ''
         url: /get-a-piece
         showIcon: false
@@ -55,6 +47,6 @@ bottomSections:
       subtitle:
         textAlign: left
 ---
-![](/images/gray-painting-placeholder-no-frame-hang-2-vamy.png)
+![](/images/first%20Contact_5807.jpg)
 
-Interdum posuere lorem ipsum dolor sit amet consectetur. Odio morbi quis commodo odio aenean sed adipiscing diam donec. Vitae congue mauris rhoncus aenean vel elit scelerisque mauris pellentesque. Porttitor massa id neque aliquam vestibulum morbi blandit cursus. Vitae aliquet nec ullamcorper sit. Gravida arcu ac tortor dignissim convallis aenean. Quisque sagittis purus sit amet volutpat consequat mauris nunc congue. Est ultricies integer quis auctor. Commodo quis imperdiet massa tincidunt nunc pulvinar sapien. Vel risus commodo viverra maecenas accumsan lacus. Donec adipiscing tristique risus nec feugiat in fermentum. Habitasse platea dictumst quisque sagittis purus sit. Quam adipiscing vitae proin sagittis nisl rhoncus mattis rhoncus urna. Id leo in vitae turpis massa sed. Auctor elit sed vulputate mi sit. Gravida arcu ac tortor dignissim convallis aenean et.
+This painting is inspired by humanity's drive to break barriers and chase what seems out of reach. To anyone out there with a dream: stay blod, aim high, stay on aim, don't give up.
