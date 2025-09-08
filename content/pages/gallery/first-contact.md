@@ -1,9 +1,9 @@
 ---
 title: First Contact
-slug: top-ten-lessons-we-learned
+slug: first-contact
 date: '2025-09-08'
 excerpt: >-
-  This painting is inpisred by humanity's drive to break barriers and chase what
+  This painting is inspired by humanity's drive to break barriers and chase what
   seems out of reach. To anyone out there with a dream: stay blod, aim high,
   stay on aim, don't give up.
 featuredImage:
