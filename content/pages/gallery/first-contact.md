@@ -4,7 +4,7 @@ slug: first-contact
 date: '2025-09-08'
 excerpt: >-
   This painting is inspired by humanity's drive to break barriers and chase what
-  seems out of reach. To anyone out there with a dream: stay blod, aim high,
+  seems out of reach. To anyone out there with a dream: stay bold, aim high,
   stay on aim, don't give up.
 featuredImage:
   url: /images/first Contact_5807.jpg
@@ -49,4 +49,4 @@ bottomSections:
 ---
 ![](/images/first%20Contact_5807.jpg)
 
-This painting is inspired by humanity's drive to break barriers and chase what seems out of reach. To anyone out there with a dream: stay blod, aim high, stay on aim, don't give up.
+This painting is inspired by humanity's drive to break barriers and chase what seems out of reach. To anyone out there with a dream: stay bold, aim high, stay on aim, don't give up.
