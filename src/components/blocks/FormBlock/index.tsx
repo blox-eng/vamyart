@@ -48,6 +48,21 @@ export default function FormBlock(props) {
     const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
     const { fields = [], elementId, submitButton, className, styles = {}, 'data-sb-field-path': fieldPath } = props;
 
+    // Pre-fill form fields from URL parameters
+    React.useEffect(() => {
+        if (typeof window !== 'undefined' && formRef.current) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pieceParam = urlParams.get('piece');
+
+            if (pieceParam) {
+                const pieceInput = formRef.current.querySelector<HTMLInputElement>('input[name="Piece"]');
+                if (pieceInput) {
+                    pieceInput.value = decodeURIComponent(pieceParam);
+                }
+            }
+        }
+    }, [formRef]);
+
     if (fields.length === 0) {
         return null;
     }
