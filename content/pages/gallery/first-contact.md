@@ -2,6 +2,7 @@
 title: First Contact
 slug: first-contact
 date: '2025-09-08'
+pieceId: '#astro-fc5807'
 excerpt: >-
   This painting is inspired by humanity's drive to break barriers and chase what
   seems out of reach. To anyone out there with a dream: stay bold, aim high,
@@ -15,9 +16,9 @@ featuredImage:
       borderRadius: medium
 isFeatured: true
 seo:
-  metaTitle: The Top Ten Lessons We’ve Learned Since Our Initial Launch
-  metaDescription: You can add the excerpt and main keywords of your gallery post here.
-  socialImage: /images/abstract-feature2.svg
+  metaTitle: First Contact
+  metaDescription: First Contact - A painting inspired by humanity's drive to break barriers and chase what seems out of reach.
+  socialImage: /images/first Contact_5807.jpg
   type: Seo
 colors: bg-light-fg-dark
 styles:
@@ -33,7 +34,7 @@ bottomSections:
       - type: Button
         label: PREORDER A PRINT
         altText: ''
-        url: /get-a-piece
+        url: '/get-a-piece?piece=%23astro-fc5807'
         showIcon: false
         icon: arrowRight
         iconPosition: right
@@ -48,5 +49,7 @@ bottomSections:
         textAlign: left
 ---
 ![](/images/first%20Contact_5807.jpg)
+
+**Piece ID: #astro-fc5807**
 
 This painting is inspired by humanity's drive to break barriers and chase what seems out of reach. To anyone out there with a dream: stay bold, aim high, stay on aim, don't give up.
