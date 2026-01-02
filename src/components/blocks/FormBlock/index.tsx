@@ -7,18 +7,39 @@ import SubmitButtonFormControl from './SubmitButtonFormControl';
 
 export default function FormBlock(props) {
     const formRef = React.createRef<HTMLFormElement>();
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
     const { fields = [], elementId, submitButton, className, styles = {}, 'data-sb-field-path': fieldPath } = props;
 
     if (fields.length === 0) {
         return null;
     }
 
-    function handleSubmit(event) {
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setIsSubmitting(true);
+        setSubmitStatus('idle');
 
         const data = new FormData(formRef.current);
-        const value = Object.fromEntries(data.entries());
-        alert(`Form data: ${JSON.stringify(value)}`);
+
+        try {
+            const response = await fetch('/__forms.html', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(data as any).toString()
+            });
+
+            if (response.ok) {
+                setSubmitStatus('success');
+                formRef.current?.reset();
+            } else {
+                setSubmitStatus('error');
+            }
+        } catch (error) {
+            setSubmitStatus('error');
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
@@ -43,8 +64,29 @@ export default function FormBlock(props) {
             id={elementId}
             onSubmit={handleSubmit}
             ref={formRef}
-            data-sb-field-path= {fieldPath}
+            data-netlify="true"
+            data-netlify-honeypot="bot-field"
+            data-sb-field-path={fieldPath}
         >
+            {/* Honeypot field for spam protection - hidden from users */}
+            <p className="hidden">
+                <label>
+                    Don&apos;t fill this out if you&apos;re human: <input name="bot-field" />
+                </label>
+            </p>
+
+            {submitStatus === 'success' && (
+                <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-md">
+                    Thank you for your submission! We&apos;ll get back to you soon.
+                </div>
+            )}
+
+            {submitStatus === 'error' && (
+                <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-md">
+                    Something went wrong. Please try again.
+                </div>
+            )}
+
             <div
                 className={classNames('w-full', 'flex', 'flex-wrap', 'gap-8', mapStyles({ justifyContent: styles?.self?.justifyContent ?? 'flex-start' }))}
                 {...(fieldPath && { 'data-sb-field-path': '.fields' })}
@@ -64,7 +106,7 @@ export default function FormBlock(props) {
             </div>
             {submitButton && (
                 <div className={classNames('mt-8', 'flex', mapStyles({ justifyContent: styles?.self?.justifyContent ?? 'flex-start' }))}>
-                    <SubmitButtonFormControl {...submitButton} {...(fieldPath && { 'data-sb-field-path': '.submitButton' })} />
+                    <SubmitButtonFormControl {...submitButton} disabled={isSubmitting} {...(fieldPath && { 'data-sb-field-path': '.submitButton' })} />
                 </div>
             )}
         </form>
