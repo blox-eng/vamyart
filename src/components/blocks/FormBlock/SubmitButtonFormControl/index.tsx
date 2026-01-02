@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { iconMap } from '../../../svgs';
 
 export default function SubmitButtonFormControl(props) {
-    const { elementId, className, label, showIcon, icon, iconPosition = 'right', style = 'primary' } = props;
+    const { elementId, className, label, showIcon, icon, iconPosition = 'right', style = 'primary', disabled = false } = props;
     const IconComponent = icon ? iconMap[icon] : null;
     const fieldPath = props['data-sb-field-path'];
     const annotations = fieldPath ? { 'data-sb-field-path': [fieldPath, `${fieldPath}.elementId#@id`].join(' ').trim() } : {};
@@ -13,13 +13,15 @@ export default function SubmitButtonFormControl(props) {
         <button
             type="submit"
             id={elementId}
+            disabled={disabled}
             className={classNames(
                 'sb-component',
                 'sb-component-block',
                 'sb-component-button',
                 {
                     'sb-component-button-primary': style === 'primary',
-                    'sb-component-button-secondary': style === 'secondary'
+                    'sb-component-button-secondary': style === 'secondary',
+                    'opacity-50 cursor-not-allowed': disabled
                 },
                 className
             )}
