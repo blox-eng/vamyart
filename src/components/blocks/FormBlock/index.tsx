@@ -60,30 +60,24 @@ export default function FormBlock(props) {
         const data = new FormData(formRef.current);
 
         try {
-            // Submit to Netlify Forms (existing behavior)
-            const netlifyResponse = await fetch('/__forms.html', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(data as any).toString()
-            });
-
-            // Also submit to HubSpot if configured
-            if (HUBSPOT_PORTAL_ID && HUBSPOT_FORM_GUID) {
-                try {
-                    await submitToHubSpot(data, HUBSPOT_PORTAL_ID, HUBSPOT_FORM_GUID);
-                } catch (hubspotError) {
-                    // Log HubSpot error but don't fail the form submission
-                    console.error('HubSpot submission error:', hubspotError);
-                }
+            // Submit to HubSpot
+            if (!HUBSPOT_PORTAL_ID || !HUBSPOT_FORM_GUID) {
+                console.error('HubSpot configuration missing. Please set NEXT_PUBLIC_HUBSPOT_PORTAL_ID and NEXT_PUBLIC_HUBSPOT_FORM_GUID environment variables.');
+                setSubmitStatus('error');
+                return;
             }
 
-            if (netlifyResponse.ok) {
+            const hubspotResponse = await submitToHubSpot(data, HUBSPOT_PORTAL_ID, HUBSPOT_FORM_GUID);
+
+            if (hubspotResponse.ok) {
                 setSubmitStatus('success');
                 formRef.current?.reset();
             } else {
+                console.error('HubSpot submission failed:', await hubspotResponse.text());
                 setSubmitStatus('error');
             }
         } catch (error) {
+            console.error('Form submission error:', error);
             setSubmitStatus('error');
         } finally {
             setIsSubmitting(false);
@@ -112,16 +106,10 @@ export default function FormBlock(props) {
             id={elementId}
             onSubmit={handleSubmit}
             ref={formRef}
-            data-netlify="true"
-            data-netlify-honeypot="bot-field"
             data-sb-field-path={fieldPath}
         >
-            {/* Honeypot field for spam protection - hidden from users */}
-            <p className="hidden">
-                <label>
-                    Don&apos;t fill this out if you&apos;re human: <input name="bot-field" />
-                </label>
-            </p>
+            {/* Honeypot field for spam protection */}
+            <input type="hidden" name="bot-field" style={{ display: 'none' }} />
 
             {submitStatus === 'success' && (
                 <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-md">
@@ -139,7 +127,6 @@ export default function FormBlock(props) {
                 className={classNames('w-full', 'flex', 'flex-wrap', 'gap-8', mapStyles({ justifyContent: styles?.self?.justifyContent ?? 'flex-start' }))}
                 {...(fieldPath && { 'data-sb-field-path': '.fields' })}
             >
-                <input type="hidden" name="form-name" value={elementId} />
                 {fields.map((field, index) => {
                     const modelName = field.__metadata.modelName;
                     if (!modelName) {
