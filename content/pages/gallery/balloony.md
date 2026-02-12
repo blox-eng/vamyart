@@ -2,6 +2,7 @@
 title: Balloony
 slug: balloony
 date: '2024-01-01'
+pieceId: '#abstract-balloony'
 excerpt: >-
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ante lorem,
   tincidunt ac leo efficitur, feugiat tempor odio. Curabitur at auctor sapien.
@@ -22,7 +23,7 @@ bottomSections:
       - type: Button
         label: GET THIS PIECE
         altText: ''
-        url: /get-a-piece
+        url: '/get-a-piece?piece=%23abstract-balloony'
         showIcon: false
         icon: arrowRight
         iconPosition: right
@@ -35,7 +36,7 @@ bottomSections:
         justifyContent: center
       subtitle:
         textAlign: left
-isFeatured: true
+isFeatured: false
 colors: bg-light-fg-dark
 styles:
   self:
@@ -51,7 +52,6 @@ styles:
     borderRadius: none
     flexDirection: col
 type: PostLayout
-isDraft: true
 author: content/data/person1.json
 ---
 ![](/images/gray-painting-placeholder-no-frame-hang-2-vamy.png)

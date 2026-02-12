@@ -2,6 +2,7 @@
 title: Blue
 slug: blue
 date: '2025-04-16'
+pieceId: '#abstract-blue'
 excerpt: >-
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ante lorem,
   tincidunt ac leo efficitur, feugiat tempor odio. Curabitur at auctor sapien.
@@ -38,7 +39,7 @@ bottomSections:
       - type: Button
         label: GET THIS PIECE
         altText: ''
-        url: /get-a-piece
+        url: '/get-a-piece?piece=%23abstract-blue'
         showIcon: false
         icon: arrowRight
         iconPosition: right
@@ -51,7 +52,7 @@ bottomSections:
         justifyContent: center
       subtitle:
         textAlign: left
-isFeatured: true
+isFeatured: false
 colors: bg-light-fg-dark
 styles:
   self:
@@ -68,7 +69,6 @@ styles:
     flexDirection: col
 type: PostLayout
 author: content/data/person1.json
-isDraft: true
 ---
 ![](/images/gray-painting-placeholder-no-frame-hang-vertical-vamy.png)
 
