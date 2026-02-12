@@ -28,7 +28,7 @@ Visitors can discover art pieces and easily express interest in purchasing them 
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Add new art pieces to the gallery via Stackbit CMS
+- [ ] Add new art pieces to the gallery (via Claude Code, following existing markdown patterns)
 - [ ] HubSpot email marketing integration (newsletter signup, new piece announcements)
 - [ ] About page / artist statement page
 - [ ] Polished content pages (consistent quality across all pages)
@@ -48,14 +48,14 @@ Visitors can discover art pieces and easily express interest in purchasing them 
 - **Architecture:** Next.js 15 SSG with markdown/JSON content, model-driven component registry
 - **Current gallery:** 4 pieces with individual detail pages and inquiry forms
 - **Integrations:** HubSpot (forms), Algolia (search), Google Analytics (analytics)
-- **Content workflow:** Artist uses Stackbit CMS visual editor to add/edit content
+- **Content workflow:** Pieces added via Claude Code following existing markdown patterns; Stackbit CMS available but not primary workflow
 - **Brownfield:** All infrastructure is in place — this is about expanding content and tightening integrations
 
 ## Constraints
 
 - **Hosting:** Netlify free tier — no server-side functions beyond what's available, build time limits
 - **Architecture:** Must work within existing Next.js SSG + markdown content model
-- **CMS:** Content additions should be doable through Stackbit CMS
+- **CMS:** Content follows existing markdown/frontmatter patterns for consistency
 - **Complexity:** Minimalistic approach — no over-engineering, keep the site simple and fast
 
 ## Key Decisions
@@ -65,7 +65,7 @@ Visitors can discover art pieces and easily express interest in purchasing them 
 | Keep static site architecture | Works well, fast, free hosting, no backend needed | — Pending |
 | HubSpot for CRM + email marketing | Already integrated for forms, natural extension to email | — Pending |
 | Skip PostHog | Google Analytics sufficient for current needs | — Pending |
-| Stackbit CMS for content | Already in use, artist is familiar with it | — Pending |
+| Claude Code for content management | Faster than CMS, follows existing markdown patterns | — Pending |
 
 ---
 *Last updated: 2026-02-12 after initialization*
