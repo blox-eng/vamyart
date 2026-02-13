@@ -14,7 +14,7 @@ Visitors can discover art pieces and easily express interest in purchasing them 
 
 <!-- Shipped and confirmed valuable. -->
 
-- ✓ Gallery with art piece detail pages — existing (4 pieces: First Contact, Balloony, Doughnut Hole, Blue)
+- ✓ Gallery with art piece detail pages — 4 pieces: First Contact, On the Horizon, Whispers, gallery index
 - ✓ Homepage with hero and featured content — existing
 - ✓ Purchase inquiry form with HubSpot integration — existing
 - ✓ Form pre-filling from piece pages (piece interest field) — existing
@@ -28,11 +28,10 @@ Visitors can discover art pieces and easily express interest in purchasing them 
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Add new art pieces to the gallery (via Claude Code, following existing markdown patterns)
+- [x] Add new art pieces to the gallery — Done (On the Horizon, Whispers added; drafts removed)
 - [ ] HubSpot email marketing integration (newsletter signup, new piece announcements)
 - [ ] About page / artist statement page
 - [ ] Polished content pages (consistent quality across all pages)
-- [ ] Reliable end-to-end form → HubSpot pipeline
 
 ### Out of Scope
 
@@ -46,7 +45,7 @@ Visitors can discover art pieces and easily express interest in purchasing them 
 
 - **Existing site:** Live at vamy.art, deployed on Netlify, content managed via Stackbit CMS
 - **Architecture:** Next.js 15 SSG with markdown/JSON content, model-driven component registry
-- **Current gallery:** 4 pieces with individual detail pages and inquiry forms
+- **Current gallery:** 4 pieces (First Contact, On the Horizon, Whispers + gallery index) with detail pages and inquiry forms
 - **Integrations:** HubSpot (forms), Algolia (search), Google Analytics (analytics)
 - **Content workflow:** Pieces added via Claude Code following existing markdown patterns; Stackbit CMS available but not primary workflow
 - **Brownfield:** All infrastructure is in place — this is about expanding content and tightening integrations
