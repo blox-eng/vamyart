@@ -1,7 +1,7 @@
 ---
 title: Whispers
 slug: whispers
-date: '2025-09-20'
+date: '2026-01-03'
 pieceId: '#seascape-w2025'
 excerpt: >-
   Muted abstract seascape with warm tones and stormy sea textures, capturing
@@ -10,9 +10,6 @@ featuredImage:
   url: /images/whispers.jpg
   altText: Whispers - Muted abstract seascape with warm tones and stormy textures
   type: ImageBlock
-  styles:
-    self:
-      borderRadius: medium
 isFeatured: false
 seo:
   metaTitle: Whispers

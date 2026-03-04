@@ -1,7 +1,7 @@
 ---
 title: On the Horizon
 slug: on-the-horizon
-date: '2025-09-15'
+date: '2026-01-20'
 pieceId: '#seascape-oh2025'
 excerpt: >-
   Abstract seascape exploring the boundary between sea and sky, painted with
@@ -10,9 +10,6 @@ featuredImage:
   url: /images/on-the-horizon.jpg
   altText: On the Horizon - Abstract seascape with dark sea and textured light sky
   type: ImageBlock
-  styles:
-    self:
-      borderRadius: medium
 isFeatured: false
 seo:
   metaTitle: On the Horizon
