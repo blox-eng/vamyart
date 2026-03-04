@@ -26,6 +26,15 @@ export const ImageBlock: Model = {
             localized: false
         },
         {
+            type: 'url',
+            name: 'link',
+            label: 'Link',
+            description: 'Optional URL to wrap the image in a link',
+            required: false,
+            hidden: false,
+            localized: false
+        },
+        {
             type: 'string',
             name: 'elementId',
             label: 'Element ID',
