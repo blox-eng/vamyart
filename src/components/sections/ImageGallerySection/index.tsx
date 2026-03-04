@@ -78,9 +78,22 @@ function ImageGalleryStaticGrid({ images = [], hasTopMargin, justifyContent = 'f
             className={classNames('w-full', 'flex', 'flex-wrap', 'items-center', mapStyles({ justifyContent: justifyContent }), { 'mt-12': hasTopMargin })}
             {...(hasAnnotations && { 'data-sb-field-path': '.images' })}
         >
-            {images.map((image, index) => (
-                <ImageBlock key={index} {...image} {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })} />
-            ))}
+            {images.map((image, index) => {
+                const block = (
+                    <ImageBlock
+                        key={index}
+                        {...image}
+                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                    />
+                );
+                return image.link ? (
+                    <a key={index} href={image.link} className="block">
+                        {block}
+                    </a>
+                ) : (
+                    block
+                );
+            })}
         </div>
     );
 }
@@ -129,14 +142,40 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                         )}
                     >
                         <div className="sb-image-strip-content flex justify-around" {...(hasAnnotations && { 'data-sb-field-path': '.images' })}>
-                            {images.map((image, index) => (
-                                <ImageBlock key={index} {...image} {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })} />
-                            ))}
+                            {images.map((image, index) => {
+                                const block = (
+                                    <ImageBlock
+                                        key={index}
+                                        {...image}
+                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                    />
+                                );
+                                return image.link ? (
+                                    <a key={index} href={image.link} className="block">
+                                        {block}
+                                    </a>
+                                ) : (
+                                    block
+                                );
+                            })}
                         </div>
                         <div className="sb-image-strip-content flex justify-around" {...(hasAnnotations && { 'data-sb-field-path': '.images' })}>
-                            {images.map((image, index) => (
-                                <ImageBlock key={index} {...image} {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })} />
-                            ))}
+                            {images.map((image, index) => {
+                                const block = (
+                                    <ImageBlock
+                                        key={index}
+                                        {...image}
+                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                    />
+                                );
+                                return image.link ? (
+                                    <a key={index} href={image.link} className="block">
+                                        {block}
+                                    </a>
+                                ) : (
+                                    block
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
