@@ -81,7 +81,6 @@ function ImageGalleryStaticGrid({ images = [], hasTopMargin, justifyContent = 'f
             {images.map((image, index) => {
                 const block = (
                     <ImageBlock
-                        key={index}
                         {...image}
                         {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
                     />
@@ -91,7 +90,11 @@ function ImageGalleryStaticGrid({ images = [], hasTopMargin, justifyContent = 'f
                         {block}
                     </a>
                 ) : (
-                    block
+                    <ImageBlock
+                        key={index}
+                        {...image}
+                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                    />
                 );
             })}
         </div>
@@ -145,7 +148,6 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                             {images.map((image, index) => {
                                 const block = (
                                     <ImageBlock
-                                        key={index}
                                         {...image}
                                         {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
                                     />
@@ -155,7 +157,11 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                                         {block}
                                     </a>
                                 ) : (
-                                    block
+                                    <ImageBlock
+                                        key={index}
+                                        {...image}
+                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                    />
                                 );
                             })}
                         </div>
@@ -163,7 +169,6 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                             {images.map((image, index) => {
                                 const block = (
                                     <ImageBlock
-                                        key={index}
                                         {...image}
                                         {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
                                     />
@@ -173,7 +178,11 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                                         {block}
                                     </a>
                                 ) : (
-                                    block
+                                    <ImageBlock
+                                        key={index}
+                                        {...image}
+                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                    />
                                 );
                             })}
                         </div>
