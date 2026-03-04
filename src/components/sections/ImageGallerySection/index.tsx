@@ -110,7 +110,7 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
         '--sb-slide-speed': `${itemCount * 8}s`
     } as React.CSSProperties;
     return (
-        <div className="w-full">
+        <div className="w-screen relative left-1/2 -translate-x-1/2">
             <div
                 className={classNames(
                     'sb-image-strip-wrap',
@@ -144,48 +144,30 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                             motion === 'move-to-left' ? 'sb-animate-slide-left' : 'sb-animate-slide-right'
                         )}
                     >
-                        <div className="sb-image-strip-content flex justify-around" {...(hasAnnotations && { 'data-sb-field-path': '.images' })}>
-                            {images.map((image, index) => {
-                                const block = (
-                                    <ImageBlock
-                                        {...image}
-                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
-                                    />
-                                );
-                                return image.link ? (
-                                    <a key={index} href={image.link} className="block h-64 overflow-hidden">
-                                        {block}
-                                    </a>
-                                ) : (
-                                    <ImageBlock
-                                        key={index}
-                                        {...image}
-                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
-                                    />
-                                );
-                            })}
-                        </div>
-                        <div className="sb-image-strip-content flex justify-around" {...(hasAnnotations && { 'data-sb-field-path': '.images' })}>
-                            {images.map((image, index) => {
-                                const block = (
-                                    <ImageBlock
-                                        {...image}
-                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
-                                    />
-                                );
-                                return image.link ? (
-                                    <a key={index} href={image.link} className="block h-64 overflow-hidden">
-                                        {block}
-                                    </a>
-                                ) : (
-                                    <ImageBlock
-                                        key={index}
-                                        {...image}
-                                        {...(hasAnnotations && { 'data-sb-field-path': `.${index}` })}
-                                    />
-                                );
-                            })}
-                        </div>
+                        {[0, 1].map((setIndex) => (
+                            <div key={setIndex} className="sb-image-strip-content flex items-center gap-8 h-52" {...(setIndex === 0 && hasAnnotations && { 'data-sb-field-path': '.images' })}>
+                                {images.map((image, index) =>
+                                    image.link ? (
+                                        <a key={index} href={image.link} className="block h-full flex-shrink-0">
+                                            <ImageBlock
+                                                {...image}
+                                                className="h-full"
+                                                imageClassName="h-full w-auto object-cover"
+                                                {...(setIndex === 0 && hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                            />
+                                        </a>
+                                    ) : (
+                                        <ImageBlock
+                                            key={index}
+                                            {...image}
+                                            className="h-full flex-shrink-0"
+                                            imageClassName="h-full w-auto object-cover"
+                                            {...(setIndex === 0 && hasAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                        />
+                                    )
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
