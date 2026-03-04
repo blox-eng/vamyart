@@ -166,32 +166,6 @@ sections:
         justifyContent: center
       subtitle:
         textAlign: center
-  - type: ImageGallerySection
-    title: null
-    subtitle: null
-    images:
-      - type: ImageBlock
-        url: /images/on-the-horizon.jpg
-        altText: On the Horizon
-        link: /on-the-horizon
-      - type: ImageBlock
-        url: /images/whispers.jpg
-        altText: Whispers
-        link: /whispers
-      - type: ImageBlock
-        url: /images/first Contact_5807.jpg
-        altText: First Contact
-        link: /first-contact
-    motion: move-to-left
-    colors: bg-light-fg-dark
-    styles:
-      self:
-        padding:
-          - pt-16
-          - pb-16
-          - pl-0
-          - pr-0
-        justifyContent: center
   - title:
       text: Reach out
       color: text-dark
