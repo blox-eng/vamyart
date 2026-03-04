@@ -11,10 +11,7 @@ featuredImage:
   url: /images/first Contact_5807.jpg
   altText: Thumbnail
   type: ImageBlock
-  styles:
-    self:
-      borderRadius: medium
-isFeatured: true
+isFeatured: false
 seo:
   metaTitle: First Contact
   metaDescription: First Contact - A painting inspired by humanity's drive to break barriers and chase what seems out of reach.
