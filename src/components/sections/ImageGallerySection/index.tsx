@@ -86,7 +86,7 @@ function ImageGalleryStaticGrid({ images = [], hasTopMargin, justifyContent = 'f
                     />
                 );
                 return image.link ? (
-                    <a key={index} href={image.link} className="block">
+                    <a key={index} href={image.link} className="block h-64 overflow-hidden">
                         {block}
                     </a>
                 ) : (
@@ -153,7 +153,7 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                                     />
                                 );
                                 return image.link ? (
-                                    <a key={index} href={image.link} className="block">
+                                    <a key={index} href={image.link} className="block h-64 overflow-hidden">
                                         {block}
                                     </a>
                                 ) : (
@@ -174,7 +174,7 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                                     />
                                 );
                                 return image.link ? (
-                                    <a key={index} href={image.link} className="block">
+                                    <a key={index} href={image.link} className="block h-64 overflow-hidden">
                                         {block}
                                     </a>
                                 ) : (
