@@ -1,0 +1,3 @@
+[build]
+  command = "pnpm install && pnpm turbo build --filter=@vamy/website"
+  publish = "apps/website/.next"
