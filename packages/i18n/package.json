@@ -1,0 +1,10 @@
+{
+  "name": "@vamy/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./messages/*": "./messages/*"
+  }
+}

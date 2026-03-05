@@ -1,0 +1,37 @@
+{
+    "logo": {
+        "url": "/images/vamy-white-sm.png",
+        "altText": "Logo light",
+        "type": "ImageBlock"
+    },
+    "text": "Maeve Vamy\n",
+    "socialLinks": [
+        {
+            "altText": "Email link",
+            "url": "mailto:hello@vamy.art",
+            "icon": "mail",
+            "type": "Social"
+        },
+        {
+            "type": "Social",
+            "altText": "Instagram link",
+            "url": "https://www.instagram.com/maevevamyart",
+            "icon": "instagram",
+            "elementId": ""
+        }
+    ],
+    "legalLinks": [
+        {
+            "label": "Terms",
+            "url": "/terms",
+            "icon": "arrowRight",
+            "iconPosition": "right",
+            "style": "secondary",
+            "type": "Link"
+        }
+    ],
+    "copyrightText": "All rights reserved @ 2025 Vamy\n",
+    "colors": "bg-dark-fg-light",
+    "type": "Footer",
+    "title": ""
+}

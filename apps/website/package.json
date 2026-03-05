@@ -1,0 +1,38 @@
+{
+  "name": "@vamy/website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@vamy/db": "workspace:*",
+    "@vamy/i18n": "workspace:*",
+    "@vamy/ui": "workspace:*",
+    "@algolia/autocomplete-js": "^1.17.1",
+    "@algolia/autocomplete-theme-classic": "^1.17.1",
+    "algoliasearch": "^4.24.0",
+    "classnames": "^2.5.1",
+    "dayjs": "^1.11.11",
+    "front-matter": "^4.0.2",
+    "glob": "^10.4.2",
+    "markdown-to-jsx": "^7.7.3",
+    "marked": "^14.1.2",
+    "next": "15.3.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "swiper": "^11.1.4",
+    "tailwindcss": "^3.4.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.1",
+    "@types/glob": "^8.1.0",
+    "autoprefixer": "^10.4.19",
+    "typescript": "^5.6.2",
+    "vitest": "^2.0.0"
+  }
+}

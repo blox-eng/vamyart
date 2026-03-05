@@ -1,0 +1,39 @@
+{
+    "logo": {
+        "url": "/images/vamy-black-sm.png",
+        "altText": "Logo dark",
+        "styles": {
+            "self": {
+                "margin": [
+                    "mr-3"
+                ]
+            }
+        },
+        "type": "ImageBlock"
+    },
+    "primaryLinks": [
+        {
+            "label": "GALLERY",
+            "altText": "Gallery",
+            "url": "/gallery",
+            "icon": "arrowRight",
+            "iconPosition": "right",
+            "style": "secondary",
+            "type": "Link"
+        }
+    ],
+    "secondaryLinks": [
+        {
+            "label": "GET A PIECE",
+            "url": "/get-a-piece",
+            "icon": "arrowRight",
+            "iconPosition": "right",
+            "style": "primary",
+            "type": "Button",
+            "altText": "get-a-piece"
+        }
+    ],
+    "variant": "logo-left-primary-nav-right",
+    "colors": "bg-light-fg-dark",
+    "type": "Header"
+}
