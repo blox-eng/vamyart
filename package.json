@@ -1,58 +1,20 @@
 {
-    "name": "content-ops-starter",
-    "version": "0.1.0",
-    "release": {
-        "branches": [
-            "main"
-        ],
-        "plugins": [
-            "@semantic-release/commit-analyzer",
-            "@semantic-release/release-notes-generator",
-            "@semantic-release/changelog",
-            [
-                "@semantic-release/github",
-                {
-                    "assets": []
-                }
-            ]
-        ]
-    },
-    "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start"
-    },
-    "dependencies": {
-        "@algolia/autocomplete-js": "^1.17.1",
-        "@algolia/autocomplete-theme-classic": "^1.17.1",
-        "algoliasearch": "^4.24.0",
-        "classnames": "^2.5.1",
-        "dayjs": "^1.11.11",
-        "front-matter": "^4.0.2",
-        "glob": "^10.4.2",
-        "markdown-to-jsx": "^7.7.3",
-        "marked": "^14.1.2",
-        "next": "15.3.8",
-        "react": "^19.1.0",
-        "react-dom": "^19.1.0",
-        "swiper": "^11.1.4",
-        "tailwindcss": "^3.4.3"
-    },
-    "devDependencies": {
-        "@base2/pretty-print-object": "^1.0.2",
-        "@semantic-release/changelog": "^6.0.3",
-        "@semantic-release/commit-analyzer": "^13.0.1",
-        "@semantic-release/github": "^11.0.3",
-        "@semantic-release/release-notes-generator": "^14.0.3",
-        "@stackbit/cms-git": "^1.0.32",
-        "@stackbit/types": "^2.1.10",
-        "@types/glob": "^8.1.0",
-        "@types/react": "^19.1.0",
-        "@types/react-dom": "^19.1.1",
-        "autoprefixer": "^10.4.19",
-        "prettier": "^3.3.2",
-        "semantic-release": "^24.2.5",
-        "typescript": "^5.6.2"
-    },
-    "main": "next.config.js"
+  "name": "vamy",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "prettier": "^3.3.2",
+    "typescript": "^5.6.2"
+  },
+  "packageManager": "pnpm@10.28.1",
+  "engines": {
+    "node": ">=20"
+  }
 }
