@@ -5,5 +5,22 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "scripts": {
+    "migrate": "drizzle-kit migrate",
+    "generate": "drizzle-kit generate",
+    "studio": "drizzle-kit studio",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "drizzle-orm": "^0.40.0",
+    "postgres": "^3.4.8"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.0",
+    "drizzle-kit": "^0.30.0",
+    "typescript": "^5.6.2",
+    "vitest": "^2.0.0"
   }
 }
