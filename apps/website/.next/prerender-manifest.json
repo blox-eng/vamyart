@@ -1,0 +1,118 @@
+{
+  "version": 4,
+  "routes": {
+    "/terms": {
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/[[...slug]]",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/terms.json",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/": {
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/[[...slug]]",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/index.json",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/get-a-piece": {
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/[[...slug]]",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/get-a-piece.json",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/gallery/whispers": {
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/[[...slug]]",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/gallery/whispers.json",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/gallery/on-the-horizon": {
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/[[...slug]]",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/gallery/on-the-horizon.json",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/gallery": {
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/[[...slug]]",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/gallery.json",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/gallery/first-contact": {
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/[[...slug]]",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/gallery/first-contact.json",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    }
+  },
+  "dynamicRoutes": {
+    "/[[...slug]]": {
+      "routeRegex": "^(?:/(.+?))?(?:/)?$",
+      "dataRoute": "/_next/data/uZJfJSYvdYbe-aVh4-a5m/[[...slug]].json",
+      "fallback": false,
+      "dataRouteRegex": "^/_next/data/uZJfJSYvdYbe\\-aVh4\\-a5m(?:/(.+?))?\\.json$",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    }
+  },
+  "notFoundRoutes": [],
+  "preview": {
+    "previewModeId": "f98f966e63e9a0923c68af18aa72f071",
+    "previewModeSigningKey": "31ff3eea8d15b4b03f5c9f0c177865348b13fc7c08e1bc6bd9c083d1213c9cd2",
+    "previewModeEncryptionKey": "62adc7caccf6116ef534b8c5394b77159fbe35b5968c5196eec939ae1a2d8336"
+  }
+}
