@@ -1,0 +1,60 @@
+import { z } from "zod";
+import { router, publicProcedure } from "../index";
+import { db } from "../../client";
+import { inquiries } from "../../schema";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export const inquiriesRouter = router({
+  create: publicProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        pieceInterest: z.string().min(1),
+        message: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await db.insert(inquiries).values(input);
+
+      // Notify artist
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL!,
+        to: process.env.RESEND_ARTIST_EMAIL!,
+        subject: `New inquiry: ${input.pieceInterest}`,
+        html: `
+          <p><strong>${input.name}</strong> (${input.email}) is interested in <em>${input.pieceInterest}</em>.</p>
+          ${input.message ? `<p>${input.message}</p>` : ""}
+        `,
+      });
+
+      // Auto-reply to collector
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL!,
+        to: input.email,
+        subject: "We received your inquiry",
+        html: `<p>Hi ${input.name}, thank you for reaching out. We'll be in touch soon.</p>`,
+      });
+
+      return { success: true };
+    }),
+
+  list: publicProcedure.query(async () => {
+    return db.query.inquiries.findMany({
+      orderBy: (inquiries, { desc }) => [desc(inquiries.createdAt)],
+    });
+  }),
+
+  markHandled: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { eq } = await import("drizzle-orm");
+      await db
+        .update(inquiries)
+        .set({ handledAt: new Date() })
+        .where(eq(inquiries.id, input.id));
+      return { success: true };
+    }),
+});
