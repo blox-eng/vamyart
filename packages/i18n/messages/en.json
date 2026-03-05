@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "gallery": "Gallery",
+    "about": "About",
+    "contact": "Get a Piece",
+    "language": "Language"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Stay in the loop",
+      "description": "New works, exhibitions, and studio updates.",
+      "placeholder": "your@email.com",
+      "submit": "Subscribe",
+      "success": "You're on the list.",
+      "error": "Something went wrong. Try again."
+    }
+  },
+  "inquiry": {
+    "success": "Thank you. We'll be in touch soon.",
+    "error": "Something went wrong. Please try again."
+  },
+  "bid": {
+    "currentBid": "Current bid",
+    "noBids": "No bids yet",
+    "minBid": "Minimum bid",
+    "endsIn": "Ends in",
+    "ended": "Auction ended",
+    "placeBid": "Place a Bid",
+    "yourName": "Your name",
+    "yourEmail": "Your email",
+    "yourBid": "Your bid (€)",
+    "submit": "Submit bid",
+    "success": "Your bid has been placed.",
+    "outbid": "Your bid is too low. Current bid is {current}.",
+    "error": "Something went wrong. Please try again."
+  },
+  "product": {
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "buy": "Buy print",
+    "selectVariant": "Select size & paper",
+    "price": "€{price}"
+  }
+}
