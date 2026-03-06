@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutGrid, ShoppingBag, ImageIcon, Mail, LogOut } from "lucide-react";
+import { LayoutGrid, ShoppingBag, ImageIcon, Mail, Truck, Megaphone, LogOut } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 
 const navItems = [
@@ -10,6 +10,8 @@ const navItems = [
   { href: "/orders", label: "Orders", icon: ShoppingBag },
   { href: "/artworks", label: "Artworks", icon: ImageIcon },
   { href: "/inquiries", label: "Inquiries", icon: Mail },
+  { href: "/shipping", label: "Shipping", icon: Truck },
+  { href: "/banners", label: "Banners", icon: Megaphone },
 ];
 
 export default function DashboardLayout({
