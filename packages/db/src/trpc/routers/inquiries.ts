@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure } from "../index";
+import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { inquiries } from "../../schema";
 import { Resend } from "resend";
@@ -41,13 +41,13 @@ export const inquiriesRouter = router({
       return { success: true };
     }),
 
-  list: publicProcedure.query(async () => {
+  list: protectedProcedure.query(async () => {
     return db.query.inquiries.findMany({
       orderBy: (inquiries, { desc }) => [desc(inquiries.createdAt)],
     });
   }),
 
-  markHandled: publicProcedure
+  markHandled: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
       const { eq } = await import("drizzle-orm");
