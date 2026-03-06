@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgEnum,
   uuid,
   text,
   numeric,
@@ -10,6 +11,10 @@ import {
   inet,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+export const shippingMethodType = pgEnum("shipping_method_type", ["free", "paid", "custom"]);
+export const bannerScope = pgEnum("banner_scope", ["global", "page"]);
 
 // ─── Artworks ────────────────────────────────────────────────────────────────
 export const artworks = pgTable("artworks", {
@@ -32,6 +37,7 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   description: text("description"),
   active: boolean("active").notNull().default(true),
+  shippingMethodId: uuid("shipping_method_id").references(() => shippingMethods.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -75,6 +81,7 @@ export const auctions = pgTable("auctions", {
   bidCount: integer("bid_count").notNull().default(0),
   deadline: timestamp("deadline", { withTimezone: true }).notNull(),
   status: text("status").notNull().default("active"), // active | closed | cancelled
+  productVariantId: uuid("product_variant_id").references(() => productVariants.id),
   winnerBidId: uuid("winner_bid_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -110,6 +117,29 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
 });
 
 
+// ─── Shipping Methods ─────────────────────────────────────────────────────────
+export const shippingMethods = pgTable("shipping_methods", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  displayText: text("display_text").notNull(),
+  type: shippingMethodType("type").notNull(),
+  cost: numeric("cost", { precision: 10, scale: 2 }),
+  isDefault: boolean("is_default").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Banners ──────────────────────────────────────────────────────────────────
+export const banners = pgTable("banners", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  text: text("text").notNull(),
+  isActive: boolean("is_active").notNull().default(false),
+  scope: bannerScope("scope").notNull().default("global"),
+  pageSlug: text("page_slug"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 // ─── Relations ────────────────────────────────────────────────────────────────
 
 export const artworksRelations = relations(artworks, ({ one, many }) => ({
@@ -120,6 +150,11 @@ export const artworksRelations = relations(artworks, ({ one, many }) => ({
 export const productsRelations = relations(products, ({ one, many }) => ({
   artwork: one(artworks, { fields: [products.artworkId], references: [artworks.id] }),
   variants: many(productVariants),
+  shippingMethod: one(shippingMethods, { fields: [products.shippingMethodId], references: [shippingMethods.id] }),
+}));
+
+export const shippingMethodsRelations = relations(shippingMethods, ({ many }) => ({
+  products: many(products),
 }));
 
 export const productVariantsRelations = relations(productVariants, ({ one }) => ({
@@ -135,6 +170,7 @@ export const ordersRelations = relations(orders, ({ one }) => ({
 
 export const auctionsRelations = relations(auctions, ({ one, many }) => ({
   artwork: one(artworks, { fields: [auctions.artworkId], references: [artworks.id] }),
+  productVariant: one(productVariants, { fields: [auctions.productVariantId], references: [productVariants.id] }),
   bids: many(bids),
 }));
 
