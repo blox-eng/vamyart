@@ -135,8 +135,10 @@ export const productsRouter = router({
   deleteProduct: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
-      await db.delete(productVariants).where(eq(productVariants.productId, input.id));
-      await db.delete(products).where(eq(products.id, input.id));
+      await db.transaction(async (tx) => {
+        await tx.delete(productVariants).where(eq(productVariants.productId, input.id));
+        await tx.delete(products).where(eq(products.id, input.id));
+      });
       return { success: true };
     }),
 
