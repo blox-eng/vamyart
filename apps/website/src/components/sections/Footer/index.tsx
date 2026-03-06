@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to-class-names';
 import { Social, Action, Link } from '../../atoms';
 import ImageBlock from '../../blocks/ImageBlock';
+import { trpc } from '../../../lib/trpc';
 
 export default function Footer(props) {
     const {
@@ -33,6 +34,7 @@ export default function Footer(props) {
         >
             <div className="mx-auto max-w-7xl">
                 <div className="grid sm:grid-cols-3 lg:grid-cols-4 gap-8">
+                    <NewsletterSignup />
                     {(logo?.url || title || text) && (
                         <div className="pb-8 sm:col-span-3 lg:col-auto">
                             {(logo?.url || title) && (
@@ -96,6 +98,52 @@ export default function Footer(props) {
                 )}
             </div>
         </footer>
+    );
+}
+
+function NewsletterSignup() {
+    const [email, setEmail] = React.useState('');
+    const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+    const subscribe = trpc.newsletter.subscribe.useMutation();
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        try {
+            await subscribe.mutateAsync({ email });
+            setStatus('success');
+            setEmail('');
+        } catch {
+            setStatus('error');
+        }
+    }
+
+    return (
+        <div className="pb-8">
+            <h2 className="uppercase text-base tracking-wide mb-4">Stay in the loop</h2>
+            <p className="text-sm mb-4">New works, exhibitions, and studio updates.</p>
+            {status === 'success' ? (
+                <p className="text-sm text-green-600">You&apos;re on the list.</p>
+            ) : (
+                <form onSubmit={handleSubmit} className="flex gap-2">
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        required
+                        className="flex-1 px-3 py-2 text-sm border border-current rounded"
+                    />
+                    <button
+                        type="submit"
+                        disabled={subscribe.isPending}
+                        className="px-4 py-2 text-sm border border-current rounded hover:bg-black hover:text-white transition-colors"
+                    >
+                        {subscribe.isPending ? '...' : 'Subscribe'}
+                    </button>
+                </form>
+            )}
+            {status === 'error' && <p className="text-sm text-red-600 mt-2">Something went wrong.</p>}
+        </div>
     );
 }
 
