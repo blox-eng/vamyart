@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { trpc } from "../../lib/trpc";
+import { trpc } from "../../../lib/trpc";
 
 type MethodType = "free" | "paid" | "custom";
 
@@ -120,6 +120,7 @@ export default function ShippingPage() {
             </div>
           )
         )}
+        {(methods ?? []).length === 0 && <p className="text-sm text-gray-400">No shipping methods yet.</p>}
       </div>
 
       <h2 className="text-lg font-light mb-4">Add shipping method</h2>
