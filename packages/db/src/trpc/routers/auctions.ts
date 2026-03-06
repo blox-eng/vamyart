@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { router, publicProcedure } from "../index";
+import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { auctions, artworks } from "../../schema";
+import { auctions, artworks, bids } from "../../schema";
 
 export const auctionsRouter = router({
   getByArtworkSlug: publicProcedure
@@ -18,17 +18,22 @@ export const auctionsRouter = router({
       });
     }),
 
-  list: publicProcedure.query(async () => {
+  list: protectedProcedure.query(async () => {
     return db.query.auctions.findMany({
-      with: { artwork: true },
+      with: {
+        artwork: true,
+        productVariant: true,
+        bids: { orderBy: (bids, { desc }) => [desc(bids.createdAt)] },
+      },
       orderBy: (auctions, { desc }) => [desc(auctions.createdAt)],
     });
   }),
 
-  open: publicProcedure
+  open: protectedProcedure
     .input(
       z.object({
         artworkId: z.string().uuid(),
+        productVariantId: z.string().uuid().optional(),
         minBid: z.number().positive(),
         minIncrement: z.number().positive().default(100),
         deadline: z.string().datetime(),
@@ -39,6 +44,7 @@ export const auctionsRouter = router({
         .insert(auctions)
         .values({
           artworkId: input.artworkId,
+          productVariantId: input.productVariantId,
           minBid: String(input.minBid),
           minIncrement: String(input.minIncrement),
           deadline: new Date(input.deadline),
@@ -53,7 +59,7 @@ export const auctionsRouter = router({
       return auction;
     }),
 
-  close: publicProcedure
+  close: protectedProcedure
     .input(
       z.object({
         id: z.string().uuid(),

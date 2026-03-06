@@ -1,20 +1,20 @@
 import { z } from "zod";
 import { eq, desc } from "drizzle-orm";
-import { router, publicProcedure } from "../index";
+import { router, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { orders } from "../../schema";
 import { Resend } from "resend";
 import { escapeHtml } from "../../utils/escape-html";
 
 export const ordersRouter = router({
-  list: publicProcedure.query(async () => {
+  list: protectedProcedure.query(async () => {
     return db.query.orders.findMany({
       with: { productVariant: { with: { product: true } } },
       orderBy: [desc(orders.createdAt)],
     });
   }),
 
-  markShipped: publicProcedure
+  markShipped: protectedProcedure
     .input(
       z.object({
         id: z.string().uuid(),
