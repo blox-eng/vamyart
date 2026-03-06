@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { shippingMethods, products } from "../../schema";
@@ -28,24 +29,20 @@ export const shippingMethodsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      if (input.isDefault === true) {
-        await db
-          .update(shippingMethods)
-          .set({ isDefault: false, updatedAt: new Date() })
-          .where(eq(shippingMethods.isDefault, true));
-      }
-
-      const [sm] = await db
-        .insert(shippingMethods)
-        .values({
+      return db.transaction(async (tx) => {
+        if (input.isDefault) {
+          await tx.update(shippingMethods).set({ isDefault: false, updatedAt: new Date() })
+            .where(eq(shippingMethods.isDefault, true));
+        }
+        const [sm] = await tx.insert(shippingMethods).values({
           name: input.name,
           displayText: input.displayText,
           type: input.type,
           cost: input.cost != null ? String(input.cost) : null,
-          isDefault: input.isDefault,
-        })
-        .returning();
-      return sm;
+          isDefault: input.isDefault ?? false,
+        }).returning();
+        return sm;
+      });
     }),
 
   update: protectedProcedure
@@ -60,24 +57,19 @@ export const shippingMethodsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { id, cost, ...fields } = input;
-
-      if (input.isDefault === true) {
-        await db
-          .update(shippingMethods)
-          .set({ isDefault: false, updatedAt: new Date() })
-          .where(eq(shippingMethods.isDefault, true));
-      }
-
-      const updateData: Record<string, unknown> = { ...fields, updatedAt: new Date() };
-      if (cost !== undefined) updateData.cost = cost != null ? String(cost) : null;
-
-      const [sm] = await db
-        .update(shippingMethods)
-        .set(updateData)
-        .where(eq(shippingMethods.id, id))
-        .returning();
-      return sm;
+      return db.transaction(async (tx) => {
+        if (input.isDefault === true) {
+          await tx.update(shippingMethods).set({ isDefault: false, updatedAt: new Date() })
+            .where(eq(shippingMethods.isDefault, true));
+        }
+        const { id, cost, isDefault, ...rest } = input;
+        const updateData: Record<string, unknown> = { ...rest, updatedAt: new Date() };
+        if (isDefault !== undefined) updateData.isDefault = isDefault;
+        if (cost !== undefined) updateData.cost = cost != null ? String(cost) : null;
+        const [sm] = await tx.update(shippingMethods).set(updateData).where(eq(shippingMethods.id, id)).returning();
+        if (!sm) throw new TRPCError({ code: "NOT_FOUND", message: "Shipping method not found" });
+        return sm;
+      });
     }),
 
   delete: protectedProcedure
@@ -86,12 +78,12 @@ export const shippingMethodsRouter = router({
       const inUse = await db.query.products.findFirst({
         where: (p, { eq }) => eq(p.shippingMethodId, input.id),
       });
-      if (inUse) throw new Error("Cannot delete: shipping method is in use by products");
+      if (inUse) throw new TRPCError({ code: "CONFLICT", message: "Cannot delete: shipping method is in use by products" });
 
       const inUseDefault = await db.query.shippingMethods.findFirst({
         where: (sm, { and, eq }) => and(eq(sm.id, input.id), eq(sm.isDefault, true)),
       });
-      if (inUseDefault) throw new Error("Cannot delete the default shipping method");
+      if (inUseDefault) throw new TRPCError({ code: "CONFLICT", message: "Cannot delete the default shipping method" });
 
       await db.delete(shippingMethods).where(eq(shippingMethods.id, input.id));
       return { success: true };
