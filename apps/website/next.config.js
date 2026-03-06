@@ -1,6 +1,3 @@
-const createNextIntlPlugin = require('next-intl/plugin');
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-
 /**
  * @type {import('next').NextConfig}
  */
@@ -13,6 +10,10 @@ const nextConfig = {
     allowedDevOrigins: [
         '192.168.1.84'
     ],
+    // Workspace packages expose TypeScript source — transpile through Next.js's SWC pipeline.
+    transpilePackages: ['@vamy/i18n', '@vamy/ui', '@vamy/db'],
+    // Pages Router locale routing (EN/DE/BG). withNextIntl is NOT used here —
+    // that plugin is App Router only and conflicts with the Pages Router i18n config.
     i18n: {
         locales: ['en', 'de', 'bg'],
         defaultLocale: 'en',
@@ -25,4 +26,4 @@ const nextConfig = {
     },
 };
 
-module.exports = withNextIntl(nextConfig);
+module.exports = nextConfig;
