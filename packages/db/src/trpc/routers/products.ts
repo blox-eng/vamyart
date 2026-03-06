@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { eq, and } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
@@ -22,13 +23,14 @@ export const productsRouter = router({
           variants: {
             where: eq(productVariants.available, true),
           },
+          shippingMethod: true,
         },
       });
     }),
 
   listAll: protectedProcedure.query(async () => {
     return db.query.products.findMany({
-      with: { variants: true, artwork: true },
+      with: { variants: true, artwork: true, shippingMethod: true },
       orderBy: (products, { desc }) => [desc(products.createdAt)],
     });
   }),
@@ -140,6 +142,23 @@ export const productsRouter = router({
         await tx.delete(products).where(eq(products.id, input.id));
       });
       return { success: true };
+    }),
+
+  updateShippingMethod: protectedProcedure
+    .input(
+      z.object({
+        productId: z.string().uuid(),
+        shippingMethodId: z.string().uuid().nullable(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const [p] = await db
+        .update(products)
+        .set({ shippingMethodId: input.shippingMethodId, updatedAt: new Date() })
+        .where(eq(products.id, input.productId))
+        .returning();
+      if (!p) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
+      return p;
     }),
 
   createProduct: protectedProcedure
