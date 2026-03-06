@@ -24,7 +24,7 @@ export const inquiriesRouter = router({
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL!,
         to: process.env.RESEND_ARTIST_EMAIL!,
-        subject: `New inquiry: ${escapeHtml(input.pieceInterest)}`,
+        subject: `New inquiry: ${input.pieceInterest}`,
         html: `
           <p><strong>${escapeHtml(input.name)}</strong> (${escapeHtml(input.email)}) is interested in <em>${escapeHtml(input.pieceInterest)}</em>.</p>
           ${input.message ? `<p>${escapeHtml(input.message)}</p>` : ""}

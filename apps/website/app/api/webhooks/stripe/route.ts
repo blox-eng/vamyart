@@ -7,7 +7,8 @@ import { Resend } from "resend";
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY!);
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature");
+  if (!sig) return new Response("Missing stripe-signature header", { status: 400 });;
 
   let event: Stripe.Event;
   try {
@@ -49,11 +50,16 @@ export async function POST(req: NextRequest) {
       html: `<p>Thank you for your order! We'll ship it soon.</p>`,
     });
 
+    const formattedAddress = [address?.line1, address?.line2, address?.city, address?.state, address?.postal_code, address?.country]
+      .filter(Boolean)
+      .map(escapeHtml)
+      .join(', ');
+
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL!,
       to: process.env.RESEND_ARTIST_EMAIL!,
       subject: "New order received",
-      html: `<p>New order from ${escapeHtml(customer?.name ?? "")} (${escapeHtml(customer?.email ?? "")}). Ship to: ${escapeHtml(JSON.stringify(address))}.</p>`,
+      html: `<p>New order from ${escapeHtml(customer?.name ?? "")} (${escapeHtml(customer?.email ?? "")}). Ship to: ${formattedAddress}.</p>`,
     });
   }
 
