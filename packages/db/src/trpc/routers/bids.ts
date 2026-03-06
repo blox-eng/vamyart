@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { bids, auctions } from "../../schema";
 import { Resend } from "resend";
+import { escapeHtml } from "../../utils/escape-html";
 
 export function validateBid({
   amount,
@@ -83,7 +84,7 @@ export const bidsRouter = router({
           .update(auctions)
           .set({
             currentBid: String(input.amount),
-            bidCount: auction.bidCount + 1,
+            bidCount: sql`bid_count + 1`,
             updatedAt: new Date(),
           })
           .where(eq(auctions.id, input.auctionId));
@@ -108,7 +109,7 @@ export const bidsRouter = router({
         from: process.env.RESEND_FROM_EMAIL!,
         to: process.env.RESEND_ARTIST_EMAIL!,
         subject: `New bid: €${input.amount}`,
-        html: `<p><strong>${input.bidderName}</strong> bid €${input.amount}. Total bids: ${auction.bidCount + 1}.</p>`,
+        html: `<p><strong>${escapeHtml(input.bidderName)}</strong> bid €${input.amount}. Total bids: ${auction.bidCount + 1}.</p>`,
       });
 
       return { success: true, bidId: newBid.id };

@@ -3,6 +3,7 @@ import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { inquiries } from "../../schema";
 import { Resend } from "resend";
+import { escapeHtml } from "../../utils/escape-html";
 
 export const inquiriesRouter = router({
   create: publicProcedure
@@ -22,10 +23,10 @@ export const inquiriesRouter = router({
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL!,
         to: process.env.RESEND_ARTIST_EMAIL!,
-        subject: `New inquiry: ${input.pieceInterest}`,
+        subject: `New inquiry: ${escapeHtml(input.pieceInterest)}`,
         html: `
-          <p><strong>${input.name}</strong> (${input.email}) is interested in <em>${input.pieceInterest}</em>.</p>
-          ${input.message ? `<p>${input.message}</p>` : ""}
+          <p><strong>${escapeHtml(input.name)}</strong> (${input.email}) is interested in <em>${escapeHtml(input.pieceInterest)}</em>.</p>
+          ${input.message ? `<p>${escapeHtml(input.message)}</p>` : ""}
         `,
       });
 
@@ -34,7 +35,7 @@ export const inquiriesRouter = router({
         from: process.env.RESEND_FROM_EMAIL!,
         to: input.email,
         subject: "We received your inquiry",
-        html: `<p>Hi ${input.name}, thank you for reaching out. We'll be in touch soon.</p>`,
+        html: `<p>Hi ${escapeHtml(input.name)}, thank you for reaching out. We'll be in touch soon.</p>`,
       });
 
       return { success: true };
