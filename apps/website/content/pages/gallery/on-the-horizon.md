@@ -28,7 +28,7 @@ bottomSections:
     text: ''
     actions:
       - type: Button
-        label: PREORDER A PRINT
+        label: INQUIRE ABOUT THE ORIGINAL
         altText: ''
         url: '/get-a-piece?piece=%23seascape-oh2025'
         showIcon: false

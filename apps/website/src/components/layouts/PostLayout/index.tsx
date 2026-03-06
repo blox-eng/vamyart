@@ -1,10 +1,21 @@
 import * as React from 'react';
+import dynamic from 'next/dynamic';
 import dayjs from 'dayjs';
 import Markdown from 'markdown-to-jsx';
 
 import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
+
+// Loaded client-side only — they use tRPC hooks and Supabase realtime
+const ProductSelector = dynamic(
+    () => import('../../blocks/ProductSelector').then((m) => ({ default: m.ProductSelector })),
+    { ssr: false }
+);
+const BidWidget = dynamic(
+    () => import('../../blocks/BidWidget').then((m) => ({ default: m.BidWidget })),
+    { ssr: false }
+);
 
 export default function PostLayout(props) {
     const { page, site } = props;
@@ -13,6 +24,10 @@ export default function PostLayout(props) {
     const { title, date, author, markdown_content, bottomSections = [] } = page;
     const dateTimeAttr = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
+
+    // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
+    const urlPath = page.__metadata?.urlPath ?? '';
+    const artworkSlug = urlPath.split('/').filter(Boolean).pop() ?? null;
 
     return (
         <BaseLayout page={page} site={site}>
@@ -42,8 +57,17 @@ export default function PostLayout(props) {
                                 {markdown_content}
                             </Markdown>
                         )}
+
+                        {/* Commerce widgets — self-hide when no active auction or products */}
+                        {artworkSlug && (
+                            <div className="max-w-xl mx-auto mt-12 space-y-4">
+                                <BidWidget artworkSlug={artworkSlug} />
+                                <ProductSelector artworkSlug={artworkSlug} />
+                            </div>
+                        )}
                     </div>
                 </article>
+
                 {bottomSections.length > 0 && (
                     <div {...(enableAnnotations && { 'data-sb-field-path': 'bottomSections' })}>
                         {bottomSections.map((section, index) => {
@@ -77,18 +101,3 @@ function PostAuthor({ author, enableAnnotations }) {
         <span {...(enableAnnotations && { 'data-sb-field-path': 'author' })}>{authorName}</span>
     );
 }
-
-/*
-function PostCategory({ category, enableAnnotations }) {
-    if (!category) {
-        return null;
-    }
-    return (
-        <div className="mb-4">
-            <Link {...(enableAnnotations && { 'data-sb-field-path': 'category' })} href={category.__metadata?.urlPath}>
-                {category.title}
-            </Link>
-        </div>
-    );
-}
-*/
