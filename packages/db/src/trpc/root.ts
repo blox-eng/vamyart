@@ -6,6 +6,8 @@ import { bidsRouter } from "./routers/bids";
 import { productsRouter } from "./routers/products";
 import { checkoutRouter } from "./routers/checkout";
 import { ordersRouter } from "./routers/orders";
+import { artworksRouter } from "./routers/artworks";
+import { shippingMethodsRouter } from "./routers/shippingMethods";
 
 export const appRouter = router({
   inquiries: inquiriesRouter,
@@ -15,6 +17,8 @@ export const appRouter = router({
   products: productsRouter,
   checkout: checkoutRouter,
   orders: ordersRouter,
+  artworks: artworksRouter,
+  shippingMethods: shippingMethodsRouter,
 });
 
 export type AppRouter = typeof appRouter;
