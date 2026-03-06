@@ -5,8 +5,6 @@ import { db } from "../../client";
 import { orders } from "../../schema";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const ordersRouter = router({
   list: publicProcedure.query(async () => {
     return db.query.orders.findMany({
@@ -23,6 +21,7 @@ export const ordersRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      const resend = new Resend(process.env.RESEND_API_KEY);
       const [order] = await db
         .update(orders)
         .set({
