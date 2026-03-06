@@ -26,6 +26,9 @@ importers:
       '@algolia/autocomplete-theme-classic':
         specifier: ^1.17.1
         version: 1.19.6
+      '@supabase/supabase-js':
+        specifier: ^2.98.0
+        version: 2.98.0
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.90.21(react@19.2.4)

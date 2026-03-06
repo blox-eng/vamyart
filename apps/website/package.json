@@ -11,6 +11,7 @@
   "dependencies": {
     "@algolia/autocomplete-js": "^1.17.1",
     "@algolia/autocomplete-theme-classic": "^1.17.1",
+    "@supabase/supabase-js": "^2.98.0",
     "@tanstack/react-query": "^5.90.21",
     "@trpc/client": "^11.12.0",
     "@trpc/react-query": "^11.12.0",
