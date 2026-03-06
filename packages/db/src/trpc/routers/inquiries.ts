@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { inquiries } from "../../schema";
@@ -50,7 +51,6 @@ export const inquiriesRouter = router({
   markHandled: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
-      const { eq } = await import("drizzle-orm");
       await db
         .update(inquiries)
         .set({ handledAt: new Date() })

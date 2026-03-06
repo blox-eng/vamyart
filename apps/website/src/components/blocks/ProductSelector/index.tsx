@@ -46,7 +46,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                                 name="variant"
                                 value={v.id}
                                 checked={selectedVariantId === v.id}
-                                onChange={() => setSelectedVariantId(v.id)}
+                                onChange={() => { setSelectedVariantId(v.id); setCheckoutError(null); }}
                                 className="sr-only"
                             />
                             <div>
