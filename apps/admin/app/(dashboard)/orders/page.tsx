@@ -52,14 +52,13 @@ export default function OrdersPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-gray-600">
-                  {o.variantId ? (
-                    <span className="font-mono text-xs">{o.variantId.slice(0, 8)}</span>
-                  ) : (
-                    "—"
+                  <p>{o.productVariant?.name ?? "—"}</p>
+                  {o.productVariant?.product?.name && (
+                    <p className="text-xs text-gray-400">{o.productVariant.product.name}</p>
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  €{(Number(o.totalAmount) / 100).toLocaleString()}
+                  €{Number(o.amountPaid).toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-gray-500 text-xs">
                   {formatDistanceToNow(new Date(o.createdAt), { addSuffix: true })}
