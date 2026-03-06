@@ -15,13 +15,18 @@ const LOCALES = ['en', 'de', 'bg'] as const;
 const LOCALE_NAMES: Record<string, string> = { en: 'English', de: 'Deutsch', bg: 'Български' };
 
 function LocaleSwitcher() {
-    const router = useRouter();
-    const currentLocale = router.locale ?? 'en';
+    const [locale, setLocale] = React.useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('vamy-locale') ?? 'en';
+        }
+        return 'en';
+    });
     return (
         <select
-            value={currentLocale}
+            value={locale}
             onChange={e => {
-                router.push(router.pathname, router.asPath, { locale: e.target.value });
+                setLocale(e.target.value);
+                localStorage.setItem('vamy-locale', e.target.value);
             }}
             className="text-sm border-none bg-transparent cursor-pointer ml-4"
             aria-label="Select language"
