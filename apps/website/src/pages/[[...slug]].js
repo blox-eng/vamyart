@@ -42,7 +42,9 @@ function Page(props) {
 export function getStaticPaths() {
     const data = allContent();
     const paths = resolveStaticPaths(data);
-    return { paths, fallback: false };
+    // Exclude paths handled by dedicated page files
+    const filtered = paths.filter(p => p !== "/get-a-piece");
+    return { paths: filtered, fallback: false };
 }
 
 export async function getStaticProps({ params }) {
