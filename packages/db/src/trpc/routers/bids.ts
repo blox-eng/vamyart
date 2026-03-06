@@ -5,8 +5,6 @@ import { db } from "../../client";
 import { bids, auctions } from "../../schema";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export function validateBid({
   amount,
   currentBid,
@@ -92,6 +90,8 @@ export const bidsRouter = router({
 
         return inserted;
       });
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
 
       // Email: outbid alert to previous highest bidder
       if (previousTopBid && previousTopBid.bidderEmail !== input.bidderEmail) {

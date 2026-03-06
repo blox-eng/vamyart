@@ -9,11 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@algolia/autocomplete-js": "^1.17.1",
+    "@algolia/autocomplete-theme-classic": "^1.17.1",
+    "@tanstack/react-query": "^5.90.21",
+    "@trpc/client": "^11.12.0",
+    "@trpc/react-query": "^11.12.0",
+    "@trpc/server": "^11.11.0",
     "@vamy/db": "workspace:*",
     "@vamy/i18n": "workspace:*",
     "@vamy/ui": "workspace:*",
-    "@algolia/autocomplete-js": "^1.17.1",
-    "@algolia/autocomplete-theme-classic": "^1.17.1",
     "algoliasearch": "^4.24.0",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.11",
@@ -24,13 +28,15 @@
     "next": "15.3.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "resend": "^6.9.3",
+    "stripe": "^20.4.0",
     "swiper": "^11.1.4",
     "tailwindcss": "^3.4.3"
   },
   "devDependencies": {
+    "@types/glob": "^8.1.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.1",
-    "@types/glob": "^8.1.0",
     "autoprefixer": "^10.4.19",
     "typescript": "^5.6.2",
     "vitest": "^2.0.0"
