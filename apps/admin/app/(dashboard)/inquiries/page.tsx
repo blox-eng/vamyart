@@ -52,16 +52,16 @@ export default function InquiriesPage() {
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${
-                      inq.handled
+                      inq.handledAt
                         ? "bg-gray-100 text-gray-500"
                         : "bg-yellow-100 text-yellow-800"
                     }`}
                   >
-                    {inq.handled ? "handled" : "open"}
+                    {inq.handledAt ? "handled" : "open"}
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  {!inq.handled && (
+                  {!inq.handledAt && (
                     <button
                       onClick={() => markHandled.mutate({ id: inq.id })}
                       disabled={markHandled.isPending}
