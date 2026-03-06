@@ -3,12 +3,18 @@ import { inquiriesRouter } from "./routers/inquiries";
 import { newsletterRouter } from "./routers/newsletter";
 import { auctionsRouter } from "./routers/auctions";
 import { bidsRouter } from "./routers/bids";
+import { productsRouter } from "./routers/products";
+import { checkoutRouter } from "./routers/checkout";
+import { ordersRouter } from "./routers/orders";
 
 export const appRouter = router({
   inquiries: inquiriesRouter,
   newsletter: newsletterRouter,
   auctions: auctionsRouter,
   bids: bidsRouter,
+  products: productsRouter,
+  checkout: checkoutRouter,
+  orders: ordersRouter,
 });
 
 export type AppRouter = typeof appRouter;

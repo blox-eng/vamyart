@@ -4,7 +4,9 @@
   "private": true,
   "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./trpc": "./src/trpc/root.ts",
+    "./trpc/context": "./src/trpc/context.ts"
   },
   "scripts": {
     "migrate": "drizzle-kit migrate",
