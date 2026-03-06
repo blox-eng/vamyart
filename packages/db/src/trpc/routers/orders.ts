@@ -4,6 +4,7 @@ import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { orders } from "../../schema";
 import { Resend } from "resend";
+import { escapeHtml } from "../../utils/escape-html";
 
 export const ordersRouter = router({
   list: publicProcedure.query(async () => {
@@ -37,7 +38,7 @@ export const ordersRouter = router({
           from: process.env.RESEND_FROM_EMAIL!,
           to: order.buyerEmail,
           subject: "Your order has shipped",
-          html: `<p>Hi ${order.buyerName}, your order is on its way! Tracking: ${input.trackingNumber}</p>`,
+          html: `<p>Hi ${escapeHtml(order.buyerName)}, your order is on its way! Tracking: ${escapeHtml(input.trackingNumber)}</p>`,
         });
       }
 
