@@ -9,6 +9,7 @@ import {
   jsonb,
   inet,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // ─── Artworks ────────────────────────────────────────────────────────────────
 export const artworks = pgTable("artworks", {
@@ -107,3 +108,36 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   email: text("email").notNull().unique(),
   subscribedAt: timestamp("subscribed_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+
+// ─── Relations ────────────────────────────────────────────────────────────────
+
+export const artworksRelations = relations(artworks, ({ one, many }) => ({
+  product: many(products),
+  auction: one(auctions, { fields: [artworks.id], references: [auctions.artworkId] }),
+}));
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  artwork: one(artworks, { fields: [products.artworkId], references: [artworks.id] }),
+  variants: many(productVariants),
+}));
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, { fields: [productVariants.productId], references: [products.id] }),
+}));
+
+export const ordersRelations = relations(orders, ({ one }) => ({
+  productVariant: one(productVariants, {
+    fields: [orders.productVariantId],
+    references: [productVariants.id],
+  }),
+}));
+
+export const auctionsRelations = relations(auctions, ({ one, many }) => ({
+  artwork: one(artworks, { fields: [auctions.artworkId], references: [artworks.id] }),
+  bids: many(bids),
+}));
+
+export const bidsRelations = relations(bids, ({ one }) => ({
+  auction: one(auctions, { fields: [bids.auctionId], references: [auctions.id] }),
+}));
