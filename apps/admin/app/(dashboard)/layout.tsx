@@ -31,7 +31,10 @@ export default function DashboardLayout({
     <div className="flex h-screen bg-gray-50">
       <aside className="w-56 bg-white border-r flex flex-col shrink-0">
         <div className="p-6 border-b">
-          <span className="text-lg font-light tracking-wide">vamy admin</span>
+          <div className="flex items-center gap-3">
+          <img src="/vamy-black.png" alt="vamy" className="h-6 w-auto" />
+          <span className="text-sm font-light tracking-widest text-gray-500">admin</span>
+        </div>
         </div>
         <nav className="flex-1 p-3 space-y-1" aria-label="Main navigation">
           {navItems.map(({ href, label, icon: Icon }) => (
