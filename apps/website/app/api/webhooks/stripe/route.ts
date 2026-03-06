@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants } from "@vamy/db";
+import { db, orders, productVariants, escapeHtml } from "@vamy/db";
 import { eq, sql } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
       await tx
         .update(productVariants)
-        .set({ stockQuantity: sql`${productVariants.stockQuantity} - 1` })
+        .set({ stockQuantity: sql`GREATEST(stock_quantity - 1, 0)`, updatedAt: new Date() })
         .where(eq(productVariants.id, variantId));
     });
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       from: process.env.RESEND_FROM_EMAIL!,
       to: process.env.RESEND_ARTIST_EMAIL!,
       subject: "New order received",
-      html: `<p>New order from ${customer?.name} (${customer?.email}). Ship to: ${JSON.stringify(address)}.</p>`,
+      html: `<p>New order from ${escapeHtml(customer?.name ?? "")} (${escapeHtml(customer?.email ?? "")}). Ship to: ${escapeHtml(JSON.stringify(address))}.</p>`,
     });
   }
 
