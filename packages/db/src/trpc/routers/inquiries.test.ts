@@ -20,7 +20,7 @@ vi.mock("resend", () => ({
 
 describe("inquiries.create", () => {
   it("rejects missing required fields", async () => {
-    const caller = createCaller({ db: {} as never });
+    const caller = createCaller({ db: {} as never, userId: null });
     await expect(
       caller.inquiries.create({
         name: "",
@@ -31,7 +31,7 @@ describe("inquiries.create", () => {
   });
 
   it("accepts valid inquiry", async () => {
-    const caller = createCaller({ db: {} as never });
+    const caller = createCaller({ db: {} as never, userId: null });
     await expect(
       caller.inquiries.create({
         name: "Test Collector",
