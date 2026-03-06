@@ -9,6 +9,29 @@ import ImageBlock from '../../blocks/ImageBlock';
 import ChevronDownIcon from '../../svgs/chevron-down';
 import CloseIcon from '../../svgs/close';
 import MenuIcon from '../../svgs/menu';
+// Locale data inlined — avoids bundling @vamy/i18n TypeScript source through webpack.
+// @vamy/i18n is the source of truth for types; this mirrors the runtime values only.
+const LOCALES = ['en', 'de', 'bg'] as const;
+const LOCALE_NAMES: Record<string, string> = { en: 'English', de: 'Deutsch', bg: 'Български' };
+
+function LocaleSwitcher() {
+    const router = useRouter();
+    const currentLocale = router.locale ?? 'en';
+    return (
+        <select
+            value={currentLocale}
+            onChange={e => {
+                router.push(router.pathname, router.asPath, { locale: e.target.value });
+            }}
+            className="text-sm border-none bg-transparent cursor-pointer ml-4"
+            aria-label="Select language"
+        >
+            {LOCALES.map(l => (
+                <option key={l} value={l}>{LOCALE_NAMES[l]}</option>
+            ))}
+        </select>
+    );
+}
 
 export default function Header(props) {
     const { colors = 'bg-light-fg-dark', styles = {}, enableAnnotations } = props;
@@ -71,6 +94,9 @@ function HeaderLogoLeftPrimaryLeft(props) {
                     <ListOfLinks links={secondaryLinks} enableAnnotations={enableAnnotations} />
                 </ul>
             )}
+            <div className={classNames('hidden lg:flex lg:items-center', secondaryLinks.length === 0 && 'ml-auto')}>
+                <LocaleSwitcher />
+            </div>
             {(primaryLinks.length > 0 || secondaryLinks.length > 0) && <MobileMenu {...props} />}
         </div>
     );
