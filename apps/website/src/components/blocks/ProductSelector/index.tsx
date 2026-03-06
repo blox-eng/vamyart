@@ -4,6 +4,7 @@ import { trpc } from '../../../lib/trpc';
 export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
     const [isRedirecting, setIsRedirecting] = useState(false);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
     const { data: productList } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug });
     const createSession = trpc.checkout.createSession.useMutation();
@@ -20,11 +21,12 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     async function handleBuy() {
         if (!selectedVariantId) return;
         setIsRedirecting(true);
+        setCheckoutError(null);
         try {
             const { url } = await createSession.mutateAsync({ variantId: selectedVariantId });
             window.location.href = url;
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Something went wrong');
+            setCheckoutError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
             setIsRedirecting(false);
         }
     }
@@ -61,6 +63,9 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                     </label>
                 ))}
             </div>
+            {checkoutError && (
+                <p className="text-sm text-red-600 mb-3">{checkoutError}</p>
+            )}
             <button
                 onClick={handleBuy}
                 disabled={!selectedVariantId || isRedirecting}
