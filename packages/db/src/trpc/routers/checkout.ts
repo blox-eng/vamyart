@@ -5,7 +5,9 @@ import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { productVariants } from "../../schema";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!);
+}
 
 export const checkoutRouter = router({
   createSession: publicProcedure
@@ -25,7 +27,7 @@ export const checkoutRouter = router({
         throw new Error("Out of stock");
       }
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card"],
         line_items: [
