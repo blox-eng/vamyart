@@ -18,6 +18,7 @@ export default function Footer(props) {
         socialLinks = [],
         legalLinks = [],
         copyrightText,
+        legalNotice,
         styles = {},
         enableAnnotations
     } = props;
@@ -91,8 +92,11 @@ export default function Footer(props) {
                                 className={classNames('sb-markdown', 'text-sm', 'mb-4', { 'sm:order-first sm:mr-12': legalLinks.length > 0 })}
                                 {...(enableAnnotations && { 'data-sb-field-path': 'copyrightText' })}
                             >
-                                {copyrightText}
+                                {copyrightText.replace(/\d{4}/, String(new Date().getFullYear()))}
                             </Markdown>
+                            {legalNotice && (
+                                <p className="text-xs text-gray-400 mt-1">{legalNotice}</p>
+                            )}
                         )}
                     </div>
                 )}
