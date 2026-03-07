@@ -62,6 +62,17 @@ export const shippingMethodsRouter = router({
           await tx.update(shippingMethods).set({ isDefault: false, updatedAt: new Date() })
             .where(eq(shippingMethods.isDefault, true));
         }
+        if (input.isDefault === false) {
+          const current = await tx.query.shippingMethods.findFirst({
+            where: (sm, { and, eq: eqFn }) => and(eqFn(sm.id, input.id), eqFn(sm.isDefault, true)),
+          });
+          if (current) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Cannot remove default status without setting another method as default first",
+            });
+          }
+        }
         const { id, cost, isDefault, ...rest } = input;
         const updateData: Record<string, unknown> = { ...rest, updatedAt: new Date() };
         if (isDefault !== undefined) updateData.isDefault = isDefault;

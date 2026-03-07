@@ -87,16 +87,18 @@ export default function Footer(props) {
                             </ul>
                         )}
                         {copyrightText && (
-                            <Markdown
-                                options={{ forceInline: true, forceWrapper: true, wrapper: 'p' }}
-                                className={classNames('sb-markdown', 'text-sm', 'mb-4', { 'sm:order-first sm:mr-12': legalLinks.length > 0 })}
-                                {...(enableAnnotations && { 'data-sb-field-path': 'copyrightText' })}
-                            >
-                                {copyrightText.replace(/\d{4}/, String(new Date().getFullYear()))}
-                            </Markdown>
-                            {legalNotice && (
-                                <p className="text-xs text-gray-400 mt-1">{legalNotice}</p>
-                            )}
+                            <>
+                                <Markdown
+                                    options={{ forceInline: true, forceWrapper: true, wrapper: 'p' }}
+                                    className={classNames('sb-markdown', 'text-sm', 'mb-4', { 'sm:order-first sm:mr-12': legalLinks.length > 0 })}
+                                    {...(enableAnnotations && { 'data-sb-field-path': 'copyrightText' })}
+                                >
+                                    {copyrightText.replace(/\d{4}/, String(new Date().getFullYear()))}
+                                </Markdown>
+                                {legalNotice && (
+                                    <p className="text-xs text-gray-400 mt-1">{legalNotice}</p>
+                                )}
+                            </>
                         )}
                     </div>
                 )}
