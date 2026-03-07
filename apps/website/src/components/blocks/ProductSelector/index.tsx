@@ -18,6 +18,11 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
 
     if (variants.length === 0) return null;
 
+    // Resolve shipping from first product (all products in an artwork share one method)
+    const shippingMethod = productList?.[0]?.shippingMethod;
+    const shippingDisplay = shippingMethod?.displayText ?? null;
+    const shippingClass = shippingMethod?.type === 'free' ? 'text-green-600' : 'text-gray-500';
+
     async function handleBuy() {
         if (!selectedVariantId) return;
         setIsRedirecting(true);
@@ -63,6 +68,11 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                     </label>
                 ))}
             </div>
+            {shippingDisplay && (
+                <p className={`text-xs mb-3 ${shippingClass}`}>
+                    {shippingDisplay}
+                </p>
+            )}
             {checkoutError && (
                 <p className="text-sm text-red-600 mb-3">{checkoutError}</p>
             )}
