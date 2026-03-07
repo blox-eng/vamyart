@@ -26,22 +26,32 @@ export async function POST(req: NextRequest) {
     const address = session.shipping_details?.address;
     const customer = session.customer_details;
 
-    await db.transaction(async (tx) => {
-      await tx.insert(orders).values({
-        productVariantId: variantId,
-        buyerName: customer?.name ?? "Unknown",
-        buyerEmail: customer?.email ?? "",
-        shippingAddress: address ?? {},
-        amountPaid: String((session.amount_total ?? 0) / 100),
-        stripeSessionId: session.id,
-        status: "paid",
-      });
+    const [inserted] = await db.transaction(async (tx) => {
+      const rows = await tx
+        .insert(orders)
+        .values({
+          productVariantId: variantId,
+          buyerName: customer?.name ?? "Unknown",
+          buyerEmail: customer?.email ?? "",
+          shippingAddress: address ?? {},
+          amountPaid: String((session.amount_total ?? 0) / 100),
+          stripeSessionId: session.id,
+          status: "paid",
+        })
+        .onConflictDoNothing()
+        .returning();
+
+      if (rows.length === 0) return rows;
 
       await tx
         .update(productVariants)
         .set({ stockQuantity: sql`GREATEST(stock_quantity - 1, 0)`, updatedAt: new Date() })
         .where(eq(productVariants.id, variantId));
+
+      return rows;
     });
+
+    if (!inserted) return new Response(null, { status: 200 });
 
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL!,
