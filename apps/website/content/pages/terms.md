@@ -49,7 +49,7 @@ sections:
       *   Detailed photographs
 
 
-      *   Price in EUR (all prices include VAT where applicable)
+      *   Price in EUR (prices do not include VAT; Мейв Вами ЕООД is not VAT registered)
 
 
       *   Authenticity guarantee
@@ -68,8 +68,7 @@ sections:
 
 
 
-      **Payment Methods:** We accept major credit cards, PayPal, and bank
-      transfers. Payment must be completed before artwork shipment.
+      **Payment Methods:** We accept credit and debit card payments via Stripe. Payment must be completed before artwork shipment.
 
 
 
@@ -217,6 +216,8 @@ sections:
       **Location:** Bulgaria, European Union
 
       **Email:** swoosh\@vamy.art
+
+      **Company:** Мейв Вами ЕООД · EIK 208627302
 
 
       ## **Modifications**

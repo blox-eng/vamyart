@@ -28,9 +28,18 @@
             "iconPosition": "right",
             "style": "secondary",
             "type": "Link"
+        },
+        {
+            "label": "Privacy",
+            "url": "/privacy",
+            "icon": "arrowRight",
+            "iconPosition": "right",
+            "style": "secondary",
+            "type": "Link"
         }
     ],
-    "copyrightText": "All rights reserved @ 2025 Vamy\n",
+    "copyrightText": "All rights reserved © Vamy\n",
+    "legalNotice": "Мейв Вами ЕООД · EIK 208627302 · Stara Zagora, Bulgaria · maeve@vamy.art",
     "colors": "bg-dark-fg-light",
     "type": "Footer",
     "title": ""
