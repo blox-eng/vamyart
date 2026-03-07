@@ -2,6 +2,7 @@ import * as React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from '../lib/trpc';
+import { AnnouncementBanner } from '../components/AnnouncementBanner';
 import '../css/main.css';
 
 function getBaseUrl() {
@@ -24,6 +25,7 @@ export default function MyApp({ Component, pageProps }) {
     return (
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
             <QueryClientProvider client={queryClient}>
+                <AnnouncementBanner />
                 <Component {...pageProps} />
             </QueryClientProvider>
         </trpc.Provider>
