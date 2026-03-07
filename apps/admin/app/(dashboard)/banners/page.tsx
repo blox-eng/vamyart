@@ -43,8 +43,12 @@ export default function BannersPage() {
 
   async function handleDelete(id: string) {
     if (confirmDelete !== id) { setConfirmDelete(id); return; }
-    await del.mutateAsync({ id });
-    setConfirmDelete(null);
+    try {
+      await del.mutateAsync({ id });
+      setConfirmDelete(null);
+    } catch {
+      setConfirmDelete(null);
+    }
   }
 
   async function handleCreate(e: React.FormEvent) {
