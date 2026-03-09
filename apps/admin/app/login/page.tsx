@@ -21,6 +21,7 @@ export default function LoginPage() {
       setError("Invalid credentials");
       setLoading(false);
     } else {
+      sessionStorage.setItem("vamy-admin-just-logged-in", "1");
       router.push("/auctions");
       router.refresh();
     }
