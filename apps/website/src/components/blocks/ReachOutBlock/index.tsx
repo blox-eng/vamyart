@@ -44,7 +44,7 @@ export default function ReachOutBlock() {
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
             {status === 'error' && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded">
+                <p className="text-sm text-red-600 bg-red-50 px-4 py-3">
                     Something went wrong. Please try again or email directly.
                 </p>
             )}
@@ -58,7 +58,7 @@ export default function ReachOutBlock() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Jane Smith"
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-600"
+                        className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-600"
                     />
                 </div>
                 <div>
@@ -69,7 +69,7 @@ export default function ReachOutBlock() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="jane@example.com"
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-600"
+                        className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-600"
                     />
                 </div>
             </div>
@@ -81,7 +81,7 @@ export default function ReachOutBlock() {
                 <select
                     value={interest}
                     onChange={(e) => setInterest(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:border-gray-600"
+                    className="w-full border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:border-gray-600"
                 >
                     <option value="">— pick a piece or just say hello</option>
                     {ARTWORKS.map((a) => (
@@ -101,7 +101,7 @@ export default function ReachOutBlock() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Tell Maeve what caught your eye, or ask anything you'd like to know."
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm resize-none focus:outline-none focus:border-gray-600"
+                    className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:border-gray-600"
                 />
             </div>
 
@@ -112,7 +112,7 @@ export default function ReachOutBlock() {
                 <button
                     type="submit"
                     disabled={createInquiry.isPending}
-                    className="bg-black text-white text-sm px-6 py-2 rounded hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                    className="bg-black text-white text-sm px-6 py-2 hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
                     {createInquiry.isPending ? 'Sending…' : 'Send'}
                 </button>
