@@ -4,7 +4,19 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, ShoppingBag, ImageIcon, Mail, Truck, Megaphone, LogOut } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
-import { ToastProvider } from "@/components/ui/toast";
+import { ToastProvider, useToast } from "@/components/ui/toast";
+import React from "react";
+
+function WelcomeToast() {
+  const toast = useToast();
+  React.useEffect(() => {
+    if (sessionStorage.getItem("vamy-admin-just-logged-in")) {
+      sessionStorage.removeItem("vamy-admin-just-logged-in");
+      toast("welcome back", "success");
+    }
+  }, [toast]);
+  return null;
+}
 
 const navItems = [
   { href: "/auctions", label: "Auctions", icon: LayoutGrid },
@@ -32,6 +44,7 @@ export default function DashboardLayout({
 
   return (
     <ToastProvider>
+      <WelcomeToast />
       <div className="flex h-screen bg-gray-50">
         <aside className="w-56 bg-white border-r flex flex-col shrink-0">
           <div className="p-6 border-b">
