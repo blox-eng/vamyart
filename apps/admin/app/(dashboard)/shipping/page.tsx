@@ -12,15 +12,12 @@ export default function ShippingPage() {
   const { data: methods, refetch, isLoading: methodsLoading } = trpc.shippingMethods.list.useQuery();
   const create = trpc.shippingMethods.create.useMutation({
     onSuccess: () => { refetch(); toast("shipping method created", "success"); },
-    onError: () => toast("failed to create shipping method", "error"),
   });
   const update = trpc.shippingMethods.update.useMutation({
     onSuccess: () => { refetch(); toast("shipping method updated", "success"); },
-    onError: () => toast("failed to update shipping method", "error"),
   });
   const del = trpc.shippingMethods.delete.useMutation({
     onSuccess: () => { refetch(); toast("shipping method deleted", "success"); },
-    onError: () => toast("failed to delete shipping method", "error"),
   });
 
   const [editId, setEditId] = useState<string | null>(null);

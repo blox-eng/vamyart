@@ -39,18 +39,26 @@ export default function BannersPage() {
   }
 
   async function toggleActive(b: NonNullable<typeof bannerList>[0]) {
-    await update.mutateAsync({ id: b.id, isActive: !b.isActive });
+    try {
+      await update.mutateAsync({ id: b.id, isActive: !b.isActive });
+    } catch {
+      // error toast fires from onError callback
+    }
   }
 
   async function saveEdit() {
     if (!editId) return;
-    await update.mutateAsync({
-      id: editId,
-      text: editText,
-      scope: editScope,
-      pageSlug: editScope === "page" ? editSlug : null,
-    });
-    setEditId(null);
+    try {
+      await update.mutateAsync({
+        id: editId,
+        text: editText,
+        scope: editScope,
+        pageSlug: editScope === "page" ? editSlug : null,
+      });
+      setEditId(null);
+    } catch {
+      // error toast fires from onError callback
+    }
   }
 
   async function handleDelete(id: string) {
