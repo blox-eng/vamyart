@@ -3,16 +3,25 @@
 import { useState } from "react";
 import { trpc } from "../../../lib/trpc";
 import { formatDistanceToNow } from "date-fns";
+import { useToast } from "@/components/ui/toast";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 export default function OrdersPage() {
-  const { data: orderList, refetch } = trpc.orders.list.useQuery();
-  const markShipped = trpc.orders.markShipped.useMutation({ onSuccess: () => refetch() });
+  const toast = useToast();
+  const { data: orderList, refetch, isLoading: ordersLoading } = trpc.orders.list.useQuery();
+  const markShipped = trpc.orders.markShipped.useMutation({
+    onSuccess: () => { refetch(); toast("order marked shipped", "success"); },
+    onError: () => toast("failed to update order", "error"),
+  });
   const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <h1 className="text-2xl font-light mb-8">Orders</h1>
 
+      {ordersLoading ? (
+        <SkeletonTable rows={5} cols={6} />
+      ) : (
       <div className="bg-white border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -111,6 +120,7 @@ export default function OrdersPage() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
