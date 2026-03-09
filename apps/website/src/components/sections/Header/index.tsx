@@ -21,12 +21,14 @@ function LocaleSwitcher() {
     });
     const locales = ['en', 'de', 'bg'] as const;
     return (
-        <span className="flex items-center gap-1 text-xs tracking-widest uppercase">
+        <span role="group" aria-label="Language selector" className="flex items-center gap-1 text-xs tracking-widest uppercase">
             {locales.map((l, i) => (
                 <React.Fragment key={l}>
                     {i > 0 && <span className="opacity-30">/</span>}
                     <button
                         onClick={() => { localStorage.setItem('vamy-locale', l); setLocale(l); }}
+                        aria-pressed={locale === l}
+                        aria-label={`Switch to ${l.toUpperCase()}`}
                         className={locale === l ? 'underline underline-offset-2' : 'opacity-50 hover:opacity-100 transition-opacity'}
                     >
                         {l.toUpperCase()}
