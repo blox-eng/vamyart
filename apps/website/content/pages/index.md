@@ -4,7 +4,7 @@ slug: /
 sections:
   - type: GenericSection
     title:
-      text: Fine Art
+      text: Maeve Vamy
       color: text-dark
       type: TitleBlock
     subtitle: ''
@@ -30,7 +30,7 @@ sections:
         elementId: ''
     media:
       url: /images/gray-painting-placeholder-no-frame-hang-square-vamy.png
-      altText: Unblock your team boost your time to production preview
+      altText: A painting by Maeve Vamy, oil on canvas
       elementId: ''
       type: ImageBlock
     badge:
@@ -50,7 +50,7 @@ sections:
           - pr-16
   - type: FeaturedItemsSection
     title:
-      text: Style
+      text: The Work
       color: text-dark
       styles:
         self:
@@ -75,7 +75,7 @@ sections:
               - pl-8
               - pb-8
               - pr-8
-            borderRadius: x-large
+            borderRadius: none
             flexDirection: row
             justifyContent: center
             textAlign: left
@@ -86,10 +86,10 @@ sections:
           url: /images/icon1.svg
           styles:
             self:
-              borderRadius: x-large
+              borderRadius: none
         tagline: ''
       - title: Realism
-        subtitle: Unrealistic
+        subtitle: On Observation
         text: |
           No filters, no hiding, no pretending. Realism strips away the 
           comfortable lies and serves you truth so sharp you'll question what's 
@@ -108,13 +108,13 @@ sections:
               - pl-8
               - pb-8
               - pr-8
-            borderRadius: x-large
+            borderRadius: none
             flexDirection: row
             textAlign: left
             justifyContent: center
         type: FeaturedItem
       - title: Surreal
-        subtitle: Vibes
+        subtitle: On Abstraction
         text: >
           Color doesn't need permission. Form doesn't need explanation. Abstract
           art gives us what realism can't. Step into chaos that somehow makes
@@ -133,7 +133,7 @@ sections:
               - pl-8
               - pb-8
               - pr-8
-            borderRadius: x-large
+            borderRadius: none
             flexDirection: row
         type: FeaturedItem
     actions:
