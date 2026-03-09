@@ -20,8 +20,8 @@ postFeed:
   subtitle: null
   showThumbnail: true
   showExcerpt: true
-  showDate: true
-  showAuthor: true
+  showDate: false
+  showAuthor: false
   actions: []
   elementId: null
   variant: big-list
