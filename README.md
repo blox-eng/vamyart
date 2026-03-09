@@ -55,7 +55,24 @@ cd apps/website && pnpm dev   # http://localhost:3000
 cd apps/admin && pnpm dev     # http://localhost:3001
 ```
 
-**Environment variables:** Copy `.env.local.example` to `.env.local` and fill in keys for Supabase, Stripe (test keys), Resend, and Buttondown. See each app's README for specifics.
+**Environment variables:** Create `.env.local` at repo root and fill in the following keys (get values from the team):
+
+```
+DATABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+RESEND_ARTIST_EMAIL=
+BUTTONDOWN_API_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_SITE_URL=
+```
+
+See each app's README for which variables each app requires.
 
 ## Key Architectural Decisions
 

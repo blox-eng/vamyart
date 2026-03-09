@@ -7,7 +7,7 @@ Public-facing artist site for Maeve Vamy. Gallery, auctions, shop, contact.
 - **Router:** Next.js Pages Router. Do not migrate to App Router.
 - **Content:** Artworks are markdown files in `content/pages/gallery/`. Page sections are YAML frontmatter — this drives the entire component tree via Contentlayer/Sourcebit.
 - **Design tokens:** `content/data/style.json` controls typefaces, colors, and button styles. Changes here cascade site-wide via `tailwind.config.js`.
-- **API:** tRPC client in `src/utils/trpc.ts`, mounted at `/api/trpc`. Routers come from `packages/db`.
+- **API:** tRPC client in `src/lib/trpc.ts`, mounted at `/api/trpc`. Routers come from `packages/db`.
 - **i18n:** next-intl, locale switcher in the header. Message files in `packages/i18n`.
 
 ## Run
