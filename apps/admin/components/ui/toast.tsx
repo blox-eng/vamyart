@@ -16,13 +16,12 @@ interface ToastContextValue {
 
 const ToastContext = React.createContext<ToastContextValue | null>(null);
 
-let nextId = 0;
-
 export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toasts, setToasts] = React.useState<Toast[]>([]);
+    const nextIdRef = React.useRef(0);
 
     const toast = React.useCallback((message: string, type: ToastType = "info") => {
-        const id = ++nextId;
+        const id = ++nextIdRef.current;
         setToasts((prev) => [...prev.slice(-2), { id, message, type }]);
         setTimeout(() => {
             setToasts((prev) => prev.filter((t) => t.id !== id));
