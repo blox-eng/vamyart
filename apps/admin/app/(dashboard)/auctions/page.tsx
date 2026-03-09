@@ -3,15 +3,23 @@
 import { useState } from "react";
 import { trpc } from "../../../lib/trpc";
 import { formatDistanceToNow, format } from "date-fns";
+import { useToast } from "@/components/ui/toast";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 export default function AuctionsPage() {
-  const { data: auctionList, refetch } = trpc.auctions.list.useQuery();
+  const { data: auctionList, refetch, isLoading: auctionsLoading } = trpc.auctions.list.useQuery();
   const { data: artworkList } = trpc.artworks.list.useQuery();
   const { data: productList } = trpc.products.listAll.useQuery();
 
-  const closeAuction = trpc.auctions.close.useMutation({ onSuccess: () => refetch() });
+  const toast = useToast();
+
+  const closeAuction = trpc.auctions.close.useMutation({
+    onSuccess: () => { refetch(); toast("auction closed", "success"); },
+    onError: () => toast("failed to close auction", "error"),
+  });
   const openAuction = trpc.auctions.open.useMutation({
-    onSuccess: () => { refetch(); setForm(null); },
+    onSuccess: () => { refetch(); setForm(null); toast("auction created", "success"); },
+    onError: () => toast("failed to create auction", "error"),
   });
 
   const [form, setForm] = useState<{
@@ -188,6 +196,7 @@ export default function AuctionsPage() {
       )}
 
       {/* Auction list */}
+      {auctionsLoading && <SkeletonTable rows={4} cols={5} />}
       <div className="space-y-3">
         {auctionList?.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-12">No auctions yet.</p>
