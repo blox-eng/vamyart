@@ -11,8 +11,6 @@ import CloseIcon from '../../svgs/close';
 import MenuIcon from '../../svgs/menu';
 // Locale data inlined — avoids bundling @vamy/i18n TypeScript source through webpack.
 // @vamy/i18n is the source of truth for types; this mirrors the runtime values only.
-const LOCALES = ['en', 'de', 'bg'] as const;
-const LOCALE_NAMES: Record<string, string> = { en: 'English', de: 'Deutsch', bg: 'Български' };
 
 function LocaleSwitcher() {
     const [locale, setLocale] = React.useState(() => {
@@ -21,20 +19,21 @@ function LocaleSwitcher() {
         }
         return 'en';
     });
+    const locales = ['en', 'de', 'bg'] as const;
     return (
-        <select
-            value={locale}
-            onChange={e => {
-                setLocale(e.target.value);
-                localStorage.setItem('vamy-locale', e.target.value);
-            }}
-            className="text-sm border-none bg-transparent cursor-pointer ml-4"
-            aria-label="Select language"
-        >
-            {LOCALES.map(l => (
-                <option key={l} value={l}>{LOCALE_NAMES[l]}</option>
+        <span className="flex items-center gap-1 text-xs tracking-widest uppercase">
+            {locales.map((l, i) => (
+                <React.Fragment key={l}>
+                    {i > 0 && <span className="opacity-30">/</span>}
+                    <button
+                        onClick={() => { localStorage.setItem('vamy-locale', l); setLocale(l); }}
+                        className={locale === l ? 'underline underline-offset-2' : 'opacity-50 hover:opacity-100 transition-opacity'}
+                    >
+                        {l.toUpperCase()}
+                    </button>
+                </React.Fragment>
             ))}
-        </select>
+        </span>
     );
 }
 
@@ -47,7 +46,7 @@ export default function Header(props) {
                 'sb-component-header',
                 colors,
                 'relative',
-                'shadow-header',
+                'border-b border-neutral',
                 styles?.self?.margin ? mapStyles({ padding: styles?.self?.margin }) : undefined,
                 styles?.self?.padding ? mapStyles({ padding: styles?.self?.padding }) : 'p-4',
                 'z-50'
