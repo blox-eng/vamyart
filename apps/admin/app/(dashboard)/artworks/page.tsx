@@ -213,7 +213,7 @@ export default function ArtworksPage() {
         </div>
       )}
 
-      {artworkEntries.length === 0 && (
+      {!productsLoading && artworkEntries.length === 0 && (
         <p className="text-gray-400 text-sm text-center py-12">No artworks or products yet.</p>
       )}
 
