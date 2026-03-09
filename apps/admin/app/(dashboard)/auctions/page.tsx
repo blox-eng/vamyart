@@ -197,6 +197,7 @@ export default function AuctionsPage() {
 
       {/* Auction list */}
       {auctionsLoading && <SkeletonTable rows={4} cols={5} />}
+      {!auctionsLoading && (
       <div className="space-y-3">
         {auctionList?.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-12">No auctions yet.</p>
@@ -381,6 +382,7 @@ export default function AuctionsPage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
