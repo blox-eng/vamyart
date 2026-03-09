@@ -39,7 +39,7 @@ export function BidWidget({ artworkSlug }: { artworkSlug: string }) {
     const currentBid = auction.currentBid ? Number(auction.currentBid) : null;
 
     return (
-        <div className="border border-black rounded-lg p-6 mt-8">
+        <div className="border border-black p-6 mt-8">
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <p className="text-xs uppercase tracking-widest text-gray-500 mb-1">
@@ -64,7 +64,7 @@ export function BidWidget({ artworkSlug }: { artworkSlug: string }) {
             {!isEnded && !bidSuccess && (
                 <button
                     onClick={() => setShowModal(true)}
-                    className="w-full bg-black text-white py-3 rounded text-sm tracking-wide hover:bg-gray-800 transition-colors"
+                    className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors"
                 >
                     Place a Bid
                 </button>
