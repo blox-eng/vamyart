@@ -137,12 +137,12 @@ function NewsletterSignup() {
                         onChange={e => setEmail(e.target.value)}
                         placeholder="your@email.com"
                         required
-                        className="flex-1 px-3 py-2 text-sm border border-current rounded"
+                        className="flex-1 px-0 py-2 text-sm border-b border-current bg-transparent outline-none"
                     />
                     <button
                         type="submit"
                         disabled={subscribe.isPending}
-                        className="px-4 py-2 text-sm border border-current rounded hover:bg-black hover:text-white transition-colors"
+                        className="px-4 py-2 text-sm border border-current transition-opacity hover:opacity-60"
                     >
                         {subscribe.isPending ? '...' : 'Subscribe'}
                     </button>
