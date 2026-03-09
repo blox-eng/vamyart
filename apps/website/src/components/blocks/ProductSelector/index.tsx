@@ -37,13 +37,13 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     }
 
     return (
-        <div className="border border-black rounded-lg p-6 mt-4">
+        <div className="border border-black p-6 mt-4">
             <h3 className="text-xs uppercase tracking-widest mb-4">Available Prints</h3>
             <div className="space-y-2 mb-6">
                 {variants.map(v => (
                     <label
                         key={v.id}
-                        className={`flex items-center justify-between p-3 border rounded cursor-pointer transition-colors ${selectedVariantId === v.id ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-400'}`}
+                        className={`flex items-center justify-between p-3 border cursor-pointer transition-colors ${selectedVariantId === v.id ? 'border-black bg-gray-50' : 'border-neutral hover:border-dark'}`}
                     >
                         <div className="flex items-center gap-3">
                             <input
@@ -79,7 +79,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             <button
                 onClick={handleBuy}
                 disabled={!selectedVariantId || isRedirecting}
-                className="w-full bg-black text-white py-3 rounded text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-40"
+                className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-40"
             >
                 {isRedirecting ? 'Redirecting to payment…' : 'Buy'}
             </button>
