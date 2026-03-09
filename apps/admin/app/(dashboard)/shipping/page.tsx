@@ -2,14 +2,26 @@
 
 import { useState } from "react";
 import { trpc } from "../../../lib/trpc";
+import { useToast } from "@/components/ui/toast";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 type MethodType = "free" | "paid" | "custom";
 
 export default function ShippingPage() {
-  const { data: methods, refetch } = trpc.shippingMethods.list.useQuery();
-  const create = trpc.shippingMethods.create.useMutation({ onSuccess: () => refetch() });
-  const update = trpc.shippingMethods.update.useMutation({ onSuccess: () => refetch() });
-  const del = trpc.shippingMethods.delete.useMutation({ onSuccess: () => refetch() });
+  const toast = useToast();
+  const { data: methods, refetch, isLoading: methodsLoading } = trpc.shippingMethods.list.useQuery();
+  const create = trpc.shippingMethods.create.useMutation({
+    onSuccess: () => { refetch(); toast("shipping method created", "success"); },
+    onError: () => toast("failed to create shipping method", "error"),
+  });
+  const update = trpc.shippingMethods.update.useMutation({
+    onSuccess: () => { refetch(); toast("shipping method updated", "success"); },
+    onError: () => toast("failed to update shipping method", "error"),
+  });
+  const del = trpc.shippingMethods.delete.useMutation({
+    onSuccess: () => { refetch(); toast("shipping method deleted", "success"); },
+    onError: () => toast("failed to delete shipping method", "error"),
+  });
 
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -84,6 +96,10 @@ export default function ShippingPage() {
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
       <div className="space-y-3 mb-10">
+        {methodsLoading ? (
+          <SkeletonTable rows={4} cols={3} />
+        ) : (
+        <>
         {(methods ?? []).map((m) =>
           editId === m.id ? (
             <div key={m.id} className="border rounded-lg p-4 space-y-3">
@@ -121,6 +137,8 @@ export default function ShippingPage() {
           )
         )}
         {(methods ?? []).length === 0 && <p className="text-sm text-gray-400">No shipping methods yet.</p>}
+        </>
+        )}
       </div>
 
       <h2 className="text-lg font-light mb-4">Add shipping method</h2>
