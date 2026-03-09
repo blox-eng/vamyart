@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { trpc } from "../../../lib/trpc";
+import { useToast } from "@/components/ui/toast";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 type VariantDraft = {
   name: string;
@@ -20,16 +22,39 @@ type NewVariantForm = { productId: string; name: string; price: string; stock: s
 type NewProductForm = { artworkId: string; productType: string; name: string; description: string };
 
 export default function ArtworksPage() {
-  const { data: productList, refetch } = trpc.products.listAll.useQuery();
-  const { data: shippingMethodsList } = trpc.shippingMethods.list.useQuery();
-  const updateShipping = trpc.products.updateShippingMethod.useMutation({ onSuccess: () => refetch() });
+  const toast = useToast();
 
-  const updateVariant = trpc.products.updateVariant.useMutation({ onSuccess: () => refetch() });
-  const deleteVariant = trpc.products.deleteVariant.useMutation({ onSuccess: () => refetch() });
-  const createVariant = trpc.products.createVariant.useMutation({ onSuccess: () => refetch() });
-  const updateProduct = trpc.products.updateProduct.useMutation({ onSuccess: () => refetch() });
-  const deleteProduct = trpc.products.deleteProduct.useMutation({ onSuccess: () => refetch() });
-  const createProduct = trpc.products.createProduct.useMutation({ onSuccess: () => refetch() });
+  const { data: productList, refetch, isLoading: productsLoading } = trpc.products.listAll.useQuery();
+  const { data: shippingMethodsList } = trpc.shippingMethods.list.useQuery();
+  const updateShipping = trpc.products.updateShippingMethod.useMutation({
+    onSuccess: () => { refetch(); toast("shipping updated", "success"); },
+    onError: () => toast("failed to update shipping", "error"),
+  });
+
+  const updateVariant = trpc.products.updateVariant.useMutation({
+    onSuccess: () => { refetch(); toast("variant updated", "success"); },
+    onError: () => toast("failed to update variant", "error"),
+  });
+  const deleteVariant = trpc.products.deleteVariant.useMutation({
+    onSuccess: () => { refetch(); toast("variant deleted", "success"); },
+    onError: () => toast("failed to delete variant", "error"),
+  });
+  const createVariant = trpc.products.createVariant.useMutation({
+    onSuccess: () => { refetch(); toast("variant added", "success"); },
+    onError: () => toast("failed to add variant", "error"),
+  });
+  const updateProduct = trpc.products.updateProduct.useMutation({
+    onSuccess: () => { refetch(); toast("product updated", "success"); },
+    onError: () => toast("failed to update product", "error"),
+  });
+  const deleteProduct = trpc.products.deleteProduct.useMutation({
+    onSuccess: () => { refetch(); toast("product deleted", "success"); },
+    onError: () => toast("failed to delete product", "error"),
+  });
+  const createProduct = trpc.products.createProduct.useMutation({
+    onSuccess: () => { refetch(); toast("product created", "success"); },
+    onError: () => toast("failed to create product", "error"),
+  });
 
   const [selectedArtworkId, setSelectedArtworkId] = useState<string | null>(null);
   const [editingVariant, setEditingVariant] = useState<Record<string, VariantDraft>>({});
@@ -193,6 +218,9 @@ export default function ArtworksPage() {
       )}
 
       {/* Products */}
+      {productsLoading ? (
+        <SkeletonTable rows={5} cols={4} />
+      ) : (
       <div className="space-y-6">
         {selected?.products.map((p) => {
           const pe = editingProduct[p.id];
@@ -528,6 +556,7 @@ export default function ArtworksPage() {
           );
         })}
       </div>
+      )}
 
       {/* Add product */}
       {selectedKey && selectedKey !== "none" && (
