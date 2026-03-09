@@ -2,15 +2,24 @@
 
 import { trpc } from "../../../lib/trpc";
 import { formatDistanceToNow } from "date-fns";
+import { useToast } from "@/components/ui/toast";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 export default function InquiriesPage() {
-  const { data: inquiryList, refetch } = trpc.inquiries.list.useQuery();
-  const markHandled = trpc.inquiries.markHandled.useMutation({ onSuccess: () => refetch() });
+  const toast = useToast();
+  const { data: inquiryList, refetch, isLoading: inquiriesLoading } = trpc.inquiries.list.useQuery();
+  const markHandled = trpc.inquiries.markHandled.useMutation({
+    onSuccess: () => { refetch(); toast("inquiry marked handled", "success"); },
+    onError: () => toast("failed to update inquiry", "error"),
+  });
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <h1 className="text-2xl font-light mb-8">Inquiries</h1>
 
+      {inquiriesLoading ? (
+        <SkeletonTable rows={5} cols={5} />
+      ) : (
       <div className="bg-white border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -76,6 +85,7 @@ export default function InquiriesPage() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
