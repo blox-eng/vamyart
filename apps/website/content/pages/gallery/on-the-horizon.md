@@ -44,10 +44,4 @@ bottomSections:
       subtitle:
         textAlign: left
 ---
-![](/images/on-the-horizon.jpg)
-
-**Piece ID: #seascape-oh2025**
-**Medium:** Acrylic on canvas
-**Dimensions:** 70 x 100 cm
-
 Abstract seascape exploring the boundary between sea and sky. The piece captures the luminous quality of coastal light with textured brushwork in the upper portion suggesting atmospheric depth, while the lower section features dark, moody tones punctuated by white wave foam. Painted with acrylic on canvas to achieve both the bold contrast and delicate light effects characteristic of seascapes.
