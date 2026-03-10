@@ -1,11 +1,17 @@
 import * as React from 'react';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
+import dynamic from 'next/dynamic';
 
 import { mapStylesToClassNames as mapStyles } from '../../../../utils/map-styles-to-class-names';
 import { getPageUrl } from '../../../../utils/page-utils';
 import Link from '../../../atoms/Link';
 import ImageBlock from '../../../blocks/ImageBlock';
+
+const ArtworkCardInfo = dynamic(
+    () => import('../../../blocks/ArtworkCardInfo').then((m) => ({ default: m.ArtworkCardInfo })),
+    { ssr: false }
+);
 
 export default function PostFeedItem(props) {
     const {
@@ -80,6 +86,10 @@ export default function PostFeedItem(props) {
                         className="mt-3"
                         hasAnnotations={hasAnnotations}
                     />
+                    {(() => {
+                        const slug = (post.__metadata?.urlPath ?? '').split('/').filter(Boolean).pop();
+                        return slug ? <ArtworkCardInfo slug={slug} /> : null;
+                    })()}
                     {showExcerpt && post.excerpt && (
                         <p className="mt-3" {...(hasAnnotations && { 'data-sb-field-path': 'excerpt' })}>
                             {post.excerpt}
