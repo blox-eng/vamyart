@@ -8,6 +8,13 @@
       "when": 1772738806219,
       "tag": "0000_nifty_ricochet",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773155764838,
+      "tag": "0001_brief_swordsman",
+      "breakpoints": true
     }
   ]
 }
