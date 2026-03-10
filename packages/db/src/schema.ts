@@ -37,6 +37,7 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   description: text("description"),
   active: boolean("active").notNull().default(true),
+  featured: boolean("featured").notNull().default(false),
   shippingMethodId: uuid("shipping_method_id").references(() => shippingMethods.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
