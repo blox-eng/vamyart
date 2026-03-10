@@ -44,10 +44,4 @@ bottomSections:
       subtitle:
         textAlign: left
 ---
-![](/images/whispers.jpg)
-
-**Piece ID: #seascape-w2025**
-**Medium:** Oil on canvas
-**Dimensions:** 70 x 100 cm
-
 Muted abstract seascape with warm, earthy tones and stormy sea textures. This piece captures the quiet intensity of coastal weather through subtle color gradations and textured brushwork. The warm palette suggests late afternoon light filtering through clouds, while the turbulent lower section conveys the restless energy of the sea. Painted with oil on canvas to achieve depth and richness in the muted color range.
