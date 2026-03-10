@@ -6,6 +6,41 @@ import { db } from "../../client";
 import { products, productVariants, artworks } from "../../schema";
 
 export const productsRouter = router({
+  getFeatured: publicProcedure.query(async () => {
+    return db.query.products.findFirst({
+      where: and(eq(products.active, true), eq(products.featured, true)),
+      with: { artwork: true, variants: true },
+    });
+  }),
+
+  getByArtworkSlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const artwork = await db.query.artworks.findFirst({
+        where: eq(artworks.slug, input.slug),
+      });
+      if (!artwork) return null;
+      return db.query.products.findFirst({
+        where: and(eq(products.artworkId, artwork.id), eq(products.active, true)),
+        with: { variants: true },
+      });
+    }),
+
+  setFeatured: protectedProcedure
+    .input(z.object({ productId: z.string().uuid(), featured: z.boolean() }))
+    .mutation(async ({ input }) => {
+      await db.transaction(async (tx) => {
+        await tx.update(products).set({ featured: false, updatedAt: new Date() });
+        if (input.featured) {
+          await tx
+            .update(products)
+            .set({ featured: true, updatedAt: new Date() })
+            .where(eq(products.id, input.productId));
+        }
+      });
+      return { success: true };
+    }),
+
   listByArtworkSlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
@@ -87,6 +122,7 @@ export const productsRouter = router({
         price: z.number().positive(),
         stockQuantity: z.number().int().min(0),
         available: z.boolean(),
+        attributes: z.record(z.unknown()).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -97,6 +133,7 @@ export const productsRouter = router({
           price: String(input.price),
           stockQuantity: input.stockQuantity,
           available: input.available,
+          ...(input.attributes !== undefined && { attributes: input.attributes }),
           updatedAt: new Date(),
         })
         .where(eq(productVariants.id, input.id))
