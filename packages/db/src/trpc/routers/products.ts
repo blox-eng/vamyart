@@ -20,10 +20,12 @@ export const productsRouter = router({
         where: eq(artworks.slug, input.slug),
       });
       if (!artwork) return null;
-      return db.query.products.findFirst({
+      const product = await db.query.products.findFirst({
         where: and(eq(products.artworkId, artwork.id), eq(products.active, true)),
         with: { variants: true },
       });
+      if (!product) return null;
+      return { ...product, artwork };
     }),
 
   setFeatured: protectedProcedure

@@ -31,7 +31,7 @@ bottomSections:
       - type: Button
         label: INQUIRE ABOUT THE ORIGINAL
         altText: ''
-        url: '/get-a-piece?piece=%23astro-fc5807'
+        url: '/get-a-piece?piece=first-contact'
         showIcon: false
         icon: arrowRight
         iconPosition: right

@@ -4,29 +4,6 @@ import { useRouter } from 'next/router';
 import Header from '../components/sections/Header';
 import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
-import { allContent } from '../utils/local-content';
-
-// Artwork metadata keyed by pieceId (from ?piece= URL param)
-const ARTWORK_MAP: Record<string, { title: string; image: string; medium: string; dimensions: string }> = {
-    '#seascape-w2025': {
-        title: 'Whispers',
-        image: '/images/whispers.jpg',
-        medium: 'Oil on canvas',
-        dimensions: '70 × 100 cm',
-    },
-    '#astro-fc5807': {
-        title: 'First Contact',
-        image: '/images/first%20Contact_5807.jpg',
-        medium: 'Oil on canvas',
-        dimensions: '70 × 100 cm',
-    },
-    '#seascape-oh2025': {
-        title: 'On the Horizon',
-        image: '/images/on-the-horizon.jpg',
-        medium: 'Acrylic on canvas',
-        dimensions: '70 × 100 cm',
-    },
-};
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
@@ -37,23 +14,33 @@ const STEPS = [
 
 export default function GetAPiece({ site }: { site: any }) {
     const router = useRouter();
-    const pieceParam = typeof window !== 'undefined'
+    const pieceSlug = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('piece') ?? ''
         : (router.query.piece as string) ?? '';
 
-    const artwork = ARTWORK_MAP[pieceParam] ?? null;
+    const { data: product } = trpc.products.getByArtworkSlug.useQuery(
+        { slug: pieceSlug },
+        { enabled: !!pieceSlug, staleTime: 60_000 }
+    );
+
+    const artwork = product?.artwork ?? null;
+    const variant = product?.variants?.[0] ?? null;
+    const attrs = (variant?.attributes ?? {}) as Record<string, string>;
+    const medium = artwork?.medium || attrs.medium || '';
+    const dimensions = artwork?.dimensions || attrs.dimensions || '';
+    const price = variant?.price ? `€${Number(variant.price).toLocaleString()}` : null;
 
     const [name, setName] = React.useState('');
     const [email, setEmail] = React.useState('');
-    const [piece, setPiece] = React.useState(pieceParam || '');
+    const [piece, setPiece] = React.useState('');
     const [message, setMessage] = React.useState('');
     const [terms, setTerms] = React.useState(false);
     const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
 
-    // Keep piece field in sync if URL param arrives after hydration
+    // Pre-fill piece field with artwork title when data arrives
     React.useEffect(() => {
-        if (pieceParam && !piece) setPiece(pieceParam);
-    }, [pieceParam]);
+        if (artwork?.title && !piece) setPiece(artwork.title);
+    }, [artwork?.title]);
 
     const createInquiry = trpc.inquiries.create.useMutation();
 
@@ -87,14 +74,16 @@ export default function GetAPiece({ site }: { site: any }) {
                                 {artwork ? (
                                     <div className="mb-10">
                                         <img
-                                            src={artwork.image}
+                                            src={`/images/${artwork.slug}.jpg`}
                                             alt={artwork.title}
                                             className="w-full aspect-[3/4] object-cover rounded-sm mb-6 shadow-sm"
                                         />
                                         <h2 className="text-xl font-light mb-1">{artwork.title}</h2>
-                                        <p className="text-sm text-gray-500">{artwork.medium}</p>
-                                        <p className="text-sm text-gray-500">{artwork.dimensions}</p>
-                                        <p className="text-sm text-gray-400 mt-1">Original — price on request</p>
+                                        {medium && <p className="text-sm text-gray-500">{medium}</p>}
+                                        {dimensions && <p className="text-sm text-gray-500">{dimensions}</p>}
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            {price ? `Original — ${price}` : 'Original — price on request'}
+                                        </p>
                                     </div>
                                 ) : (
                                     <div className="mb-10">
@@ -188,7 +177,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     value={piece}
                                                     onChange={e => setPiece(e.target.value)}
                                                     required
-                                                    placeholder="Title or piece ID — e.g. Whispers, #seascape-w2025"
+                                                    placeholder="Title of the artwork — e.g. Whispers"
                                                     readOnly={!!artwork}
                                                     className={`w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600' : ''}`}
                                                 />
