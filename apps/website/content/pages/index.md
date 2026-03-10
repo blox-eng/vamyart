@@ -22,7 +22,7 @@ sections:
       - type: Link
         label: Follow me
         altText: Instagram
-        url: 'https://www.instagram.com/maevevamyart'
+        url: 'https://www.instagram.com/maeve_vamy_art'
         showIcon: true
         icon: arrowRight
         iconPosition: right
