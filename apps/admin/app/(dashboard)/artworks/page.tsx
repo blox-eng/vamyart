@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
@@ -10,6 +10,8 @@ type VariantDraft = {
   price: string;
   stock: string;
   available: boolean;
+  medium: string;
+  dimensions: string;
 };
 
 type ProductDraft = {
@@ -26,6 +28,11 @@ export default function ArtworksPage() {
 
   const { data: productList, refetch, isLoading: productsLoading } = trpc.products.listAll.useQuery();
   const { data: shippingMethodsList } = trpc.shippingMethods.list.useQuery();
+  const setFeatured = trpc.products.setFeatured.useMutation({
+    onSuccess: () => { refetch(); toast("featured updated", "success"); },
+    onError: () => toast("failed to update featured", "error"),
+  });
+
   const updateShipping = trpc.products.updateShippingMethod.useMutation({
     onSuccess: () => { refetch(); toast("shipping updated", "success"); },
     onError: () => toast("failed to update shipping", "error"),
@@ -80,6 +87,7 @@ export default function ArtworksPage() {
   // ── Variant editing ──────────────────────────────────────────────────────────
 
   function startEditVariant(v: any) {
+    const attrs = (v.attributes as Record<string, string>) ?? {};
     setEditingVariant((prev) => ({
       ...prev,
       [v.id]: {
@@ -87,6 +95,8 @@ export default function ArtworksPage() {
         price: String(Number(v.price)),
         stock: String(v.stockQuantity),
         available: v.available,
+        medium: attrs.medium ?? "",
+        dimensions: attrs.dimensions ?? "",
       },
     }));
   }
@@ -102,8 +112,11 @@ export default function ArtworksPage() {
   function saveVariant(id: string) {
     const d = editingVariant[id];
     if (!d) return;
+    const attributes: Record<string, string> = {};
+    if (d.medium) attributes.medium = d.medium;
+    if (d.dimensions) attributes.dimensions = d.dimensions;
     updateVariant.mutate(
-      { id, name: d.name, price: Number(d.price), stockQuantity: Number(d.stock), available: d.available },
+      { id, name: d.name, price: Number(d.price), stockQuantity: Number(d.stock), available: d.available, attributes },
       { onSuccess: () => cancelEditVariant(id) }
     );
   }
@@ -286,7 +299,20 @@ export default function ArtworksPage() {
                 ) : (
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="font-medium">{p.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{p.name}</p>
+                        <button
+                          onClick={() => setFeatured.mutate({ productId: p.id, featured: !p.featured })}
+                          disabled={setFeatured.isPending}
+                          className={`text-xs px-2 py-0.5 rounded disabled:opacity-50 ${
+                            p.featured
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                          }`}
+                        >
+                          {p.featured ? "\u2605 Featured" : "Feature"}
+                        </button>
+                      </div>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {p.variants.length} variant{p.variants.length !== 1 ? "s" : ""}
                         {!p.active && (
@@ -360,7 +386,8 @@ export default function ArtworksPage() {
                       const ve = editingVariant[v.id];
                       if (ve) {
                         return (
-                          <tr key={v.id} className="border-b last:border-0 bg-blue-50">
+                          <React.Fragment key={v.id}>
+                          <tr className="border-b last:border-0 bg-blue-50">
                             <td className="py-2 pr-3">
                               <input
                                 className="border rounded px-2 py-1 text-xs w-32"
@@ -436,6 +463,41 @@ export default function ArtworksPage() {
                               </div>
                             </td>
                           </tr>
+                          <tr className="border-b last:border-0 bg-blue-50">
+                            <td colSpan={5} className="py-2 px-3">
+                              <div className="flex gap-3 items-center">
+                                <div>
+                                  <label className="block text-xs text-gray-500 mb-0.5">Medium</label>
+                                  <input
+                                    className="border rounded px-2 py-1 text-xs w-40"
+                                    value={ve.medium}
+                                    onChange={(e) =>
+                                      setEditingVariant((prev) => ({
+                                        ...prev,
+                                        [v.id]: { ...ve, medium: e.target.value },
+                                      }))
+                                    }
+                                    placeholder="e.g. Giclée on Hahnemühle"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs text-gray-500 mb-0.5">Dimensions</label>
+                                  <input
+                                    className="border rounded px-2 py-1 text-xs w-40"
+                                    value={ve.dimensions}
+                                    onChange={(e) =>
+                                      setEditingVariant((prev) => ({
+                                        ...prev,
+                                        [v.id]: { ...ve, dimensions: e.target.value },
+                                      }))
+                                    }
+                                    placeholder="e.g. 30 × 40 cm"
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                          </React.Fragment>
                         );
                       }
 
