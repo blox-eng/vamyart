@@ -30,7 +30,7 @@ bottomSections:
       - type: Button
         label: INQUIRE ABOUT THE ORIGINAL
         altText: ''
-        url: '/get-a-piece?piece=%23seascape-w2025'
+        url: '/get-a-piece?piece=whispers'
         showIcon: false
         icon: arrowRight
         iconPosition: right

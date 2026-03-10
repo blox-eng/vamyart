@@ -30,7 +30,7 @@ bottomSections:
       - type: Button
         label: INQUIRE ABOUT THE ORIGINAL
         altText: ''
-        url: '/get-a-piece?piece=%23seascape-oh2025'
+        url: '/get-a-piece?piece=on-the-horizon'
         showIcon: false
         icon: arrowRight
         iconPosition: right
