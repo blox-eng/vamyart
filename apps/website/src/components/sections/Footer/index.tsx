@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Markdown from 'markdown-to-jsx';
 import classNames from 'classnames';
 
 import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to-class-names';
@@ -11,10 +10,6 @@ export default function Footer(props) {
     const {
         colors = 'bg-light-fg-dark',
         logo,
-        title,
-        text,
-        primaryLinks,
-        secondaryLinks,
         socialLinks = [],
         legalLinks = [],
         copyrightText,
@@ -22,6 +17,7 @@ export default function Footer(props) {
         styles = {},
         enableAnnotations
     } = props;
+
     return (
         <footer
             className={classNames(
@@ -29,79 +25,72 @@ export default function Footer(props) {
                 'sb-component-footer',
                 colors,
                 styles?.self?.margin ? mapStyles({ padding: styles?.self?.margin }) : undefined,
-                styles?.self?.padding ? mapStyles({ padding: styles?.self?.padding }) : 'px-4 py-28'
+                styles?.self?.padding ? mapStyles({ padding: styles?.self?.padding }) : 'px-4 py-16'
             )}
             {...(enableAnnotations && { 'data-sb-object-id': props?.__metadata?.id })}
         >
             <div className="mx-auto max-w-7xl">
-                <div className="grid sm:grid-cols-3 lg:grid-cols-4 gap-8">
-                    <NewsletterSignup />
-                    {(logo?.url || title || text) && (
-                        <div className="pb-8 sm:col-span-3 lg:col-auto">
-                            {(logo?.url || title) && (
-                                <Link href="/" className="flex flex-col items-start">
-                                    {logo && (
-                                        <ImageBlock {...logo} className="inline-block w-auto" {...(enableAnnotations && { 'data-sb-field-path': 'logo' })} />
-                                    )}
-                                    {title && (
-                                        <div className="h4" {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>
-                                            {title}
-                                        </div>
-                                    )}
-                                </Link>
+                {/* Row 1: Logo + Newsletter + Social */}
+                <div className="flex flex-col md:flex-row gap-12 md:gap-16">
+                    {/* Left: Logo + name */}
+                    <div className="shrink-0">
+                        <Link href="/" className="flex items-center gap-3">
+                            {logo && (
+                                <ImageBlock
+                                    {...logo}
+                                    className="inline-block w-auto"
+                                    {...(enableAnnotations && { 'data-sb-field-path': 'logo' })}
+                                />
                             )}
-                            {text && (
-                                <Markdown
-                                    options={{ forceBlock: true, forceWrapper: true }}
-                                    className={classNames('sb-markdown', 'text-sm', { 'mt-4': title || logo?.url })}
-                                    {...(enableAnnotations && { 'data-sb-field-path': 'text' })}
-                                >
-                                    {text}
-                                </Markdown>
-                            )}
-                        </div>
-                    )}
-                    {primaryLinks && <FooterLinksGroup {...primaryLinks} {...(enableAnnotations && { 'data-sb-field-path': 'primaryLinks' })} />}
-                    {secondaryLinks && <FooterLinksGroup {...secondaryLinks} {...(enableAnnotations && { 'data-sb-field-path': 'secondaryLinks' })} />}
-                    {socialLinks.length > 0 && (
-                        <div className="pb-6">
-                            <ul className="flex flex-wrap items-center" {...(enableAnnotations && { 'data-sb-field-path': 'socialLinks' })}>
+                            <span className="text-lg tracking-wide">Maeve Vamy</span>
+                        </Link>
+                    </div>
+
+                    {/* Right: Newsletter + social */}
+                    <div className="flex-1 max-w-md">
+                        <NewsletterSignup />
+                        {socialLinks.length > 0 && (
+                            <ul
+                                className="flex items-center gap-6 mt-4"
+                                {...(enableAnnotations && { 'data-sb-field-path': 'socialLinks' })}
+                            >
                                 {socialLinks.map((link, index) => (
-                                    <li key={index} className="text-2xl mb-2 mr-8 lg:mr-12 last:mr-0">
-                                        <Social {...link} {...(enableAnnotations && { 'data-sb-field-path': `.${index}` })} />
+                                    <li key={index} className="text-xl">
+                                        <Social
+                                            {...link}
+                                            {...(enableAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                        />
                                     </li>
                                 ))}
                             </ul>
-                        </div>
-                    )}
-                </div>
-                {(copyrightText || legalLinks.length > 0) && (
-                    <div className="sb-footer-bottom border-t pt-8 mt-16 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between">
-                        {legalLinks.length > 0 && (
-                            <ul className="flex flex-wrap mb-3" {...(enableAnnotations && { 'data-sb-field-path': 'legalLinks' })}>
-                                {legalLinks.map((link, index) => (
-                                    <li key={index} className="mb-1 mr-6 last:mr-0">
-                                        <Action {...link} className="text-sm" {...(enableAnnotations && { 'data-sb-field-path': `.${index}` })} />
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        {copyrightText && (
-                            <>
-                                <Markdown
-                                    options={{ forceInline: true, forceWrapper: true, wrapper: 'p' }}
-                                    className={classNames('sb-markdown', 'text-sm', 'mb-4', { 'sm:order-first sm:mr-12': legalLinks.length > 0 })}
-                                    {...(enableAnnotations && { 'data-sb-field-path': 'copyrightText' })}
-                                >
-                                    {copyrightText.replace(/\d{4}/, String(new Date().getFullYear()))}
-                                </Markdown>
-                                {legalNotice && (
-                                    <p className="text-xs text-gray-400 mt-1">{legalNotice}</p>
-                                )}
-                            </>
                         )}
                     </div>
-                )}
+                </div>
+
+                {/* Row 2: Bottom bar */}
+                <div className="border-t pt-6 mt-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+                    <p>&copy; {new Date().getFullYear()} Vamy</p>
+                    {legalLinks.length > 0 && (
+                        <ul
+                            className="flex items-center gap-1"
+                            {...(enableAnnotations && { 'data-sb-field-path': 'legalLinks' })}
+                        >
+                            {legalLinks.map((link, index) => (
+                                <React.Fragment key={index}>
+                                    {index > 0 && <li aria-hidden="true">&middot;</li>}
+                                    <li>
+                                        <Action
+                                            {...link}
+                                            className="text-sm"
+                                            {...(enableAnnotations && { 'data-sb-field-path': `.${index}` })}
+                                        />
+                                    </li>
+                                </React.Fragment>
+                            ))}
+                        </ul>
+                    )}
+                    {legalNotice && <p className="text-xs text-gray-400">{legalNotice}</p>}
+                </div>
             </div>
         </footer>
     );
@@ -124,8 +113,8 @@ function NewsletterSignup() {
     }
 
     return (
-        <div className="pb-8">
-            <h2 className="uppercase text-base tracking-wide mb-4">Stay in the loop</h2>
+        <div>
+            <h2 className="uppercase text-base tracking-wide mb-2">Stay in the loop</h2>
             <p className="text-sm mb-4">New works, exhibitions, and studio updates.</p>
             {status === 'success' ? (
                 <p className="text-sm text-green-600">You&apos;re on the list.</p>
@@ -134,7 +123,7 @@ function NewsletterSignup() {
                     <input
                         type="email"
                         value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        onChange={(e) => setEmail(e.target.value)}
                         placeholder="your@email.com"
                         required
                         className="flex-1 px-0 py-2 text-sm border-b border-current bg-transparent outline-none"
@@ -149,32 +138,6 @@ function NewsletterSignup() {
                 </form>
             )}
             {status === 'error' && <p className="text-sm text-red-600 mt-2">Something went wrong.</p>}
-        </div>
-    );
-}
-
-function FooterLinksGroup(props) {
-    const { title, links = [] } = props;
-    const fieldPath = props['data-sb-field-path'];
-    if (links.length === 0) {
-        return null;
-    }
-    return (
-        <div className="pb-8" data-sb-field-path={fieldPath}>
-            {title && (
-                <h2 className="uppercase text-base tracking-wide" {...(fieldPath && { 'data-sb-field-path': '.title' })}>
-                    {title}
-                </h2>
-            )}
-            {links.length > 0 && (
-                <ul className={classNames('space-y-3', { 'mt-7': title })} {...(fieldPath && { 'data-sb-field-path': '.links' })}>
-                    {links.map((link, index) => (
-                        <li key={index}>
-                            <Action {...link} className="text-sm" {...(fieldPath && { 'data-sb-field-path': `.${index}` })} />
-                        </li>
-                    ))}
-                </ul>
-            )}
         </div>
     );
 }
