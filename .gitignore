@@ -53,3 +53,6 @@ tmp*
 # Planning docs
 .planning/
 .env.local
+.playwright-mcp/
+# screenshots
+*.png
