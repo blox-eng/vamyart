@@ -1,13 +1,12 @@
-import { useRouter } from 'next/router';
-import { trpc } from '../lib/trpc';
+interface Banner {
+    text: string;
+}
 
-export function AnnouncementBanner() {
-    const router = useRouter();
-    const slug = (router.query.slug as string[] | undefined)?.join('/') ?? router.pathname.replace(/^\//, '');
-    const { data: banner } = trpc.banners.getActive.useQuery({ slug }, {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-    });
+interface AnnouncementBannerProps {
+    banner?: Banner | null;
+}
 
+export function AnnouncementBanner({ banner }: AnnouncementBannerProps) {
     if (!banner) return null;
 
     return (
