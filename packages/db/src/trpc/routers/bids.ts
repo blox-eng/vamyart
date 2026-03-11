@@ -48,30 +48,30 @@ export const bidsRouter = router({
       });
 
       // Lock auction row for the duration of validate + insert to prevent TOCTOU race
-      const [newBid] = await db.transaction(async (tx) => {
-        const [auction] = await tx
+      const [auction, newBid] = await db.transaction(async (tx) => {
+        const [auctionRow] = await tx
           .select()
           .from(auctions)
           .where(eq(auctions.id, input.auctionId))
           .for("update");
 
-        if (!auction || auction.status !== "active") {
+        if (!auctionRow || auctionRow.status !== "active") {
           throw new Error("Auction not found or not active");
         }
 
         const validation = validateBid({
           amount: input.amount,
-          currentBid: auction.currentBid ? Number(auction.currentBid) : null,
-          minBid: Number(auction.minBid),
-          minIncrement: Number(auction.minIncrement),
-          deadline: auction.deadline,
+          currentBid: auctionRow.currentBid ? Number(auctionRow.currentBid) : null,
+          minBid: Number(auctionRow.minBid),
+          minIncrement: Number(auctionRow.minIncrement),
+          deadline: auctionRow.deadline,
         });
 
         if (!validation.valid) {
           throw new Error(validation.reason);
         }
 
-        const inserted = await tx
+        const [inserted] = await tx
           .insert(bids)
           .values({
             auctionId: input.auctionId,
@@ -91,7 +91,7 @@ export const bidsRouter = router({
           })
           .where(eq(auctions.id, input.auctionId));
 
-        return inserted;
+        return [auctionRow, inserted] as const;
       });
 
       const resend = new Resend(process.env.RESEND_API_KEY);
