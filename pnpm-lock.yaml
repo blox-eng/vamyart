@@ -196,6 +196,9 @@ importers:
       resend:
         specifier: ^6.9.3
         version: 6.9.3
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
       stripe:
         specifier: ^20.4.0
         version: 20.4.0(@types/node@25.3.3)
@@ -2222,6 +2225,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
+
   setprototypeof@1.1.1:
     resolution: {integrity: sha512-JvdAWfbXeIGaZ9cILp38HntZSFSo3mWg6xGcJJsd+d4aRMOqauag1C63dJfDw7OaMYwEbHMOxEZ1lqVRYP2OAw==}
 
@@ -4167,6 +4173,8 @@ snapshots:
   search-insights@2.17.3: {}
 
   semver@7.7.4: {}
+
+  server-only@0.0.1: {}
 
   setprototypeof@1.1.1: {}
 

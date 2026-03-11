@@ -1,13 +1,7 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import dynamic from 'next/dynamic';
 
 import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to-class-names';
-
-const FeaturedHero = dynamic(
-    () => import('../FeaturedHero').then((m) => m.FeaturedHero),
-    { ssr: false }
-);
 
 export default function ImageBlock(props) {
     const { elementId, className, imageClassName, url, altText = '', styles = {} } = props;
@@ -32,8 +26,6 @@ export default function ImageBlock(props) {
         styles?.self?.borderRadius ? mapStyles({ borderRadius: styles?.self?.borderRadius }) : undefined
     );
 
-    const isPlaceholder = url.includes('placeholder');
-
     return (
         <div
             className={classNames(
@@ -45,16 +37,7 @@ export default function ImageBlock(props) {
             )}
             {...annotations}
         >
-            {isPlaceholder ? (
-                <FeaturedHero
-                    fallbackUrl={url}
-                    altText={altText}
-                    className={imgClassName}
-                    id={elementId}
-                />
-            ) : (
-                <img id={elementId} className={imgClassName} src={url} alt={altText} />
-            )}
+            <img id={elementId} className={imgClassName} src={url} alt={altText} />
         </div>
     );
 }
