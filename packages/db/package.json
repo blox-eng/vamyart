@@ -20,6 +20,7 @@
     "drizzle-orm": "^0.40.0",
     "postgres": "^3.4.8",
     "resend": "^6.9.3",
+    "server-only": "^0.0.1",
     "stripe": "^20.4.0",
     "zod": "^4.3.6"
   },
