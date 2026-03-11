@@ -1,6 +1,5 @@
 import * as React from 'react';
 import dynamic from 'next/dynamic';
-import dayjs from 'dayjs';
 import Markdown from 'markdown-to-jsx';
 
 import { getBaseLayoutComponent } from '../../../utils/base-layout';
@@ -16,55 +15,74 @@ const BidWidget = dynamic(
     () => import('../../blocks/BidWidget').then((m) => ({ default: m.BidWidget })),
     { ssr: false }
 );
+const ArtworkDetails = dynamic(
+    () => import('../../blocks/ArtworkDetails').then((m) => ({ default: m.ArtworkDetails })),
+    { ssr: false }
+);
 
 export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, date, author, markdown_content, bottomSections = [] } = page;
-    const dateTimeAttr = dayjs(date).format('YYYY-MM-DD HH:mm:ss');
-    const formattedDate = dayjs(date).format('YYYY-MM-DD');
+    const { title, markdown_content, bottomSections = [] } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
     const artworkSlug = urlPath.split('/').filter(Boolean).pop() ?? null;
 
+    const featuredImageUrl = page.featuredImage?.url;
+    const featuredImageAlt = page.featuredImage?.altText || title;
+
     return (
         <BaseLayout page={page} site={site}>
             <main id="main" className="sb-layout sb-post-layout">
                 <article className="px-4 py-16 sm:py-28">
-                    <div className="mx-auto max-w-screen-2xl">
-                        <header className="max-w-4xl mx-auto mb-12 text-center">
-                            <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
-                            <div className="mt-4 text-sm uppercase">
-                                <time dateTime={dateTimeAttr} {...(enableAnnotations && { 'data-sb-field-path': 'date' })}>
-                                    {formattedDate}
-                                </time>
-                                {author && (
-                                    <>
-                                        <span className="mx-2">|</span>
-                                        <PostAuthor author={author} enableAnnotations={enableAnnotations} />
-                                    </>
-                                )}
+                    <div className="mx-auto max-w-screen-2xl lg:grid lg:grid-cols-2 lg:gap-12">
+                        {/* Left column — artwork image */}
+                        {featuredImageUrl && (
+                            <div className="lg:sticky lg:top-8 lg:self-start mb-8 lg:mb-0">
+                                <img
+                                    src={featuredImageUrl}
+                                    alt={featuredImageAlt}
+                                    className="w-full h-auto"
+                                    {...(enableAnnotations && { 'data-sb-field-path': 'featuredImage.url' })}
+                                />
                             </div>
-                        </header>
-                        {markdown_content && (
-                            <Markdown
-                                options={{ forceBlock: true }}
-                                className="max-w-3xl mx-auto sb-markdown"
-                                {...(enableAnnotations && { 'data-sb-field-path': 'markdown_content' })}
-                            >
-                                {markdown_content}
-                            </Markdown>
                         )}
 
-                        {/* Commerce widgets — self-hide when no active auction or products */}
-                        {artworkSlug && (
-                            <div className="max-w-xl mx-auto mt-12 space-y-4">
-                                <BidWidget artworkSlug={artworkSlug} />
-                                <ProductSelector artworkSlug={artworkSlug} />
-                            </div>
-                        )}
+                        {/* Right column — details */}
+                        <div className="space-y-6">
+                            <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
+
+                            {artworkSlug && <ArtworkDetails slug={artworkSlug} />}
+
+                            {artworkSlug && (
+                                <Link
+                                    href={`/get-a-piece?piece=${artworkSlug}`}
+                                    className="inline-block text-sm font-medium uppercase tracking-wide underline underline-offset-4 hover:text-gray-600"
+                                >
+                                    Inquire
+                                </Link>
+                            )}
+
+                            {markdown_content && (
+                                <Markdown
+                                    options={{ forceBlock: true }}
+                                    className="sb-markdown"
+                                    {...(enableAnnotations && { 'data-sb-field-path': 'markdown_content' })}
+                                >
+                                    {markdown_content}
+                                </Markdown>
+                            )}
+
+                            {/* Commerce widgets — self-hide when no active auction or products */}
+                            {artworkSlug && (
+                                <div className="space-y-4">
+                                    <BidWidget artworkSlug={artworkSlug} />
+                                    <ProductSelector artworkSlug={artworkSlug} />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </article>
 
@@ -88,16 +106,5 @@ export default function PostLayout(props) {
                 )}
             </main>
         </BaseLayout>
-    );
-}
-
-function PostAuthor({ author, enableAnnotations }) {
-    const authorName = author.name && <span {...(enableAnnotations && { 'data-sb-field-path': '.name' })}>{author.name}</span>;
-    return author.slug ? (
-        <Link {...(enableAnnotations && { 'data-sb-field-path': 'author' })} href={`/gallery/author/${author.slug}`}>
-            {authorName}
-        </Link>
-    ) : (
-        <span {...(enableAnnotations && { 'data-sb-field-path': 'author' })}>{authorName}</span>
     );
 }
