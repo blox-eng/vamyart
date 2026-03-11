@@ -20,7 +20,7 @@ export default function GetAPiece({ site }: { site: any }) {
 
     const { data: product } = trpc.products.getByArtworkSlug.useQuery(
         { slug: pieceSlug },
-        { enabled: !!pieceSlug, staleTime: 60_000 }
+        { enabled: !!pieceSlug, staleTime: Infinity }
     );
 
     const artwork = product?.artwork ?? null;
