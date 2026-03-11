@@ -79,7 +79,7 @@ export const productsRouter = router({
         name: z.string().min(1),
         price: z.number().positive(),
         stockQuantity: z.number().int().min(0),
-        attributes: z.record(z.string()).optional(),
+        attributes: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -124,7 +124,7 @@ export const productsRouter = router({
         price: z.number().positive(),
         stockQuantity: z.number().int().min(0),
         available: z.boolean(),
-        attributes: z.record(z.unknown()).optional(),
+        attributes: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .mutation(async ({ input }) => {
