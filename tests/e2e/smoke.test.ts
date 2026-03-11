@@ -10,14 +10,19 @@ test.describe("smoke — pages load", () => {
   test("gallery page", async ({ page }) => {
     await page.goto("/gallery");
     await expect(page.locator("body")).toBeVisible();
-    // Should not show an error page
     await expect(page.locator("h1, h2").first()).toBeVisible();
   });
 
   test("get-a-piece page", async ({ page }) => {
     await page.goto("/get-a-piece");
     await expect(page.locator("body")).toBeVisible();
-    await expect(page.locator("form")).toBeVisible();
+    await expect(page.locator("form").first()).toBeVisible();
+  });
+
+  test("about page", async ({ page }) => {
+    await page.goto("/about");
+    await expect(page.locator("body")).toBeVisible();
+    await expect(page.locator("h1")).toContainText("Maeve Vamy");
   });
 
   test("404 page", async ({ page }) => {
