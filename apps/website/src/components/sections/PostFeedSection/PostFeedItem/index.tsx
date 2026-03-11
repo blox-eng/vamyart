@@ -1,17 +1,10 @@
 import * as React from 'react';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
-import dynamic from 'next/dynamic';
-
 import { mapStylesToClassNames as mapStyles } from '../../../../utils/map-styles-to-class-names';
 import { getPageUrl } from '../../../../utils/page-utils';
 import Link from '../../../atoms/Link';
 import ImageBlock from '../../../blocks/ImageBlock';
-
-const ArtworkCardInfo = dynamic(
-    () => import('../../../blocks/ArtworkCardInfo').then((m) => ({ default: m.ArtworkCardInfo })),
-    { ssr: false }
-);
 
 export default function PostFeedItem(props) {
     const {
@@ -86,10 +79,9 @@ export default function PostFeedItem(props) {
                         className="mt-3"
                         hasAnnotations={hasAnnotations}
                     />
-                    {(() => {
-                        const slug = (post.__metadata?.urlPath ?? '').split('/').filter(Boolean).pop();
-                        return slug ? <ArtworkCardInfo slug={slug} /> : null;
-                    })()}
+                    {post.artworkProduct && (
+                        <ArtworkCardInfoStatic product={post.artworkProduct} />
+                    )}
                     {showExcerpt && post.excerpt && (
                         <p className="mt-3" {...(hasAnnotations && { 'data-sb-field-path': 'excerpt' })}>
                             {post.excerpt}
@@ -98,6 +90,38 @@ export default function PostFeedItem(props) {
                 </div>
             </div>
         </Link>
+    );
+}
+
+function ArtworkCardInfoStatic({ product }: { product: any }) {
+    const allVariants = (product.variants ?? []) as any[];
+    const cheapest = allVariants
+        .filter((v: any) => v.available && v.price)
+        .sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+    const hasAvailable = allVariants.some((v: any) => v.available);
+    const attrs = (allVariants[0]?.attributes ?? {}) as Record<string, string>;
+    const medium = attrs.medium ?? "";
+    const dimensions = attrs.dimensions ?? "";
+
+    return (
+        <div className="mt-2 space-y-1">
+            {medium && (
+                <p className="text-xs text-gray-500">
+                    {medium}{dimensions ? ` · ${dimensions}` : ""}
+                </p>
+            )}
+            {cheapest ? (
+                <p className="text-sm font-light">€{Number(cheapest.price).toLocaleString()}</p>
+            ) : (
+                <p className="text-xs text-gray-400 italic">Price on request</p>
+            )}
+            <p className="text-xs flex items-center gap-1.5">
+                <span className={`inline-block w-1.5 h-1.5 rounded-full ${hasAvailable ? "bg-green-500" : "bg-gray-400"}`} />
+                <span className={hasAvailable ? "text-green-700" : "text-gray-400"}>
+                    {hasAvailable ? "Available" : "Sold"}
+                </span>
+            </p>
+        </div>
     );
 }
 
