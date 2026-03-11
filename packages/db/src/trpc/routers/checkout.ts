@@ -51,7 +51,6 @@ export const checkoutRouter = router({
 
       const sessionParams: Stripe.Checkout.SessionCreateParams = {
         mode: "payment",
-        payment_method_types: ["card"],
         line_items: [
           {
             price_data: {
