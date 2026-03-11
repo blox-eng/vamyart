@@ -15,10 +15,35 @@ const BidWidget = dynamic(
     () => import('../../blocks/BidWidget').then((m) => ({ default: m.BidWidget })),
     { ssr: false }
 );
-const ArtworkDetails = dynamic(
-    () => import('../../blocks/ArtworkDetails').then((m) => ({ default: m.ArtworkDetails })),
-    { ssr: false }
-);
+
+function ArtworkDetailsStatic({ product }: { product: any }) {
+    const allVariants = (product.variants ?? []) as any[];
+    const cheapest = allVariants
+        .filter((v: any) => v.available && v.price)
+        .sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+    const hasAvailable = allVariants.some((v: any) => v.available);
+    const attrs = (allVariants[0]?.attributes ?? {}) as Record<string, string>;
+    const medium = attrs.medium ?? "";
+    const dimensions = attrs.dimensions ?? "";
+
+    return (
+        <div className="space-y-2">
+            {medium && <p className="text-sm text-gray-500">{medium}</p>}
+            {dimensions && <p className="text-sm text-gray-500">{dimensions}</p>}
+            {cheapest ? (
+                <p className="text-lg font-light">€{Number(cheapest.price).toLocaleString()}</p>
+            ) : (
+                <p className="text-sm text-gray-400 italic">Price on request</p>
+            )}
+            <p className="text-sm flex items-center gap-1.5">
+                <span className={`inline-block w-2 h-2 rounded-full ${hasAvailable ? "bg-green-500" : "bg-gray-400"}`} />
+                <span className={hasAvailable ? "text-green-700" : "text-gray-400"}>
+                    {hasAvailable ? "Available" : "Sold"}
+                </span>
+            </p>
+        </div>
+    );
+}
 
 export default function PostLayout(props) {
     const { page, site } = props;
@@ -54,7 +79,7 @@ export default function PostLayout(props) {
                         <div className="space-y-6">
                             <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
 
-                            {artworkSlug && <ArtworkDetails slug={artworkSlug} />}
+                            {page.artworkProduct && <ArtworkDetailsStatic product={page.artworkProduct} />}
 
                             {artworkSlug && (
                                 <Link
