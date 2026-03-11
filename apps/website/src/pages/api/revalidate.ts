@@ -1,4 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { timingSafeEqual } from "crypto";
+
+function secretsMatch(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,7 +15,7 @@ export default async function handler(
   }
 
   const secret = req.headers["x-revalidate-secret"] ?? req.query.secret;
-  if (secret !== process.env.REVALIDATION_SECRET) {
+  if (!secretsMatch(String(secret ?? ""), process.env.REVALIDATION_SECRET ?? "")) {
     return res.status(401).json({ error: "Invalid secret" });
   }
 
