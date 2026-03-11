@@ -70,7 +70,12 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_SITE_URL=
+REVALIDATION_SECRET=
+NEXT_PUBLIC_WEBSITE_URL=
 ```
+
+> `REVALIDATION_SECRET`: Random 32+ char string shared between the website and admin sites. Generate with `openssl rand -hex 32`.
+> `NEXT_PUBLIC_WEBSITE_URL`: Set on the **admin** Netlify site only. Must point to `https://vamy.art` so the admin can trigger website ISR revalidation.
 
 See each app's README for which variables each app requires.
 
