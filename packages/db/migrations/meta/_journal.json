@@ -15,6 +15,13 @@
       "when": 1773155764838,
       "tag": "0001_brief_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741694400000,
+      "tag": "0002_shipping_banners",
+      "breakpoints": true
     }
   ]
 }
