@@ -5,6 +5,7 @@ import { mapStylesToClassNames as mapStyles } from '../../../../utils/map-styles
 import { getPageUrl } from '../../../../utils/page-utils';
 import Link from '../../../atoms/Link';
 import ImageBlock from '../../../blocks/ImageBlock';
+import { deriveArtworkDisplayData } from '../../../../utils/artwork-product';
 
 export default function PostFeedItem(props) {
     const {
@@ -94,14 +95,7 @@ export default function PostFeedItem(props) {
 }
 
 function ArtworkCardInfoStatic({ product }: { product: any }) {
-    const allVariants = (product.variants ?? []) as any[];
-    const cheapest = allVariants
-        .filter((v: any) => v.available && v.price)
-        .sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-    const hasAvailable = allVariants.some((v: any) => v.available);
-    const attrs = (allVariants[0]?.attributes ?? {}) as Record<string, string>;
-    const medium = attrs.medium ?? "";
-    const dimensions = attrs.dimensions ?? "";
+    const { medium, dimensions, cheapestPrice, hasAvailable } = deriveArtworkDisplayData(product);
 
     return (
         <div className="mt-2 space-y-1">
@@ -110,8 +104,8 @@ function ArtworkCardInfoStatic({ product }: { product: any }) {
                     {medium}{dimensions ? ` · ${dimensions}` : ""}
                 </p>
             )}
-            {cheapest ? (
-                <p className="text-sm font-light">€{Number(cheapest.price).toLocaleString()}</p>
+            {cheapestPrice !== null ? (
+                <p className="text-sm font-light">€{cheapestPrice.toLocaleString()}</p>
             ) : (
                 <p className="text-xs text-gray-400 italic">Price on request</p>
             )}

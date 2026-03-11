@@ -88,21 +88,21 @@ export async function getStaticProps({ params }) {
     }
 
     // Gallery index: attach product data to posts for server-side rendering
-    if (urlPath === '/gallery') {
+    if (urlPath === '/gallery' && props.page?.items) {
         try {
-            const posts = props.page?.items ?? [];
-            await Promise.all(
-                posts.map(async (post) => {
+            props.page.items = await Promise.all(
+                props.page.items.map(async (post) => {
                     const postSlug = post.__metadata?.urlPath?.split('/').filter(Boolean).pop();
-                    if (!postSlug) return;
+                    if (!postSlug) return post;
                     try {
                         const product = await serverTrpc.products.getByArtworkSlug({ slug: postSlug });
                         if (product) {
-                            post.artworkProduct = toJson(product);
+                            return { ...post, artworkProduct: toJson(product) };
                         }
                     } catch {
                         // Product unavailable for this slug
                     }
+                    return post;
                 })
             );
         } catch {

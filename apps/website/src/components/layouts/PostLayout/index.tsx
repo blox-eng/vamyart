@@ -5,6 +5,7 @@ import Markdown from 'markdown-to-jsx';
 import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
+import { deriveArtworkDisplayData } from '../../../utils/artwork-product';
 
 // Loaded client-side only — they use tRPC hooks and Supabase realtime
 const ProductSelector = dynamic(
@@ -17,21 +18,14 @@ const BidWidget = dynamic(
 );
 
 function ArtworkDetailsStatic({ product }: { product: any }) {
-    const allVariants = (product.variants ?? []) as any[];
-    const cheapest = allVariants
-        .filter((v: any) => v.available && v.price)
-        .sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-    const hasAvailable = allVariants.some((v: any) => v.available);
-    const attrs = (allVariants[0]?.attributes ?? {}) as Record<string, string>;
-    const medium = attrs.medium ?? "";
-    const dimensions = attrs.dimensions ?? "";
+    const { medium, dimensions, cheapestPrice, hasAvailable } = deriveArtworkDisplayData(product);
 
     return (
         <div className="space-y-2">
             {medium && <p className="text-sm text-gray-500">{medium}</p>}
             {dimensions && <p className="text-sm text-gray-500">{dimensions}</p>}
-            {cheapest ? (
-                <p className="text-lg font-light">€{Number(cheapest.price).toLocaleString()}</p>
+            {cheapestPrice !== null ? (
+                <p className="text-lg font-light">€{cheapestPrice.toLocaleString()}</p>
             ) : (
                 <p className="text-sm text-gray-400 italic">Price on request</p>
             )}
