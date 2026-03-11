@@ -14,7 +14,7 @@ export const newsletterRouter = router({
         .onConflictDoNothing();
 
       // Sync to Buttondown
-      await fetch("https://api.buttondown.email/v1/subscribers", {
+      const bdRes = await fetch("https://api.buttondown.email/v1/subscribers", {
         method: "POST",
         headers: {
           Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
@@ -22,6 +22,11 @@ export const newsletterRouter = router({
         },
         body: JSON.stringify({ email_address: input.email }),
       });
+
+      if (!bdRes.ok) {
+        // Don't throw — local record was saved. Log for ops visibility.
+        console.error("[newsletter] Buttondown sync failed:", bdRes.status, await bdRes.text());
+      }
 
       return { success: true };
     }),
