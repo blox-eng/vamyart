@@ -10,6 +10,22 @@
 
 Move read-only product data into `getStaticProps` with ISR (`revalidate: 3600`). Pages are pre-rendered at build time and regenerated in the background every 60 minutes. When the artist updates data in the admin panel, an on-demand revalidation endpoint instantly regenerates affected pages.
 
+## Catch-All Page: Fallback Mode
+
+The catch-all `src/pages/[[...slug]].js` currently uses `fallback: false`. ISR requires `fallback: 'blocking'` so that:
+1. `revalidate: 3600` actually triggers background regeneration
+2. `res.revalidate()` calls from the on-demand endpoint take effect
+
+Change `getStaticPaths` to return `fallback: 'blocking'` instead of `fallback: false`.
+
+## Gallery Detail Pages: Strategy
+
+Gallery detail pages (`/gallery/whispers`, etc.) are rendered by the catch-all `[[...slug]].js`, which reads markdown content via `allContent()` / `resolveStaticProps()`. There is no dedicated `src/pages/gallery/[slug].tsx`.
+
+**Approach:** Inject DB data into the catch-all's `getStaticProps` rather than creating a separate page file. In `resolveStaticProps` (or in the catch-all's `getStaticProps` directly), detect gallery detail pages by URL pattern (`/gallery/{slug}`), call `tRPC` server-side to fetch product data, and merge it into the page props alongside the existing markdown content.
+
+This avoids creating a parallel routing system and keeps the content model intact.
+
 ## What Moves Server-Side
 
 ### Homepage (`/`)
@@ -20,7 +36,7 @@ Move read-only product data into `getStaticProps` with ISR (`revalidate: 3600`).
 - **ArtworkCardInfo**: Fetch all products with variants in `getStaticProps`, build a `slug → product` map, pass to PostFeedLayout → PostFeedItem as props. Remove the client-side ArtworkCardInfo component.
 
 ### Artwork Detail (`/gallery/{slug}`)
-- **ArtworkDetails**: Fetch product by artwork slug in `getStaticProps`, pass as prop. Remove client-side ArtworkDetails component. Render medium, dimensions, price, availability directly in PostLayout from props.
+- **ArtworkDetails**: In the catch-all `getStaticProps`, detect gallery detail pages and fetch product by artwork slug via tRPC server-side caller. Pass product data as a prop. Remove client-side ArtworkDetails component. Render medium, dimensions, price, availability directly in PostLayout from props.
 
 ### About (`/about`)
 - No DB calls. Already fully static.
@@ -40,13 +56,21 @@ Move read-only product data into `getStaticProps` with ISR (`revalidate: 3600`).
 
 ## API Abuse Protection
 
-Add `Cache-Control` headers to the tRPC GET handler at `apps/website/app/api/trpc/[trpc]/route.ts`:
+Add `Cache-Control` headers to the tRPC GET handler at `apps/website/app/api/trpc/[trpc]/route.ts`. The handler uses `fetchRequestHandler` which returns a `Response` object — intercept it and set headers:
 
-```
-Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400
+```ts
+const response = await fetchRequestHandler({ /* ... */ });
+response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+return response;
 ```
 
-Netlify's edge CDN caches the response. 100k refreshes within the cache window = 1 actual DB call. Mutations (POST) are not cached.
+Only apply to GET requests. POST (mutations) must not be cached.
+
+Netlify's edge CDN caches the response. 100k refreshes within the cache window = 1 actual DB call.
+
+## Netlify ISR Compatibility
+
+Netlify supports Next.js ISR and on-demand revalidation via `@netlify/plugin-nextjs` (included by default in the Netlify Next.js runtime). Verify the current `netlify.toml` uses a compatible runtime. The `REVALIDATION_SECRET` and Supabase env vars must be available in the Netlify build environment (they are, since Supabase is external and env vars are configured in Netlify dashboard).
 
 ## On-Demand Revalidation
 
