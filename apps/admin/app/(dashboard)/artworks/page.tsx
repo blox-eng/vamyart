@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
+import { revalidatePaths } from "@/lib/revalidate";
 
 type VariantDraft = {
   name: string;
@@ -29,7 +30,11 @@ export default function ArtworksPage() {
   const { data: productList, refetch, isLoading: productsLoading } = trpc.products.listAll.useQuery();
   const { data: shippingMethodsList } = trpc.shippingMethods.list.useQuery();
   const setFeatured = trpc.products.setFeatured.useMutation({
-    onSuccess: () => { refetch(); toast("featured updated", "success"); },
+    onSuccess: async () => {
+      await revalidatePaths(["/"]);
+      refetch();
+      toast("featured updated", "success");
+    },
     onError: () => toast("failed to update featured", "error"),
   });
 
@@ -39,7 +44,16 @@ export default function ArtworksPage() {
   });
 
   const updateVariant = trpc.products.updateVariant.useMutation({
-    onSuccess: () => { refetch(); toast("variant updated", "success"); },
+    onSuccess: async (_, vars) => {
+      const editedProduct = (productList ?? []).find((p) =>
+        p.variants.some((v: any) => v.id === vars.id)
+      );
+      const slug = editedProduct?.artwork?.slug;
+      const paths = ["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])];
+      await revalidatePaths(paths);
+      refetch();
+      toast("variant updated", "success");
+    },
     onError: () => toast("failed to update variant", "error"),
   });
   const deleteVariant = trpc.products.deleteVariant.useMutation({
@@ -55,11 +69,19 @@ export default function ArtworksPage() {
     onError: () => toast("failed to update product", "error"),
   });
   const deleteProduct = trpc.products.deleteProduct.useMutation({
-    onSuccess: () => { refetch(); toast("product deleted", "success"); },
+    onSuccess: async () => {
+      await revalidatePaths(["/", "/gallery"]);
+      refetch();
+      toast("product deleted", "success");
+    },
     onError: () => toast("failed to delete product", "error"),
   });
   const createProduct = trpc.products.createProduct.useMutation({
-    onSuccess: () => { refetch(); toast("product created", "success"); },
+    onSuccess: async () => {
+      await revalidatePaths(["/", "/gallery"]);
+      refetch();
+      toast("product created", "success");
+    },
     onError: () => toast("failed to create product", "error"),
   });
 
