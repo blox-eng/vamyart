@@ -25,7 +25,7 @@ export default function MyApp({ Component, pageProps }) {
     return (
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
             <QueryClientProvider client={queryClient}>
-                <AnnouncementBanner />
+                <AnnouncementBanner banner={pageProps?.site?.activeBanner ?? null} />
                 <Component {...pageProps} />
             </QueryClientProvider>
         </trpc.Provider>

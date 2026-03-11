@@ -11,6 +11,11 @@ import { appRouter } from '@vamy/db/trpc';
 // Used in the homepage, gallery, and artwork detail blocks below
 const serverTrpc = appRouter.createCaller({ userId: null });
 
+// Strip non-serializable values (Date objects from Drizzle) before returning via getStaticProps
+function toJson(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
 function Page(props) {
     const { page, site } = props;
     const { modelName } = page.__metadata;
@@ -56,6 +61,68 @@ export async function getStaticProps({ params }) {
     const data = allContent();
     const urlPath = '/' + (params.slug || []).join('/');
     const props = await resolveStaticProps(urlPath, data);
+
+    // Homepage: inject featured artwork image + active banner server-side
+    if (urlPath === '/') {
+        try {
+            const featured = await serverTrpc.products.getFeatured();
+            if (featured?.artwork?.slug) {
+                const heroSection = props.page?.sections?.[0];
+                if (heroSection?.media?.url?.includes('placeholder')) {
+                    heroSection.media.url = `/images/${featured.artwork.slug}.jpg`;
+                    heroSection.media.altText = `${featured.artwork.title} by Maeve Vamy`;
+                }
+            }
+        } catch {
+            // Fallback to placeholder if DB unavailable at build time
+        }
+
+        try {
+            const banner = await serverTrpc.banners.getActive({ slug: '' });
+            if (banner) {
+                props.site.activeBanner = banner;
+            }
+        } catch {
+            // No banner — component handles null gracefully
+        }
+    }
+
+    // Gallery index: attach product data to posts for server-side rendering
+    if (urlPath === '/gallery') {
+        try {
+            const posts = props.page?.items ?? [];
+            await Promise.all(
+                posts.map(async (post) => {
+                    const postSlug = post.__metadata?.urlPath?.split('/').filter(Boolean).pop();
+                    if (!postSlug) return;
+                    try {
+                        const product = await serverTrpc.products.getByArtworkSlug({ slug: postSlug });
+                        if (product) {
+                            post.artworkProduct = toJson(product);
+                        }
+                    } catch {
+                        // Product unavailable for this slug
+                    }
+                })
+            );
+        } catch {
+            // Products unavailable at build time — cards render without pricing
+        }
+    }
+
+    // Gallery detail: /gallery/{slug} — exactly 2 path segments
+    if (urlPath.startsWith('/gallery/') && urlPath.split('/').filter(Boolean).length === 2) {
+        const artworkSlug = urlPath.split('/').filter(Boolean).pop();
+        try {
+            const product = await serverTrpc.products.getByArtworkSlug({ slug: artworkSlug });
+            if (product) {
+                props.page.artworkProduct = toJson(product);
+            }
+        } catch {
+            // Product unavailable at build time — detail renders without pricing
+        }
+    }
+
     return { props, revalidate: 3600 };
 }
 
