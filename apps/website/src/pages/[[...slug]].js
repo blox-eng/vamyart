@@ -5,6 +5,10 @@ import { getComponent } from '../components/components-registry';
 import { resolveStaticProps } from '../utils/static-props-resolvers';
 import { resolveStaticPaths } from '../utils/static-paths-resolvers';
 import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../utils/seo-utils';
+import { appRouter } from '@vamy/db/trpc';
+
+// tRPC v11 server-side caller (used in getStaticProps — no auth needed for public routes)
+const serverTrpc = appRouter.createCaller({ userId: null });
 
 function Page(props) {
     const { page, site } = props;
@@ -44,14 +48,14 @@ export function getStaticPaths() {
     const paths = resolveStaticPaths(data);
     // Exclude paths handled by dedicated page files
     const filtered = paths.filter(p => p !== "/get-a-piece");
-    return { paths: filtered, fallback: false };
+    return { paths: filtered, fallback: 'blocking' };
 }
 
 export async function getStaticProps({ params }) {
     const data = allContent();
     const urlPath = '/' + (params.slug || []).join('/');
     const props = await resolveStaticProps(urlPath, data);
-    return { props };
+    return { props, revalidate: 3600 };
 }
 
 export default Page;
