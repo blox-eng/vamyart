@@ -29,6 +29,20 @@ export const artworks = pgTable("artworks", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ─── Artwork Images ──────────────────────────────────────────────────────────
+export const artworkImages = pgTable("artwork_images", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  artworkId: uuid("artwork_id")
+    .notNull()
+    .references(() => artworks.id, { onDelete: "cascade" }),
+  storagePath: text("storage_path").notNull(),
+  altText: text("alt_text"),
+  isPrimary: boolean("is_primary").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 // ─── Products ─────────────────────────────────────────────────────────────────
 export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -146,6 +160,14 @@ export const banners = pgTable("banners", {
 export const artworksRelations = relations(artworks, ({ one, many }) => ({
   product: many(products),
   auction: one(auctions, { fields: [artworks.id], references: [auctions.artworkId] }),
+  images: many(artworkImages),
+}));
+
+export const artworkImagesRelations = relations(artworkImages, ({ one }) => ({
+  artwork: one(artworks, {
+    fields: [artworkImages.artworkId],
+    references: [artworks.id],
+  }),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
