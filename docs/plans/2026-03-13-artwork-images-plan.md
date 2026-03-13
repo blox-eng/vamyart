@@ -106,7 +106,7 @@ CREATE POLICY "Allow public read access on artwork_images"
 
 ```bash
 cd packages/db
-DATABASE_URL="postgresql://postgres.ytgbohzmipyfrezsctbl:jjvGAxSMyFYEQvYi@aws-1-eu-west-1.pooler.supabase.com:6543/postgres" pnpm migrate
+DATABASE_URL="<your-production-db-url>" pnpm migrate
 ```
 
 - [ ] **Step 4: Verify in Supabase**
