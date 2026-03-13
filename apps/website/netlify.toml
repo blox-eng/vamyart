@@ -1,5 +1,5 @@
 [build]
-  command = "cd ../.. && pnpm install && pnpm turbo build --filter=@vamy/website"
+  command = "cd $NETLIFY_REPO_DIR && pnpm install && pnpm turbo build --filter=@vamy/website"
   publish = ".next"
 
 [[plugins]]
