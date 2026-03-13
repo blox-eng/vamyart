@@ -15,15 +15,6 @@ export default function About({ site }: { site: any }) {
                     {site?.header && <Header {...site.header} />}
 
                     <main className="min-h-screen bg-white">
-                        {/* Hero */}
-                        <div className="w-full aspect-[21/9] overflow-hidden">
-                            <img
-                                src="/images/about-placeholder.jpg"
-                                alt="Studio of Maeve Vamy"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-
                         <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
                             {/* Bio */}
                             <section className="mb-16">
