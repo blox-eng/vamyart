@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "gallery": "Galerie",
+    "about": "Über mich",
+    "contact": "Ein Werk erwerben",
+    "language": "Sprache"
+  },
+  "footer": {
+    "newsletter": {
+      "title": "Bleib auf dem Laufenden",
+      "description": "Neue Werke, Ausstellungen und Studio-Updates.",
+      "placeholder": "deine@email.de",
+      "submit": "Abonnieren",
+      "success": "Du stehst auf der Liste.",
+      "error": "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+    }
+  },
+  "inquiry": {
+    "success": "Vielen Dank. Wir melden uns bald.",
+    "error": "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+  },
+  "bid": {
+    "currentBid": "Aktuelles Gebot",
+    "noBids": "Noch keine Gebote",
+    "minBid": "Mindestgebot",
+    "endsIn": "Endet in",
+    "ended": "Auktion beendet",
+    "placeBid": "Gebot abgeben",
+    "yourName": "Dein Name",
+    "yourEmail": "Deine E-Mail",
+    "yourBid": "Dein Gebot (€)",
+    "submit": "Gebot einreichen",
+    "success": "Dein Gebot wurde eingereicht.",
+    "outbid": "Dein Gebot ist zu niedrig. Aktuelles Gebot: {current}.",
+    "error": "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+  },
+  "product": {
+    "inStock": "Auf Lager",
+    "outOfStock": "Nicht verfügbar",
+    "buy": "Druck kaufen",
+    "selectVariant": "Größe & Papier wählen",
+    "price": "€{price}"
+  }
+}

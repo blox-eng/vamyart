@@ -1,74 +1,103 @@
-# Content Ops Starter
+# vamy.art
 
-![Content Ops Starter](https://assets.stackbit.com/docs/content-ops-starter-thumb.png)
+Artist website for Maeve Vamy — painter. Built to sell original works, run auctions, and handle inquiries.
 
-Netlify starter that's made for customization with a flexible content model, component library, [visual editing](https://docs.netlify.com/visual-editor/overview/) and [Git Content Source](https://docs.netlify.com/create/content-sources/git/).
+## What This Is
 
-**⚡ View demo:** [https://content-ops-starter.netlify.app/](https://content-ops-starter.netlify.app/)
+A Next.js monorepo with two deployable apps:
 
-## Table of Contents
+- **`apps/website`** — public-facing artist site (gallery, auctions, shop, contact)
+- **`apps/admin`** — Maeve's private admin panel (artworks, orders, bids, inquiries)
 
-- [Deploying to Netlify](#deploying-to-netlify)
-- [Develop with Netlify Visual Editor Locally](#develop-with-netlify-visual-editor-locally)
-- [Building for production](#building-for-production)
-- [Setting Up Algolia Search](#setting-up-algolia-search)
-- [Next Steps](#next-steps)
-- [Support](#support)
+## Tech Stack
 
-## Deploying to Netlify
+| Layer | Choice |
+|---|---|
+| Frontend | Next.js 15, React 19, Tailwind CSS |
+| Router | Pages Router (website), App Router (admin) |
+| API | tRPC v11 inside Next.js API routes |
+| ORM | Drizzle ORM |
+| Database | Supabase PostgreSQL |
+| Auth | Supabase Auth (admin only — no buyer accounts) |
+| Realtime | Supabase Realtime on `bids` table |
+| Payments | Stripe Checkout (guest only) |
+| Email | Resend (transactional), Buttondown (newsletter) |
+| i18n | next-intl (EN / DE / BG) |
+| Deploy | Netlify (two sites from one repo) |
+| Package manager | pnpm + Turborepo |
 
-If you click "Deploy to Netlify" button, it will create a new repo for you that looks exactly like this one, and sets that repo up immediately for deployment on Netlify.
+## Monorepo Structure
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify-templates/content-ops-starter)
-
-## Develop with Netlify Visual Editor Locally
-
-The typical development process is to begin by working locally. Clone this repository, then run `npm install` in its root directory.
-
-Run the Next.js development server:
-
-```txt
-cd content-ops-starter
-npm run dev
+```
+apps/
+  website/          # Public site — Pages Router
+  admin/            # Admin panel — App Router
+packages/
+  db/               # Drizzle schema + tRPC routers (shared by both apps)
+  ui/               # shadcn/ui primitives (shared)
+  i18n/             # next-intl message files (EN/DE/BG)
+docs/
+  plans/            # Architecture decisions and implementation plans
 ```
 
-Install the [Netlify Visual Editor CLI](https://www.npmjs.com/package/@stackbit/cli). Then open a new terminal window in the same project directory and run the Netlify visual editor dev server:
+## Local Dev
 
-```txt
-npm install -g @stackbit/cli
-stackbit dev
+**Prerequisites:** Node 20+, pnpm 9+, a `.env.local` at repo root.
+
+```bash
+pnpm install
+pnpm dev          # runs both apps in parallel via Turborepo
 ```
 
-This outputs your own Netlify visual editor URL. Open this, register, or sign in, and you will be directed to Netlify's visual editor for your new project.
-
-![Next.js Dev + Visual Editor Dev](https://assets.stackbit.com/docs/next-dev-stackbit-dev.png)
-
-## Building for production
-
-To build a static site for production, run the following command
-
-```shell
-npm run build
+Or run a single app:
+```bash
+cd apps/website && pnpm dev   # http://localhost:3000
+cd apps/admin && pnpm dev     # http://localhost:3001
 ```
 
-## Setting Up Algolia Search
+**Environment variables:** Create `.env.local` at repo root and fill in the following keys (get values from the team):
 
-This starter includes Algolia search integration. To set it up:
+```
+DATABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+RESEND_ARTIST_EMAIL=
+BUTTONDOWN_API_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_SITE_URL=
+REVALIDATION_SECRET=
+NEXT_PUBLIC_WEBSITE_URL=
+```
 
-1. Create an [Algolia](https://www.algolia.com/) account
-2. Create a new application and index
-3. Set the following environment variables:
-   - `NEXT_PUBLIC_ALGOLIA_APP_ID` - Your Algolia application ID
-   - `NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY` - Your Algolia search-only API key
-   - `NEXT_PUBLIC_ALGOLIA_INDEX_NAME` - Your index name
+> `REVALIDATION_SECRET`: Random 32+ char string shared between the website and admin sites. Generate with `openssl rand -hex 32`.
+> `NEXT_PUBLIC_WEBSITE_URL`: Set on the **admin** Netlify site only. Must point to `https://vamy.art` so the admin can trigger website ISR revalidation.
 
-## Next Steps
+See each app's README for which variables each app requires.
 
-Here are a few suggestions on what to do next if you're new to Netlify visual editor:
+## Key Architectural Decisions
 
-- Learn [Netlify visual editor overview](https://docs.netlify.com/visual-editor/visual-editing/)
-- Check [Netlify visual editor reference documentation](https://visual-editor-reference.netlify.com/)
+**Artworks live in markdown, not the database.** Content is in `apps/website/content/pages/gallery/`. The artwork `slug` is the join key to any DB records (products, auctions). Do not move artwork data to the DB.
 
-## Support
+**No buyer accounts.** Checkout is guest-only. Stripe handles identity. This avoids GDPR complexity and was a deliberate product decision.
 
-If you get stuck along the way, get help in our [support forums](https://answers.netlify.com/).
+**Pages Router stays on the website.** The admin uses App Router. Do not migrate the website to App Router — the content model is tightly coupled to Pages Router conventions.
+
+**tRPC lives inside Next.js API routes.** There is no separate backend service. `packages/db` exports routers that both apps mount.
+
+## Deploy
+
+Two Netlify sites, same repo:
+
+- Website: base dir `apps/website`, publish dir `.next`
+- Admin: base dir `apps/admin`, publish dir `.next`
+
+Each app has its own `netlify.toml`. Build command: `cd ../.. && pnpm turbo build --filter=@vamy/<app>`.
+
+## Plans & Decisions
+
+See `docs/plans/` for architecture decisions and implementation plans covering the sales integration, auction system, admin panel, and this design overhaul.
