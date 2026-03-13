@@ -86,6 +86,7 @@ export default function ArtworksPage() {
   });
 
   const [selectedArtworkId, setSelectedArtworkId] = useState<string | null>(null);
+  const [expandedImages, setExpandedImages] = useState(false);
   const [editingVariant, setEditingVariant] = useState<Record<string, VariantDraft>>({});
   const [editingProduct, setEditingProduct] = useState<Record<string, ProductDraft>>({});
   const [newVariantForm, setNewVariantForm] = useState<NewVariantForm | null>(null);
@@ -105,6 +106,64 @@ export default function ArtworksPage() {
   const selectedKey = selectedArtworkId ?? artworkEntries[0]?.[0] ?? null;
   const selectedEntry = artworkEntries.find(([k]) => k === selectedKey);
   const selected = selectedEntry?.[1];
+
+  // ── Image gallery ────────────────────────────────────────────────────────────
+
+  const imagesList = trpc.artworkImages.list.useQuery(
+    { artworkId: selectedKey! },
+    { enabled: !!selectedKey && selectedKey !== "none" }
+  );
+
+  const uploadImage = trpc.artworkImages.upload.useMutation({
+    onSuccess: async () => {
+      imagesList.refetch();
+      const slug = selected?.artwork?.slug;
+      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      toast("Image uploaded", "success");
+    },
+    onError: (e) => toast(e.message, "error"),
+  });
+
+  const deleteImage = trpc.artworkImages.delete.useMutation({
+    onSuccess: async () => {
+      imagesList.refetch();
+      const slug = selected?.artwork?.slug;
+      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      toast("Image deleted", "success");
+    },
+    onError: (e) => toast(e.message, "error"),
+  });
+
+  const setPrimaryImage = trpc.artworkImages.setPrimary.useMutation({
+    onSuccess: async () => {
+      imagesList.refetch();
+      const slug = selected?.artwork?.slug;
+      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      toast("Primary image updated", "success");
+    },
+    onError: (e) => toast(e.message, "error"),
+  });
+
+  async function handleImageUpload(file: File) {
+    if (!selectedKey || selectedKey === "none") return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast("File too large (max 10MB)", "error");
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast("Invalid file type (jpg/png/webp only)", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      uploadImage.mutate({
+        artworkId: selectedKey,
+        fileBase64: reader.result as string,
+        fileName: file.name,
+      });
+    };
+    reader.readAsDataURL(file);
+  }
 
   // ── Variant editing ──────────────────────────────────────────────────────────
 
@@ -236,6 +295,7 @@ export default function ArtworksPage() {
               setNewVariantForm(null);
               setNewProductForm(null);
               setConfirmDelete(null);
+              setExpandedImages(false);
             }}
             className="border rounded-lg px-4 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-black"
           >
@@ -245,6 +305,74 @@ export default function ArtworksPage() {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Image Gallery */}
+      {selectedKey && selectedKey !== "none" && (
+        <div className="mb-8">
+          <button
+            onClick={() => setExpandedImages(!expandedImages)}
+            className="text-xs text-gray-600 hover:text-black mb-3 flex items-center gap-1"
+          >
+            <span className="transform transition-transform" style={{ display: 'inline-block', transform: expandedImages ? 'rotate(90deg)' : 'none' }}>▶</span>
+            Images ({imagesList.data?.length ?? 0})
+          </button>
+          {expandedImages && (
+            <div className="bg-white border rounded-lg p-4 space-y-4">
+              {/* Upload zone */}
+              <label className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-gray-400 transition-colors">
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                />
+                <span className="text-sm text-gray-400">
+                  {uploadImage.isPending ? "Uploading..." : "Click to upload image (jpg/png/webp, max 10MB)"}
+                </span>
+              </label>
+
+              {/* Image grid */}
+              {(imagesList.data?.length ?? 0) > 0 && (
+                <div className="grid grid-cols-4 gap-3">
+                  {imagesList.data?.map((img) => (
+                    <div key={img.id} className="relative group rounded overflow-hidden bg-gray-100">
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${img.storagePath}`}
+                        alt={img.altText || "Artwork image"}
+                        className="w-full aspect-square object-cover"
+                      />
+                      {img.isPrimary && (
+                        <span className="absolute top-1 left-1 bg-amber-100 text-amber-700 text-xs px-1.5 py-0.5 rounded">
+                          ★ Primary
+                        </span>
+                      )}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {!img.isPrimary && (
+                          <button
+                            onClick={() => setPrimaryImage.mutate({ id: img.id })}
+                            className="text-xs bg-white/20 text-white px-2 py-1 rounded hover:bg-white/40"
+                          >
+                            ★ Set Primary
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteImage.mutate({ id: img.id })}
+                          className="text-xs bg-red-500/80 text-white px-2 py-1 rounded hover:bg-red-500"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
