@@ -56,3 +56,4 @@ tmp*
 .playwright-mcp/
 # screenshots
 *.png
+.superpowers/
