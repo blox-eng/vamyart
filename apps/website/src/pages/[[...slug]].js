@@ -66,11 +66,20 @@ export async function getStaticProps({ params }) {
     if (urlPath === '/') {
         try {
             const featured = await serverTrpc.products.getFeatured();
-            if (featured?.artwork?.slug) {
+            if (featured?.artwork) {
                 const heroSection = props.page?.sections?.[0];
-                if (heroSection?.media?.url?.includes('placeholder')) {
-                    heroSection.media.url = `/images/${featured.artwork.slug}.jpg`;
-                    heroSection.media.altText = `${featured.artwork.title} by Maeve Vamy`;
+                if (heroSection?.media) {
+                    if (featured.artworkId) {
+                        const images = await serverTrpc.artworkImages.list({ artworkId: featured.artworkId });
+                        const primary = images.find(img => img.isPrimary);
+                        if (primary) {
+                            heroSection.media.url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`;
+                            heroSection.media.altText = primary.altText || `${featured.artwork.title} by Maeve Vamy`;
+                        } else if (heroSection.media.url?.includes('placeholder')) {
+                            heroSection.media.url = `/images/${featured.artwork.slug}.jpg`;
+                            heroSection.media.altText = `${featured.artwork.title} by Maeve Vamy`;
+                        }
+                    }
                 }
             }
         } catch {
@@ -97,7 +106,22 @@ export async function getStaticProps({ params }) {
                     try {
                         const product = await serverTrpc.products.getByArtworkSlug({ slug: postSlug });
                         if (product) {
-                            return { ...post, artworkProduct: toJson(product) };
+                            let updatedPost = { ...post, artworkProduct: toJson(product) };
+                            if (product.artworkId) {
+                                const images = await serverTrpc.artworkImages.list({ artworkId: product.artworkId });
+                                const primary = images.find(img => img.isPrimary);
+                                if (primary) {
+                                    updatedPost = {
+                                        ...updatedPost,
+                                        featuredImage: {
+                                            ...(post.featuredImage || {}),
+                                            url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
+                                            altText: primary.altText || post.featuredImage?.altText || post.title,
+                                        },
+                                    };
+                                }
+                            }
+                            return updatedPost;
                         }
                     } catch {
                         // Product unavailable for this slug
@@ -117,6 +141,17 @@ export async function getStaticProps({ params }) {
             const product = await serverTrpc.products.getByArtworkSlug({ slug: artworkSlug });
             if (product) {
                 props.page.artworkProduct = toJson(product);
+                if (product.artworkId) {
+                    const images = await serverTrpc.artworkImages.list({ artworkId: product.artworkId });
+                    const primary = images.find(img => img.isPrimary);
+                    if (primary) {
+                        props.page.featuredImage = {
+                            ...(props.page.featuredImage || {}),
+                            url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
+                            altText: primary.altText || props.page.featuredImage?.altText || props.page.title,
+                        };
+                    }
+                }
             }
         } catch {
             // Product unavailable at build time — detail renders without pricing
