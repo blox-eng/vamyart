@@ -80,8 +80,8 @@ export default function PostFeedItem(props) {
                         className="mt-3"
                         hasAnnotations={hasAnnotations}
                     />
-                    {post.artworkProduct && (
-                        <ArtworkCardInfoStatic product={post.artworkProduct} />
+                    {post.artworkProducts && post.artworkProducts.length > 0 && (
+                        <ArtworkCardInfoStatic products={post.artworkProducts} />
                     )}
                     {showExcerpt && post.excerpt && (
                         <p className="mt-3" {...(hasAnnotations && { 'data-sb-field-path': 'excerpt' })}>
@@ -94,18 +94,21 @@ export default function PostFeedItem(props) {
     );
 }
 
-function ArtworkCardInfoStatic({ product }: { product: any }) {
-    const { medium, dimensions, cheapestPrice, hasAvailable } = deriveArtworkDisplayData(product);
+function ArtworkCardInfoStatic({ products }: { products: any[] }) {
+    const { printPriceFrom, originalPrice, hasAvailable } = deriveArtworkDisplayData(products);
+
+    const priceParts: string[] = [];
+    if (printPriceFrom !== null) {
+        priceParts.push(originalPrice !== null ? `Prints from €${printPriceFrom.toLocaleString()}` : `From €${printPriceFrom.toLocaleString()}`);
+    }
+    if (originalPrice !== null) {
+        priceParts.push(`Original €${originalPrice.toLocaleString()}`);
+    }
 
     return (
         <div className="mt-2 space-y-1">
-            {medium && (
-                <p className="text-xs text-gray-500">
-                    {medium}{dimensions ? ` · ${dimensions}` : ""}
-                </p>
-            )}
-            {cheapestPrice !== null ? (
-                <p className="text-sm font-light">€{cheapestPrice.toLocaleString()}</p>
+            {priceParts.length > 0 ? (
+                <p className="text-sm font-light">{priceParts.join(" · ")}</p>
             ) : (
                 <p className="text-xs text-gray-400 italic">Price on request</p>
             )}
