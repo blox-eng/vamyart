@@ -104,25 +104,24 @@ export async function getStaticProps({ params }) {
                     const postSlug = post.__metadata?.urlPath?.split('/').filter(Boolean).pop();
                     if (!postSlug) return post;
                     try {
-                        const product = await serverTrpc.products.getByArtworkSlug({ slug: postSlug });
-                        if (product) {
-                            let updatedPost = { ...post, artworkProduct: toJson(product) };
-                            if (product.artworkId) {
-                                const images = await serverTrpc.artworkImages.list({ artworkId: product.artworkId });
+                        const products = await serverTrpc.products.listByArtworkSlug({ slug: postSlug });
+                        let updatedPost = { ...post };
+                        if (products.length > 0) {
+                            updatedPost.artworkProducts = toJson(products);
+                            const artworkId = products[0].artworkId;
+                            if (artworkId) {
+                                const images = await serverTrpc.artworkImages.list({ artworkId });
                                 const primary = images.find(img => img.isPrimary);
                                 if (primary) {
-                                    updatedPost = {
-                                        ...updatedPost,
-                                        featuredImage: {
-                                            ...(post.featuredImage || {}),
-                                            url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-                                            altText: primary.altText || post.featuredImage?.altText || post.title,
-                                        },
+                                    updatedPost.featuredImage = {
+                                        ...(post.featuredImage || {}),
+                                        url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
+                                        altText: primary.altText || post.featuredImage?.altText || post.title,
                                     };
                                 }
                             }
-                            return updatedPost;
                         }
+                        return updatedPost;
                     } catch {
                         // Product unavailable for this slug
                     }
@@ -138,11 +137,12 @@ export async function getStaticProps({ params }) {
     if (urlPath.startsWith('/gallery/') && urlPath.split('/').filter(Boolean).length === 2) {
         const artworkSlug = urlPath.split('/').filter(Boolean).pop();
         try {
-            const product = await serverTrpc.products.getByArtworkSlug({ slug: artworkSlug });
-            if (product) {
-                props.page.artworkProduct = toJson(product);
-                if (product.artworkId) {
-                    const images = await serverTrpc.artworkImages.list({ artworkId: product.artworkId });
+            const products = await serverTrpc.products.listByArtworkSlug({ slug: artworkSlug });
+            if (products.length > 0) {
+                props.page.artworkProducts = toJson(products);
+                const artworkId = products[0].artworkId;
+                if (artworkId) {
+                    const images = await serverTrpc.artworkImages.list({ artworkId });
                     const primary = images.find(img => img.isPrimary);
                     if (primary) {
                         props.page.featuredImage = {
