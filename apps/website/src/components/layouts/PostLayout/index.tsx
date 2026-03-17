@@ -5,39 +5,27 @@ import Markdown from 'markdown-to-jsx';
 import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
-import { deriveArtworkDisplayData } from '../../../utils/artwork-product';
 
 // Loaded client-side only — they use tRPC hooks and Supabase realtime
 const ProductSelector = dynamic(
     () => import('../../blocks/ProductSelector').then((m) => ({ default: m.ProductSelector })),
-    { ssr: false }
+    {
+        ssr: false,
+        loading: () => (
+            <div className="space-y-3 animate-pulse">
+                <div className="h-4 w-32 bg-gray-200 rounded" />
+                <div className="h-12 w-full bg-gray-100 rounded" />
+                <div className="h-12 w-full bg-gray-100 rounded" />
+                <div className="h-12 w-full bg-gray-100 rounded" />
+                <div className="h-10 w-full bg-gray-200 rounded" />
+            </div>
+        ),
+    }
 );
 const BidWidget = dynamic(
     () => import('../../blocks/BidWidget').then((m) => ({ default: m.BidWidget })),
     { ssr: false }
 );
-
-function ArtworkDetailsStatic({ product }: { product: any }) {
-    const { medium, dimensions, cheapestPrice, hasAvailable } = deriveArtworkDisplayData(product);
-
-    return (
-        <div className="space-y-2">
-            {medium && <p className="text-sm text-gray-500">{medium}</p>}
-            {dimensions && <p className="text-sm text-gray-500">{dimensions}</p>}
-            {cheapestPrice !== null ? (
-                <p className="text-lg font-light">€{cheapestPrice.toLocaleString()}</p>
-            ) : (
-                <p className="text-sm text-gray-400 italic">Price on request</p>
-            )}
-            <p className="text-sm flex items-center gap-1.5">
-                <span className={`inline-block w-2 h-2 rounded-full ${hasAvailable ? "bg-green-500" : "bg-gray-400"}`} />
-                <span className={hasAvailable ? "text-green-700" : "text-gray-400"}>
-                    {hasAvailable ? "Available" : "Sold"}
-                </span>
-            </p>
-        </div>
-    );
-}
 
 export default function PostLayout(props) {
     const { page, site } = props;
@@ -72,8 +60,6 @@ export default function PostLayout(props) {
                         {/* Right column — details */}
                         <div className="space-y-6">
                             <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
-
-                            {page.artworkProduct && <ArtworkDetailsStatic product={page.artworkProduct} />}
 
                             {artworkSlug && (
                                 <Link
