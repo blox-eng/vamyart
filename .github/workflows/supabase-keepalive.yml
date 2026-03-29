@@ -1,0 +1,49 @@
+name: Supabase Keepalive & Daily Digest
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # Daily at 08:00 UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query Supabase & send digest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          headers=(-H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY")
+          api="$SUPABASE_URL/rest/v1"
+
+          count() {
+            curl -sf "${headers[@]}" -H "Prefer: count=exact" -H "Range: 0-0" \
+              "$api/$1?select=id" -o /dev/null -w '%header{content-range}' \
+              | grep -oP '(?<=/)\d+' || echo "0"
+          }
+
+          artworks=$(count artworks)
+          inquiries=$(count inquiries)
+          orders=$(count orders)
+          bids=$(count bids)
+          subscribers=$(count newsletter_subscribers)
+
+          echo "Artworks: $artworks | Inquiries: $inquiries | Orders: $orders | Bids: $bids | Subscribers: $subscribers"
+
+          curl -sf -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @- <<EOF
+          {
+            "from": "Vamy <maeve@vamy.art>",
+            "to": ["maeve@vamy.art"],
+            "subject": "vamy.art daily digest",
+            "html": "<h2>vamy.art Daily Digest</h2><table><tr><td>Artworks</td><td><strong>$artworks</strong></td></tr><tr><td>Inquiries</td><td><strong>$inquiries</strong></td></tr><tr><td>Orders</td><td><strong>$orders</strong></td></tr><tr><td>Bids</td><td><strong>$bids</strong></td></tr><tr><td>Subscribers</td><td><strong>$subscribers</strong></td></tr></table><p><small>Sent to keep Supabase active &amp; give you a daily pulse.</small></p>"
+          }
+          EOF
+
+          echo "Digest sent successfully"
