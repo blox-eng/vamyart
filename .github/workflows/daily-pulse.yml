@@ -1,4 +1,4 @@
-name: Supabase Keepalive & Daily Digest
+name: Daily Pulse
 
 on:
   schedule:
