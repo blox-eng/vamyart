@@ -41,8 +41,8 @@ jobs:
             --arg bids "$bids" \
             --arg subscribers "$subscribers" \
             '{
-              from: "Vamy <maeve@vamy.art>",
-              to: ["maeve@vamy.art"],
+              from: "Vamy <onboarding@resend.dev>",
+              to: ["wiesel@vamy.art"],
               subject: "vamy.art daily pulse",
               html: "<h2>vamy.art Daily Pulse</h2><table><tr><td>Artworks</td><td><strong>\($artworks)</strong></td></tr><tr><td>Inquiries</td><td><strong>\($inquiries)</strong></td></tr><tr><td>Orders</td><td><strong>\($orders)</strong></td></tr><tr><td>Bids</td><td><strong>\($bids)</strong></td></tr><tr><td>Subscribers</td><td><strong>\($subscribers)</strong></td></tr></table>"
             }' | curl -sf -X POST https://api.resend.com/emails \
