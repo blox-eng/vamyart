@@ -34,14 +34,9 @@ jobs:
 
           echo "Artworks: $artworks | Inquiries: $inquiries | Orders: $orders | Bids: $bids | Subscribers: $subscribers"
 
-          payload=$(cat <<PAYLOAD
-{"from":"Vamy <maeve@vamy.art>","to":["maeve@vamy.art"],"subject":"vamy.art daily pulse","html":"<h2>vamy.art Daily Pulse</h2><table><tr><td>Artworks</td><td><strong>${artworks}</strong></td></tr><tr><td>Inquiries</td><td><strong>${inquiries}</strong></td></tr><tr><td>Orders</td><td><strong>${orders}</strong></td></tr><tr><td>Bids</td><td><strong>${bids}</strong></td></tr><tr><td>Subscribers</td><td><strong>${subscribers}</strong></td></tr></table>"}
-PAYLOAD
-          )
-
           curl -sf -X POST https://api.resend.com/emails \
             -H "Authorization: Bearer $RESEND_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "$payload"
+            -d "{\"from\":\"Vamy <maeve@vamy.art>\",\"to\":[\"maeve@vamy.art\"],\"subject\":\"vamy.art daily pulse\",\"html\":\"<h2>vamy.art Daily Pulse</h2><table><tr><td>Artworks</td><td><strong>${artworks}</strong></td></tr><tr><td>Inquiries</td><td><strong>${inquiries}</strong></td></tr><tr><td>Orders</td><td><strong>${orders}</strong></td></tr><tr><td>Bids</td><td><strong>${bids}</strong></td></tr><tr><td>Subscribers</td><td><strong>${subscribers}</strong></td></tr></table>\"}"
 
           echo "Digest sent successfully"
