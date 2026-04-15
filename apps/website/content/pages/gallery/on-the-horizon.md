@@ -20,6 +20,8 @@ colors: bg-light-fg-dark
 styles:
   self:
     flexDirection: row
+medium: Acrylic on canvas
+dimensions: 90 × 70 cm
 type: PostLayout
 author: content/data/person1.json
 bottomSections:
