@@ -31,7 +31,7 @@ export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, markdown_content, bottomSections = [] } = page;
+    const { title, markdown_content, bottomSections = [], medium, dimensions, price } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
@@ -60,6 +60,20 @@ export default function PostLayout(props) {
                         {/* Right column — details */}
                         <div className="space-y-6">
                             <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
+
+                            {(medium || dimensions || price) && (
+                                <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-500 mb-8">
+                                    {medium && (
+                                        <div><dt className="sr-only">Medium</dt><dd>{medium}</dd></div>
+                                    )}
+                                    {dimensions && (
+                                        <div><dt className="sr-only">Dimensions</dt><dd>{dimensions}</dd></div>
+                                    )}
+                                    {price && (
+                                        <div><dt className="sr-only">Price</dt><dd>€{Number(price).toLocaleString()}</dd></div>
+                                    )}
+                                </dl>
+                            )}
 
                             {artworkSlug && (
                                 <Link
