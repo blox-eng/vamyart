@@ -6,7 +6,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-    const { data: productList } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug });
+    const { data: productList } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
     const createSession = trpc.checkout.createSession.useMutation();
 
     if (!productList || productList.length === 0) return null;
