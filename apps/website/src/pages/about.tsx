@@ -7,7 +7,7 @@ export default function About({ site }: { site: any }) {
         <>
             <Head>
                 <title>About — Maeve Vamy</title>
-                <meta name="description" content="Bulgarian-based oil painter exploring the boundary between realism and abstraction." />
+                <meta name="description" content="Bulgarian oil painter working between realism and abstraction, painting from her studio in Stara Zagora." />
             </Head>
 
             <div className="sb-page">
@@ -22,17 +22,13 @@ export default function About({ site }: { site: any }) {
 
                                 <div className="space-y-5 text-gray-600 leading-relaxed">
                                     <p>
-                                        Maeve Vamy is a Bulgarian-based oil painter exploring the boundary between realism
-                                        and abstraction. Working in oil on canvas, she captures coastal atmospheres, light
-                                        phenomena, and the tension between stillness and motion.
+                                        Maeve Vamy is a Bulgarian oil painter. She works between realism and
+                                        abstraction, painting from direct observation in her studio in Stara
+                                        Zagora.
                                     </p>
                                     <p>
-                                        Her practice is rooted in direct observation — watching light move across water,
-                                        weather reshape horizons, colour shift between dawn and dusk.
-                                    </p>
-                                    <p>
-                                        She works from her studio in Stara Zagora, Bulgaria. Her paintings are held in
-                                        private collections across Europe.
+                                        Each piece is finished slowly — built up in layers of oil on linen,
+                                        then varnished and signed only when it's truly done.
                                     </p>
                                 </div>
                             </section>
@@ -42,10 +38,9 @@ export default function About({ site }: { site: any }) {
                                 <h2 className="text-xs uppercase tracking-widest text-gray-400 mb-6">Artist statement</h2>
                                 <blockquote className="border-l-2 border-gray-300 pl-6">
                                     <p className="italic text-gray-600 leading-relaxed">
-                                        "I paint because looking isn't enough. A photograph captures a moment — a painting
-                                        captures what that moment felt like. The mess, the slowness, the refusal to be
-                                        rushed — that's the point. Every brushstroke is a decision to stay with something
-                                        longer than the world usually allows."
+                                        "I paint because looking isn't enough. A painting captures what a
+                                        moment felt like — the mess, the slowness, the refusal to be rushed.
+                                        That's the point."
                                     </p>
                                     <footer className="mt-4 text-sm text-gray-400">— Maeve Vamy</footer>
                                 </blockquote>
