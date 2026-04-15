@@ -1,12 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { trpc } from '../../../lib/trpc';
-
-const ARTWORKS = [
-    { value: 'whispers', label: 'Whispers' },
-    { value: 'first-contact', label: 'First Contact' },
-    { value: 'on-the-horizon', label: 'On the Horizon' },
-];
+import { ARTWORKS, COMMISSION_OPTION, OTHER_OPTION } from '../../../lib/artworks';
 
 export default function ReachOutBlock() {
     const [name, setName] = React.useState('');
@@ -85,10 +80,10 @@ export default function ReachOutBlock() {
                 >
                     <option value="">— pick a piece or just say hello</option>
                     {ARTWORKS.map((a) => (
-                        <option key={a.value} value={a.label}>{a.label}</option>
+                        <option key={a.slug} value={a.title}>{a.title}</option>
                     ))}
-                    <option value="commission">A commission</option>
-                    <option value="general">Something else</option>
+                    <option value={COMMISSION_OPTION.title}>{COMMISSION_OPTION.title}</option>
+                    <option value={OTHER_OPTION.title}>{OTHER_OPTION.title}</option>
                 </select>
             </div>
 
