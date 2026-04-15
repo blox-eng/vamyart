@@ -13,7 +13,43 @@ seo:
   socialImage: /images/img-placeholder.svg
   type: Seo
 type: PostFeedLayout
-bottomSections: []
+bottomSections:
+  - type: GenericSection
+    title:
+      type: TitleBlock
+      text: Commission something for your space.
+      color: text-dark
+    subtitle: ''
+    text: ''
+    badge:
+      type: Badge
+      label: Don't see the right piece?
+      color: text-primary
+    actions:
+      - type: Button
+        label: Start a conversation
+        altText: ''
+        url: /get-a-piece/
+        showIcon: false
+        icon: arrowRight
+        iconPosition: right
+        style: secondary
+        elementId: ''
+    colors: bg-light-fg-dark
+    styles:
+      self:
+        flexDirection: col
+        justifyContent: center
+        textAlign: center
+        padding:
+          - pt-16
+          - pl-4
+          - pb-16
+          - pr-4
+        borderColor: border-dark
+        borderStyle: solid
+        borderWidth: 1
+        borderRadius: none
 postFeed:
   type: PagedPostsSection
   title: null
