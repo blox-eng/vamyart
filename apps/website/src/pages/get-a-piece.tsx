@@ -21,7 +21,7 @@ export default function GetAPiece({ site }: { site: any }) {
 
     const { data: product } = trpc.products.getByArtworkSlug.useQuery(
         { slug: pieceSlug },
-        { enabled: !!pieceSlug, staleTime: Infinity }
+        { enabled: !!pieceSlug, staleTime: Infinity, retry: false }
     );
 
     const artwork = product?.artwork ?? null;

@@ -15,7 +15,7 @@ export function BidWidget({ artworkSlug }: { artworkSlug: string }) {
 
     const { data: auction, refetch } = trpc.auctions.getByArtworkSlug.useQuery(
         { slug: artworkSlug },
-        { refetchInterval: 30_000 } // 30s polling fallback
+        { refetchInterval: 30_000, retry: false } // 30s polling fallback
     );
 
     // Supabase Realtime — live bid updates
