@@ -14,6 +14,12 @@
     "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.28.1",
+  "pnpm": {
+    "overrides": {
+      "picomatch": "^4.0.4",
+      "brace-expansion": "^2.0.2"
+    }
+  },
   "engines": {
     "node": ">=20"
   }
