@@ -49,6 +49,11 @@ export default function Footer(props) {
                     {/* Right: Newsletter + social */}
                     <div className="flex-1 max-w-md">
                         <NewsletterSignup />
+                        <div className="mt-6 text-sm">
+                            <Link href="/get-a-piece/" className="underline underline-offset-4 hover:no-underline">
+                                Inquire about a piece
+                            </Link>
+                        </div>
                         {socialLinks.length > 0 && (
                             <ul
                                 className="flex items-center gap-6 mt-4"
@@ -119,19 +124,19 @@ function NewsletterSignup() {
             {status === 'success' ? (
                 <p className="text-sm text-green-600">You&apos;re on the list.</p>
             ) : (
-                <form onSubmit={handleSubmit} className="flex gap-2">
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-2 max-w-sm">
                     <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="your@email.com"
                         required
-                        className="flex-1 px-0 py-2 text-sm border-b border-current bg-transparent outline-none"
+                        className="flex-1 min-w-0 px-0 py-2 text-sm border-b border-current bg-transparent outline-none"
                     />
                     <button
                         type="submit"
                         disabled={subscribe.isPending}
-                        className="px-4 py-2 text-sm border border-current transition-opacity hover:opacity-60"
+                        className="shrink-0 px-4 py-2 text-sm border border-current transition-opacity hover:opacity-60"
                     >
                         {subscribe.isPending ? '...' : 'Subscribe'}
                     </button>

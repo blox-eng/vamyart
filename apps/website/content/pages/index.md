@@ -34,7 +34,7 @@ sections:
       elementId: ''
       type: ImageBlock
     badge:
-      label: MAEVE VAMY
+      label: Original oil paintings
       color: text-primary
       type: Badge
     elementId: ''
@@ -135,6 +135,29 @@ sections:
               - pr-8
             borderRadius: none
             flexDirection: row
+        type: FeaturedItem
+      - title: Craft
+        subtitle: On Quality
+        text: |
+          Museum-grade linen, archival oils, hand-stretched bars. Every piece is built to outlive the wall it hangs on — finished, varnished, and signed only when it's truly done.
+        image:
+          url: /images/icon4.svg
+          altText: Concentric circles representing craft and precision
+          elementId: ''
+          type: ImageBlock
+        actions: []
+        colors: bg-neutralAlt-fg-dark
+        styles:
+          self:
+            padding:
+              - pt-8
+              - pl-8
+              - pb-8
+              - pr-8
+            borderRadius: none
+            flexDirection: row
+            textAlign: left
+            justifyContent: center
         type: FeaturedItem
     actions:
       - label: CHECK OUT MY WORK

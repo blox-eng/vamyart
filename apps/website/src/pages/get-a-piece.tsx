@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import Header from '../components/sections/Header';
 import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
+import { ARTWORKS, COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
@@ -20,7 +21,7 @@ export default function GetAPiece({ site }: { site: any }) {
 
     const { data: product } = trpc.products.getByArtworkSlug.useQuery(
         { slug: pieceSlug },
-        { enabled: !!pieceSlug, staleTime: Infinity }
+        { enabled: !!pieceSlug, staleTime: Infinity, retry: false }
     );
 
     const artwork = product?.artwork ?? null;
@@ -171,16 +172,21 @@ export default function GetAPiece({ site }: { site: any }) {
                                                 <label className="block text-sm font-medium mb-1.5" htmlFor="inq-piece">
                                                     Which piece?
                                                 </label>
-                                                <input
+                                                <select
                                                     id="inq-piece"
-                                                    type="text"
                                                     value={piece}
                                                     onChange={e => setPiece(e.target.value)}
                                                     required
-                                                    placeholder="Title of the artwork — e.g. Whispers"
-                                                    readOnly={!!artwork}
-                                                    className={`w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600' : ''}`}
-                                                />
+                                                    disabled={!!artwork}
+                                                    className={`w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600 cursor-not-allowed' : ''}`}
+                                                >
+                                                    <option value="">— select a piece</option>
+                                                    {ARTWORKS.map(a => (
+                                                        <option key={a.slug} value={a.title}>{a.title}</option>
+                                                    ))}
+                                                    <option value={COMMISSION_OPTION.title}>{COMMISSION_OPTION.title}</option>
+                                                    <option value={OTHER_OPTION.title}>{OTHER_OPTION.title}</option>
+                                                </select>
                                                 {artwork && (
                                                     <p className="text-xs text-gray-400 mt-1.5">
                                                         Pre-filled from the artwork page.{' '}

@@ -9,7 +9,7 @@ excerpt: >-
   stay on aim, don't give up.
 featuredImage:
   url: /images/first Contact_5807.jpg
-  altText: Thumbnail
+  altText: First Contact - Portrait of an astronaut in a helmet, oil on canvas
   type: ImageBlock
 isFeatured: false
 seo:
