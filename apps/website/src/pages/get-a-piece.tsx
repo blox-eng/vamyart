@@ -5,6 +5,7 @@ import Header from '../components/sections/Header';
 import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
 import { ARTWORKS, COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
+import { formatPrice } from '../lib/formatPrice';
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
@@ -29,7 +30,7 @@ export default function GetAPiece({ site }: { site: any }) {
     const attrs = (variant?.attributes ?? {}) as Record<string, string>;
     const medium = artwork?.medium || attrs.medium || '';
     const dimensions = artwork?.dimensions || attrs.dimensions || '';
-    const price = variant?.price ? `€${Number(variant.price).toLocaleString()}` : null;
+    const price = formatPrice(variant?.price);
 
     const [name, setName] = React.useState('');
     const [email, setEmail] = React.useState('');
