@@ -5,6 +5,7 @@ import Markdown from 'markdown-to-jsx';
 import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
+import { formatPrice } from '../../../lib/formatPrice';
 
 // Loaded client-side only — they use tRPC hooks and Supabase realtime
 const ProductSelector = dynamic(
@@ -69,8 +70,8 @@ export default function PostLayout(props) {
                                     {dimensions && (
                                         <div><dt className="sr-only">Dimensions</dt><dd>{dimensions}</dd></div>
                                     )}
-                                    {price && (
-                                        <div><dt className="sr-only">Price</dt><dd>€{Number(price).toLocaleString()}</dd></div>
+                                    {price && formatPrice(price) && (
+                                        <div><dt className="sr-only">Price</dt><dd>{formatPrice(price)}</dd></div>
                                     )}
                                 </dl>
                             )}
