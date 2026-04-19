@@ -53,7 +53,7 @@ export default function ReachOutBlock() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Jane Smith"
-                        className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-600"
+                        className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-gray-600"
                     />
                 </div>
                 <div>
@@ -64,7 +64,7 @@ export default function ReachOutBlock() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="jane@example.com"
-                        className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-gray-600"
+                        className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-gray-600"
                     />
                 </div>
             </div>
@@ -76,7 +76,7 @@ export default function ReachOutBlock() {
                 <select
                     value={interest}
                     onChange={(e) => setInterest(e.target.value)}
-                    className="w-full border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:border-gray-600"
+                    className="w-full border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-gray-600"
                 >
                     <option value="">— pick a piece or just say hello</option>
                     {ARTWORKS.map((a) => (
@@ -96,7 +96,7 @@ export default function ReachOutBlock() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Tell Maeve what caught your eye, or ask anything you'd like to know."
-                    className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:border-gray-600"
+                    className="w-full border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-gray-600"
                 />
             </div>
 

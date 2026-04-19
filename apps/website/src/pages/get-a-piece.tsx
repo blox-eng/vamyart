@@ -148,7 +148,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     required
                                                     autoComplete="name"
                                                     placeholder="First and last name"
-                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors"
+                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors"
                                                 />
                                             </div>
                                             <div>
@@ -161,7 +161,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     required
                                                     autoComplete="email"
                                                     placeholder="you@example.com"
-                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors"
+                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors"
                                                 />
                                             </div>
                                         </fieldset>
@@ -179,7 +179,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     onChange={e => setPiece(e.target.value)}
                                                     required
                                                     disabled={!!artwork}
-                                                    className={`w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600 cursor-not-allowed' : ''}`}
+                                                    className={`w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600 cursor-not-allowed' : ''}`}
                                                 >
                                                     <option value="">— select a piece</option>
                                                     {ARTWORKS.map(a => (
@@ -208,7 +208,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     onChange={e => setMessage(e.target.value)}
                                                     rows={4}
                                                     placeholder="e.g. where you plan to hang it, questions about shipping, whether you'd like to visit the studio…"
-                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors resize-none"
+                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors resize-none"
                                                 />
                                             </div>
                                         </fieldset>
@@ -220,7 +220,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                 checked={terms}
                                                 onChange={e => setTerms(e.target.checked)}
                                                 required
-                                                className="mt-0.5 shrink-0"
+                                                className="mt-0.5 shrink-0 focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2"
                                             />
                                             <span className="text-sm text-gray-500">
                                                 I have read and accept the{' '}
