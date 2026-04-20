@@ -6,19 +6,22 @@ import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
 import { ARTWORKS, COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
 import { formatPrice } from '../lib/formatPrice';
+import LazyImage from '../components/atoms/LazyImage';
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
     { n: '02', label: 'Maeve gets back to you', text: 'Personally, within 2 working days.' },
     { n: '03', label: 'Discuss the details', text: 'Shipping, insurance, payment — all sorted together.' },
     { n: '04', label: 'Secure payment', text: 'Via Stripe link — card, Apple Pay, Google Pay.' },
+    { n: '05', label: 'Packed with care', text: 'Museum-grade packaging, fully insured, dispatched within 30 days.' },
+    { n: '06', label: 'Tracked shipping', text: 'Maeve will email tracking details once your piece is on its way.' },
+    { n: '07', label: 'Certificate included', text: 'Signed certificate of authenticity and provenance documentation.' },
+    { n: '08', label: 'Aftercare', text: 'Care instructions included, and Maeve is reachable long after.' },
 ];
 
 export default function GetAPiece({ site }: { site: any }) {
     const router = useRouter();
-    const pieceSlug = typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('piece') ?? ''
-        : (router.query.piece as string) ?? '';
+    const pieceSlug = typeof router.query.piece === 'string' ? router.query.piece : '';
 
     const { data: product, isLoading: isProductLoading } = trpc.products.getByArtworkSlug.useQuery(
         { slug: pieceSlug },
@@ -94,15 +97,12 @@ export default function GetAPiece({ site }: { site: any }) {
                                     </div>
                                 ) : artwork ? (
                                     <div className="mb-10">
-                                        <img
+                                        <LazyImage
                                             src={`/images/${artwork.slug}.jpg`}
                                             alt={artwork.title}
-                                            className="w-full aspect-[3/4] object-cover rounded-sm mb-6 shadow-sm bg-gray-50"
-                                            onError={(e) => {
-                                                const t = e.currentTarget;
-                                                if (t.src.endsWith('/images/img-placeholder.svg')) return;
-                                                t.src = '/images/img-placeholder.svg';
-                                            }}
+                                            className="w-full shadow-sm mb-6"
+                                            imgClassName="h-auto"
+                                            loading="eager"
                                         />
                                         <h2 className="text-xl font-light mb-1">{artwork.title}</h2>
                                         {medium && <p className="text-sm text-gray-500">{medium}</p>}
@@ -274,7 +274,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                 {createInquiry.isPending ? 'Sending…' : 'Send inquiry'}
                                             </button>
                                             <p className="text-xs text-gray-400 mt-3">
-                                                Maeve will reply personally — no bots, no templates.
+                                                I'll reply personally — usually within 2 working days. — Maeve
                                             </p>
                                         </div>
                                     </form>
