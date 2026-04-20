@@ -29,6 +29,13 @@
       "when": 1773416395654,
       "tag": "0003_artwork_images",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776702354398,
+      "tag": "0004_ordinary_wallop",
+      "breakpoints": true
     }
   ]
 }
