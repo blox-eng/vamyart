@@ -5,6 +5,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
+    const [termsAccepted, setTermsAccepted] = useState(false);
 
     const { data: productList, isLoading: productsLoading } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
     const createSession = trpc.checkout.createSession.useMutation();
@@ -86,17 +87,36 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             {checkoutError && (
                 <p className="text-sm text-red-600 mb-3">{checkoutError}</p>
             )}
+            <label className="flex items-start gap-3 cursor-pointer mt-4 mb-3">
+                <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-0.5 shrink-0 focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2"
+                />
+                <span className="text-xs text-gray-600">
+                    I have read and accept the{' '}
+                    <a href="/terms" target="_blank" rel="noreferrer" className="underline hover:no-underline">Terms</a>
+                    {' '}and{' '}
+                    <a href="/privacy" target="_blank" rel="noreferrer" className="underline hover:no-underline">Privacy Policy</a>.
+                </span>
+            </label>
             <button
                 onClick={handleBuy}
-                disabled={!selectedVariantId || isRedirecting}
+                disabled={!selectedVariantId || !termsAccepted || isRedirecting}
                 className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-60"
             >
                 {isRedirecting
                     ? 'Redirecting to payment…'
                     : !selectedVariantId
                         ? 'Select a piece to buy'
-                        : 'Buy'}
+                        : !termsAccepted
+                            ? 'Accept terms to continue'
+                            : 'Buy'}
             </button>
+            <p className="text-xs text-gray-500 mt-3 text-center">
+                Secure checkout via Stripe. Card, Apple Pay, Google Pay.
+            </p>
         </div>
     );
 }
