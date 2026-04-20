@@ -241,6 +241,12 @@ sections:
       self:
         alignItems: center
         flexDirection: row-reverse
+        justifyContent: center
+        padding:
+          - pt-16
+          - pl-4
+          - pb-16
+          - pr-4
 slug: terms
 isDraft: false
 seo:
