@@ -241,14 +241,23 @@ export default function GetAPiece({ site }: { site: any }) {
                                         </label>
 
                                         {status === 'error' && (
-                                            <p className="text-sm text-red-600">Something went wrong — please try again.</p>
+                                            <div className="text-sm text-red-600 bg-red-50 px-4 py-3 flex items-center justify-between gap-4">
+                                                <span>Something went wrong — please try again.</span>
+                                                <button
+                                                    type="submit"
+                                                    disabled={createInquiry.isPending}
+                                                    className="text-red-700 underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                                                >
+                                                    Try again
+                                                </button>
+                                            </div>
                                         )}
 
                                         <div>
                                             <button
                                                 type="submit"
                                                 disabled={createInquiry.isPending || !terms}
-                                                className="bg-black text-white px-8 py-3 rounded text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-40"
+                                                className="bg-black text-white px-8 py-3 rounded text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-50"
                                             >
                                                 {createInquiry.isPending ? 'Sending…' : 'Send inquiry'}
                                             </button>
