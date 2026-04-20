@@ -114,6 +114,14 @@ export default function PostLayout(props) {
                                 <div className="space-y-4">
                                     <BidWidget artworkSlug={artworkSlug} />
                                     <ProductSelector artworkSlug={artworkSlug} />
+                                    <div className="pt-2 text-center">
+                                        <Link
+                                            href={`/get-a-piece?piece=${artworkSlug}`}
+                                            className="inline-block text-sm font-medium underline underline-offset-4 hover:text-gray-600"
+                                        >
+                                            Or inquire about this piece
+                                        </Link>
+                                    </div>
                                 </div>
                             )}
 

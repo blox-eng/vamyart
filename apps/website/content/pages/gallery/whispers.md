@@ -22,26 +22,6 @@ styles:
     flexDirection: row
 type: PostLayout
 author: content/data/person1.json
-bottomSections:
-  - type: GenericSection
-    subtitle: ''
-    text: ''
-    actions:
-      - type: Button
-        label: Inquire about this piece
-        altText: ''
-        url: '/get-a-piece?piece=whispers'
-        showIcon: false
-        icon: arrowRight
-        iconPosition: right
-        style: primary
-        elementId: ''
-    colors: bg-light-fg-dark
-    styles:
-      self:
-        flexDirection: row
-        justifyContent: center
-      subtitle:
-        textAlign: left
+bottomSections: []
 ---
 Muted abstract seascape with warm, earthy tones and stormy sea textures. This piece captures the quiet intensity of coastal weather through subtle color gradations and textured brushwork. The warm palette suggests late afternoon light filtering through clouds, while the turbulent lower section conveys the restless energy of the sea. Painted with oil on canvas to achieve depth and richness in the muted color range.
