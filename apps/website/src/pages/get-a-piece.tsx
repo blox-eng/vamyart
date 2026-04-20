@@ -60,8 +60,20 @@ export default function GetAPiece({ site }: { site: any }) {
     return (
         <>
             <Head>
-                <title>Inquire about a piece — vamy</title>
+                <title>Inquire about a piece — Maeve Vamy</title>
                 <meta name="description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
+                <meta property="og:title" content="Inquire about a piece — Maeve Vamy" />
+                <meta property="og:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
+                <meta property="og:image" content="/images/whispers.jpg" />
+                <meta property="og:image:alt" content="Whispers — oil painting by Maeve Vamy" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="Maeve Vamy" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Inquire about a piece — Maeve Vamy" />
+                <meta name="twitter:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
+                <meta name="twitter:image" content="/images/whispers.jpg" />
             </Head>
 
             <div className="sb-page">
