@@ -10,6 +10,7 @@ styles:
 seo:
   metaTitle: Gallery - Maeve Vamy
   metaDescription: 'Original fine art by Maeve Vamy — muted seascapes, abstract figurations, and surreal studies in warm, earthy tones.'
+  addTitleSuffix: false
   type: Seo
 type: PostFeedLayout
 bottomSections:
