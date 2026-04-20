@@ -9,7 +9,7 @@ styles:
     textAlign: center
 seo:
   metaTitle: Gallery - Maeve Vamy
-  metaDescription: 'Discover '
+  metaDescription: 'Original oil paintings by Maeve Vamy — muted seascapes, abstract figurations, and surreal studies in warm, earthy tones.'
   socialImage: /images/img-placeholder.svg
   type: Seo
 type: PostFeedLayout
