@@ -5,21 +5,25 @@ import Header from '../components/sections/Header';
 import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
 import { ARTWORKS, COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
+import { formatPrice } from '../lib/formatPrice';
+import LazyImage from '../components/atoms/LazyImage';
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
     { n: '02', label: 'Maeve gets back to you', text: 'Personally, within 2 working days.' },
     { n: '03', label: 'Discuss the details', text: 'Shipping, insurance, payment — all sorted together.' },
     { n: '04', label: 'Secure payment', text: 'Via Stripe link — card, Apple Pay, Google Pay.' },
+    { n: '05', label: 'Packed with care', text: 'Museum-grade packaging, fully insured, dispatched within 30 days.' },
+    { n: '06', label: 'Tracked shipping', text: 'Maeve will email tracking details once your piece is on its way.' },
+    { n: '07', label: 'Certificate included', text: 'Signed certificate of authenticity and provenance documentation.' },
+    { n: '08', label: 'Aftercare', text: 'Care instructions included, and Maeve is reachable long after.' },
 ];
 
 export default function GetAPiece({ site }: { site: any }) {
     const router = useRouter();
-    const pieceSlug = typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('piece') ?? ''
-        : (router.query.piece as string) ?? '';
+    const pieceSlug = typeof router.query.piece === 'string' ? router.query.piece : '';
 
-    const { data: product } = trpc.products.getByArtworkSlug.useQuery(
+    const { data: product, isLoading: isProductLoading } = trpc.products.getByArtworkSlug.useQuery(
         { slug: pieceSlug },
         { enabled: !!pieceSlug, staleTime: Infinity, retry: false }
     );
@@ -29,7 +33,7 @@ export default function GetAPiece({ site }: { site: any }) {
     const attrs = (variant?.attributes ?? {}) as Record<string, string>;
     const medium = artwork?.medium || attrs.medium || '';
     const dimensions = artwork?.dimensions || attrs.dimensions || '';
-    const price = variant?.price ? `€${Number(variant.price).toLocaleString()}` : null;
+    const price = formatPrice(variant?.price);
 
     const [name, setName] = React.useState('');
     const [email, setEmail] = React.useState('');
@@ -45,8 +49,13 @@ export default function GetAPiece({ site }: { site: any }) {
 
     const createInquiry = trpc.inquiries.create.useMutation();
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
         setStatus('idle');
         try {
             await createInquiry.mutateAsync({ name, email, pieceInterest: piece, message: message || undefined });
@@ -59,8 +68,20 @@ export default function GetAPiece({ site }: { site: any }) {
     return (
         <>
             <Head>
-                <title>Inquire about a piece — vamy</title>
+                <title>Inquire about a piece — Maeve Vamy</title>
                 <meta name="description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
+                <meta property="og:title" content="Inquire about a piece — Maeve Vamy" />
+                <meta property="og:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
+                <meta property="og:image" content="/images/whispers.jpg" />
+                <meta property="og:image:alt" content="Whispers — oil painting by Maeve Vamy" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="Maeve Vamy" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Inquire about a piece — Maeve Vamy" />
+                <meta name="twitter:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
+                <meta name="twitter:image" content="/images/whispers.jpg" />
             </Head>
 
             <div className="sb-page">
@@ -72,12 +93,21 @@ export default function GetAPiece({ site }: { site: any }) {
 
                             {/* ── Left panel: context ───────────────────────── */}
                             <aside className="lg:col-span-2 mb-12 lg:mb-0">
-                                {artwork ? (
+                                {pieceSlug && isProductLoading ? (
+                                    <div className="mb-10 animate-pulse" aria-busy="true" aria-label="Loading artwork details">
+                                        <div className="w-full aspect-[3/4] bg-gray-100 rounded-sm mb-6" />
+                                        <div className="h-5 w-2/3 bg-gray-100 rounded mb-2" />
+                                        <div className="h-3 w-1/3 bg-gray-100 rounded mb-1" />
+                                        <div className="h-3 w-1/4 bg-gray-100 rounded mb-4" />
+                                    </div>
+                                ) : artwork ? (
                                     <div className="mb-10">
-                                        <img
+                                        <LazyImage
                                             src={`/images/${artwork.slug}.jpg`}
                                             alt={artwork.title}
-                                            className="w-full aspect-[3/4] object-cover rounded-sm mb-6 shadow-sm"
+                                            className="w-full shadow-sm mb-6"
+                                            imgClassName="h-auto"
+                                            loading="eager"
                                         />
                                         <h2 className="text-xl font-light mb-1">{artwork.title}</h2>
                                         {medium && <p className="text-sm text-gray-500">{medium}</p>}
@@ -147,7 +177,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     required
                                                     autoComplete="name"
                                                     placeholder="First and last name"
-                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors"
+                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors"
                                                 />
                                             </div>
                                             <div>
@@ -160,7 +190,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     required
                                                     autoComplete="email"
                                                     placeholder="you@example.com"
-                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors"
+                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors"
                                                 />
                                             </div>
                                         </fieldset>
@@ -178,7 +208,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     onChange={e => setPiece(e.target.value)}
                                                     required
                                                     disabled={!!artwork}
-                                                    className={`w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600 cursor-not-allowed' : ''}`}
+                                                    className={`w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600 cursor-not-allowed' : ''}`}
                                                 >
                                                     <option value="">— select a piece</option>
                                                     {ARTWORKS.map(a => (
@@ -207,7 +237,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     onChange={e => setMessage(e.target.value)}
                                                     rows={4}
                                                     placeholder="e.g. where you plan to hang it, questions about shipping, whether you'd like to visit the studio…"
-                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black transition-colors resize-none"
+                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors resize-none"
                                                 />
                                             </div>
                                         </fieldset>
@@ -219,28 +249,39 @@ export default function GetAPiece({ site }: { site: any }) {
                                                 checked={terms}
                                                 onChange={e => setTerms(e.target.checked)}
                                                 required
-                                                className="mt-0.5 shrink-0"
+                                                className="mt-0.5 shrink-0 focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2"
                                             />
                                             <span className="text-sm text-gray-500">
                                                 I have read and accept the{' '}
-                                                <a href="/terms" className="underline hover:no-underline" target="_blank">legal terms</a>
+                                                <a href="/terms" className="underline hover:no-underline" target="_blank" rel="noreferrer">Terms</a>
+                                                {' '}and{' '}
+                                                <a href="/privacy" className="underline hover:no-underline" target="_blank" rel="noreferrer">Privacy Policy</a>.
                                             </span>
                                         </label>
 
                                         {status === 'error' && (
-                                            <p className="text-sm text-red-600">Something went wrong — please try again.</p>
+                                            <div className="text-sm text-red-600 bg-red-50 px-4 py-3 flex items-center justify-between gap-4">
+                                                <span>Something went wrong — please try again.</span>
+                                                <button
+                                                    type="submit"
+                                                    disabled={createInquiry.isPending || !terms}
+                                                    className="text-red-700 underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                                                >
+                                                    Try again
+                                                </button>
+                                            </div>
                                         )}
 
                                         <div>
                                             <button
                                                 type="submit"
                                                 disabled={createInquiry.isPending || !terms}
-                                                className="bg-black text-white px-8 py-3 rounded text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-40"
+                                                className="bg-black text-white px-8 py-3 rounded text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-50"
                                             >
                                                 {createInquiry.isPending ? 'Sending…' : 'Send inquiry'}
                                             </button>
                                             <p className="text-xs text-gray-400 mt-3">
-                                                Maeve will reply personally — no bots, no templates.
+                                                I'll reply personally — usually within 2 working days. — Maeve
                                             </p>
                                         </div>
                                     </form>

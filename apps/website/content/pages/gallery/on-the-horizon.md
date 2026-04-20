@@ -24,26 +24,6 @@ medium: Acrylic on canvas
 dimensions: 90 × 70 cm
 type: PostLayout
 author: content/data/person1.json
-bottomSections:
-  - type: GenericSection
-    subtitle: ''
-    text: ''
-    actions:
-      - type: Button
-        label: INQUIRE ABOUT THE ORIGINAL
-        altText: ''
-        url: '/get-a-piece?piece=on-the-horizon'
-        showIcon: false
-        icon: arrowRight
-        iconPosition: right
-        style: primary
-        elementId: ''
-    colors: bg-light-fg-dark
-    styles:
-      self:
-        flexDirection: row
-        justifyContent: center
-      subtitle:
-        textAlign: left
+bottomSections: []
 ---
 Abstract seascape exploring the boundary between sea and sky. The piece captures the luminous quality of coastal light with textured brushwork in the upper portion suggesting atmospheric depth, while the lower section features dark, moody tones punctuated by white wave foam. Painted with acrylic on canvas to achieve both the bold contrast and delicate light effects characteristic of seascapes.

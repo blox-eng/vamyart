@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants, escapeHtml } from "@vamy/db";
+import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml } from "@vamy/db";
 import { eq, sql } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -53,24 +53,57 @@ export async function POST(req: NextRequest) {
 
     if (!inserted) return new Response(null, { status: 200 });
 
-    await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL!,
-      to: customer?.email ?? "",
-      subject: "Order confirmed",
-      html: `<p>Thank you for your order! We'll ship it soon.</p>`,
-    });
+    try {
+      const variant = await db.query.productVariants.findFirst({
+        where: eq(productVariants.id, variantId),
+        with: { product: { with: { artwork: true } } },
+      });
+
+      const attrs = (variant?.attributes as Record<string, string> | null) ?? {};
+      const receiptHtml = renderOrderReceiptHtml({
+        orderNumber: inserted.id,
+        buyerName: customer?.name ?? "",
+        pieceName: variant?.product?.artwork?.title ?? variant?.product?.name ?? "Your piece",
+        variantName: variant?.name ?? "",
+        medium: attrs.medium ?? null,
+        totalPaidEur: (session.amount_total ?? 0) / 100,
+        shippingAddress: {
+          line1: address?.line1 ?? null,
+          line2: address?.line2 ?? null,
+          city: address?.city ?? null,
+          postalCode: address?.postal_code ?? null,
+          country: address?.country ?? null,
+        },
+        termsUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://vamy.art"}/terms`,
+        privacyUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://vamy.art"}/privacy`,
+      });
+
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL!,
+        to: customer?.email ?? "",
+        replyTo: "maeve@vamy.art",
+        subject: `Your piece is on the way — order #${inserted.id.slice(0, 8)}`,
+        html: receiptHtml,
+      });
+    } catch (err) {
+      console.error("[stripe-webhook] receipt email failed", { orderId: inserted.id, err });
+    }
 
     const formattedAddress = [address?.line1, address?.line2, address?.city, address?.state, address?.postal_code, address?.country]
       .filter(Boolean)
       .map(escapeHtml)
       .join(', ');
 
-    await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL!,
-      to: process.env.RESEND_ARTIST_EMAIL!,
-      subject: "New order received",
-      html: `<p>New order from ${escapeHtml(customer?.name ?? "")} (${escapeHtml(customer?.email ?? "")}). Ship to: ${formattedAddress}.</p>`,
-    });
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL!,
+        to: process.env.RESEND_ARTIST_EMAIL!,
+        subject: "New order received",
+        html: `<p>New order from ${escapeHtml(customer?.name ?? "")} (${escapeHtml(customer?.email ?? "")}). Ship to: ${formattedAddress}.</p>`,
+      });
+    } catch (err) {
+      console.error("[stripe-webhook] artist notification email failed", { orderId: inserted.id, err });
+    }
   }
 
   return new Response(null, { status: 200 });

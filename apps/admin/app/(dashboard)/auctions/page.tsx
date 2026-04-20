@@ -8,8 +8,8 @@ import { SkeletonTable } from "@/components/ui/skeleton";
 
 export default function AuctionsPage() {
   const { data: auctionList, refetch, isLoading: auctionsLoading } = trpc.auctions.list.useQuery();
-  const { data: artworkList } = trpc.artworks.list.useQuery();
-  const { data: productList } = trpc.products.listAll.useQuery();
+  const { data: artworkList, isLoading: artworkListLoading } = trpc.artworks.list.useQuery();
+  const { data: productList, isLoading: productListLoading } = trpc.products.listAll.useQuery();
 
   const toast = useToast();
 
@@ -105,6 +105,7 @@ export default function AuctionsPage() {
               required
             >
               <option value="" disabled>Select an artwork…</option>
+              {artworkListLoading && <option disabled>Loading artworks…</option>}
               {availableArtworks.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.title}
@@ -127,6 +128,7 @@ export default function AuctionsPage() {
                 onChange={(e) => setForm({ ...form, productVariantId: e.target.value })}
               >
                 <option value="">— unspecified</option>
+                {productListLoading && <option disabled>Loading products…</option>}
                 {productsByArtwork[form.artworkId].map((p: any) =>
                   p.variants.map((v: any) => (
                     <option key={v.id} value={v.id}>

@@ -7,7 +7,19 @@ export default function About({ site }: { site: any }) {
         <>
             <Head>
                 <title>About — Maeve Vamy</title>
-                <meta name="description" content="Bulgarian oil painter working between realism and abstraction, painting from her studio in Stara Zagora." />
+                <meta name="description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />
+                <meta property="og:title" content="About — Maeve Vamy" />
+                <meta property="og:description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />
+                <meta property="og:image" content="/images/on-the-horizon.jpg" />
+                <meta property="og:image:alt" content="On the Horizon — oil painting by Maeve Vamy" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:type" content="profile" />
+                <meta property="og:site_name" content="Maeve Vamy" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="About — Maeve Vamy" />
+                <meta name="twitter:description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />
+                <meta name="twitter:image" content="/images/on-the-horizon.jpg" />
             </Head>
 
             <div className="sb-page">
@@ -22,7 +34,7 @@ export default function About({ site }: { site: any }) {
 
                                 <div className="space-y-5 text-gray-600 leading-relaxed">
                                     <p>
-                                        Maeve Vamy is a Bulgarian oil painter. She works between realism and
+                                        Maeve Vamy is a Bulgarian fine artist. She works between realism and
                                         abstraction, painting from direct observation in her studio in Stara
                                         Zagora.
                                     </p>

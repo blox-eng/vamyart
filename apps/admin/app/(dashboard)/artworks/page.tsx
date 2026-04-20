@@ -28,7 +28,7 @@ export default function ArtworksPage() {
   const toast = useToast();
 
   const { data: productList, refetch, isLoading: productsLoading } = trpc.products.listAll.useQuery();
-  const { data: shippingMethodsList } = trpc.shippingMethods.list.useQuery();
+  const { data: shippingMethodsList, isLoading: shippingMethodsLoading } = trpc.shippingMethods.list.useQuery();
   const setFeatured = trpc.products.setFeatured.useMutation({
     onSuccess: async () => {
       await revalidatePaths(["/"]);
@@ -337,7 +337,14 @@ export default function ArtworksPage() {
               </label>
 
               {/* Image grid */}
-              {(imagesList.data?.length ?? 0) > 0 && (
+              {imagesList.isLoading && (
+                <div className="grid grid-cols-4 gap-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="aspect-square bg-gray-100 animate-pulse rounded" />
+                  ))}
+                </div>
+              )}
+              {!imagesList.isLoading && (imagesList.data?.length ?? 0) > 0 && (
                 <div className="grid grid-cols-4 gap-3">
                   {imagesList.data?.map((img) => (
                     <div key={img.id} className="relative group rounded overflow-hidden bg-gray-100">
@@ -482,6 +489,7 @@ export default function ArtworksPage() {
                           }}
                         >
                           <option value="">— use default —</option>
+                          {shippingMethodsLoading && <option disabled>Loading shipping methods…</option>}
                           {(shippingMethodsList ?? []).map((sm) => (
                             <option key={sm.id} value={sm.id}>{sm.name} ({sm.type})</option>
                           ))}
