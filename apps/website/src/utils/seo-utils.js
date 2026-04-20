@@ -102,7 +102,11 @@ export function seoGenerateOgImage(page, site) {
         ogImage = page.seo.socialImage;
     }
 
-    // Resolve to absolute URL when Netlify provides the domain
+    // Resolve to absolute URL when Netlify provides the domain.
+    // If the image is already absolute (e.g. Supabase-hosted featuredImage), return as-is.
+    if (ogImage && /^https?:\/\//i.test(ogImage)) {
+        return ogImage;
+    }
     const domainUrl = site.env?.URL ? site.env.URL : null;
     if (ogImage && domainUrl) {
         return domainUrl + ogImage;
