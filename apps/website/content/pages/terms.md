@@ -49,7 +49,7 @@ sections:
       *   Detailed photographs
 
 
-      *   Price in EUR (prices do not include VAT; Мейв Вами ЕООД is not VAT registered)
+      *   Price in EUR (prices do not include VAT; applicable VAT, duties and taxes are determined by the customer&rsquo;s location and are the buyer&rsquo;s responsibility)
 
 
       *   Authenticity guarantee
@@ -215,7 +215,7 @@ sections:
 
       **Location:** Bulgaria, European Union
 
-      **Email:** swoosh\@vamy.art
+      **Email:** maeve@vamy.art
 
       **Company:** Мейв Вами ЕООД · EIK 208627302
 
@@ -235,25 +235,24 @@ sections:
       *By completing a purchase, you acknowledge that you have read, understood,
       and agree to these Terms and Conditions.*
     actions: []
-    media:
-      type: ImageBlock
-      altText: Dope design preview
-    badge:
-      type: Badge
-      label: WE HAVE SOME TERMS
-      color: text-primary
+
     colors: bg-light-fg-dark
     styles:
       self:
         alignItems: center
         flexDirection: row-reverse
+        justifyContent: center
+        padding:
+          - pt-16
+          - pl-4
+          - pb-16
+          - pr-4
 slug: terms
 isDraft: false
 seo:
   type: Seo
-  metaTitle: Landing Page
-  metaDescription: Write here your new page's description including most relevant keywords.
-  addTitleSuffix: true
-  socialImage: /images/main-hero.jpg
+  metaTitle: Terms & Conditions — Maeve Vamy
+  metaDescription: Terms of sale, shipping, returns, and EU consumer rights for Мейв Вами ЕООД.
+  addTitleSuffix: false
   metaTags: []
 ---

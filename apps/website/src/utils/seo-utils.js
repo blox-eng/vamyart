@@ -1,3 +1,7 @@
+import { pickOgImage } from '../lib/ogRotation';
+
+const SITE_NAME = 'Maeve Vamy';
+
 export function seoGenerateMetaTags(page, site) {
     let pageMetaTags = {};
 
@@ -8,12 +12,27 @@ export function seoGenerateMetaTags(page, site) {
     }
 
     const seoTitle = seoGenerateTitle(page, site);
+    const metaDescription = seoGenerateMetaDescription(page, site);
     const ogImage = seoGenerateOgImage(page, site);
+    const ogUrl = seoGenerateOgUrl(page, site);
+    const ogType = page.__metadata?.modelName === 'PostLayout' ? 'article' : 'website';
+    const ogImageAlt = seoGenerateOgImageAlt(page);
 
     pageMetaTags = {
         ...pageMetaTags,
         ...(seoTitle && { 'og:title': seoTitle }),
-        ...(ogImage && { 'og:image': ogImage })
+        ...(metaDescription && { 'og:description': metaDescription }),
+        'og:type': ogType,
+        'og:site_name': SITE_NAME,
+        ...(ogUrl && { 'og:url': ogUrl }),
+        ...(ogImage && { 'og:image': ogImage }),
+        ...(ogImage && { 'og:image:alt': ogImageAlt }),
+        ...(ogImage && { 'og:image:width': '1200' }),
+        ...(ogImage && { 'og:image:height': '630' }),
+        'twitter:card': 'summary_large_image',
+        ...(seoTitle && { 'twitter:title': seoTitle }),
+        ...(metaDescription && { 'twitter:description': metaDescription }),
+        ...(ogImage && { 'twitter:image': ogImage }),
     };
 
     if (page.seo?.metaTags?.length) {
@@ -24,7 +43,7 @@ export function seoGenerateMetaTags(page, site) {
 
     let metaTags = [];
     Object.keys(pageMetaTags).forEach((key) => {
-        if (pageMetaTags[key] !== null) {
+        if (pageMetaTags[key] !== null && pageMetaTags[key] !== undefined) {
             metaTags.push({
                 property: key,
                 content: pageMetaTags[key],
@@ -46,8 +65,8 @@ export function seoGenerateTitle(page, site) {
 
 export function seoGenerateMetaDescription(page, site) {
     let metaDescription = null;
-    // Gallery posts use the exceprt as the default meta description
-    if (page.__metadata.modelName === 'PostLayout') {
+    // Gallery posts use the excerpt as the default meta description
+    if (page.__metadata?.modelName === 'PostLayout') {
         metaDescription = page.excerpt;
     }
     // page metaDescription field overrides all others
@@ -59,30 +78,52 @@ export function seoGenerateMetaDescription(page, site) {
 
 export function seoGenerateOgImage(page, site) {
     let ogImage = null;
-    // Use the sites default og:image field
-    if (site.defaultSocialImage) {
+
+    // 1. Gallery posts use the featuredImage as the default og:image
+    if (page.__metadata?.modelName === 'PostLayout' && page.featuredImage?.url) {
+        ogImage = page.featuredImage.url;
+    }
+
+    // 2. Non-PostLayout pages without explicit socialImage get a per-URL rotated artwork
+    if (!ogImage) {
+        const urlPath = page.__metadata?.urlPath;
+        if (urlPath) {
+            ogImage = pickOgImage(urlPath);
+        }
+    }
+
+    // 3. Fall back to site default (final safety net)
+    if (!ogImage && site.defaultSocialImage) {
         ogImage = site.defaultSocialImage;
     }
-    // Gallery posts use the featuredImage as the default og:image
-    if (page.__metadata.modelName === 'PostLayout') {
-        if (page.featuredImage?.url) {
-            ogImage = page.featuredImage.url;
-        }
-    }
-    // page socialImage field overrides all others
+
+    // 4. page socialImage field overrides all others
     if (page.seo?.socialImage) {
-        ogImage = page.seo?.socialImage;
+        ogImage = page.seo.socialImage;
     }
 
-    // ogImage should use an absolute URL. Get the Netlify domain URL from the Netlify environment variable process.env.URL
+    // Resolve to absolute URL when Netlify provides the domain.
+    // If the image is already absolute (e.g. Supabase-hosted featuredImage), return as-is.
+    if (ogImage && /^https?:\/\//i.test(ogImage)) {
+        return ogImage;
+    }
     const domainUrl = site.env?.URL ? site.env.URL : null;
-
-    if (ogImage) {
-        if (domainUrl) {
-            return domainUrl + ogImage;
-        } else {
-            return ogImage;
-        }
+    if (ogImage && domainUrl) {
+        return domainUrl + ogImage;
     }
-    return null;
+    return ogImage;
+}
+
+function seoGenerateOgUrl(page, site) {
+    const domainUrl = site.env?.URL ? site.env.URL : null;
+    const urlPath = page.__metadata?.urlPath;
+    if (!domainUrl || !urlPath) return null;
+    return domainUrl + urlPath;
+}
+
+function seoGenerateOgImageAlt(page) {
+    if (page.__metadata?.modelName === 'PostLayout' && page.featuredImage?.altText) {
+        return page.featuredImage.altText;
+    }
+    return 'Fine art by Maeve Vamy';
 }

@@ -5,6 +5,8 @@ import Markdown from 'markdown-to-jsx';
 import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
+import LazyImage from '../../atoms/LazyImage';
+import { formatPrice } from '../../../lib/formatPrice';
 
 // Loaded client-side only — they use tRPC hooks and Supabase realtime
 const ProductSelector = dynamic(
@@ -31,7 +33,7 @@ export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, markdown_content, bottomSections = [], medium, dimensions, price } = page;
+    const { title, markdown_content, bottomSections = [], medium, dimensions, price, pieceId, prevPost, nextPost } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
@@ -48,10 +50,12 @@ export default function PostLayout(props) {
                         {/* Left column — artwork image */}
                         {featuredImageUrl && (
                             <div className="lg:sticky lg:top-8 lg:self-start mb-8 lg:mb-0">
-                                <img
+                                <LazyImage
                                     src={featuredImageUrl}
                                     alt={featuredImageAlt}
-                                    className="w-full h-auto"
+                                    className="w-full"
+                                    imgClassName="h-auto"
+                                    loading="eager"
                                     {...(enableAnnotations && { 'data-sb-field-path': 'featuredImage.url' })}
                                 />
                             </div>
@@ -59,7 +63,18 @@ export default function PostLayout(props) {
 
                         {/* Right column — details */}
                         <div className="space-y-6">
+                            <Link
+                                href="/gallery"
+                                className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <span aria-hidden="true">←</span> Back to gallery
+                            </Link>
                             <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
+                            {pieceId && (
+                                <p className="text-xs uppercase tracking-widest text-gray-400 -mt-4">
+                                    {pieceId}
+                                </p>
+                            )}
 
                             {(medium || dimensions || price) && (
                                 <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-500 mb-8">
@@ -69,8 +84,8 @@ export default function PostLayout(props) {
                                     {dimensions && (
                                         <div><dt className="sr-only">Dimensions</dt><dd>{dimensions}</dd></div>
                                     )}
-                                    {price && (
-                                        <div><dt className="sr-only">Price</dt><dd>€{Number(price).toLocaleString()}</dd></div>
+                                    {price && formatPrice(price) && (
+                                        <div><dt className="sr-only">Price</dt><dd>{formatPrice(price)}</dd></div>
                                     )}
                                 </dl>
                             )}
@@ -99,7 +114,38 @@ export default function PostLayout(props) {
                                 <div className="space-y-4">
                                     <BidWidget artworkSlug={artworkSlug} />
                                     <ProductSelector artworkSlug={artworkSlug} />
+                                    <div className="pt-2 text-center">
+                                        <Link
+                                            href={`/get-a-piece?piece=${artworkSlug}`}
+                                            className="inline-block text-sm font-medium underline underline-offset-4 hover:text-gray-600"
+                                        >
+                                            Or inquire about this piece
+                                        </Link>
+                                    </div>
                                 </div>
+                            )}
+
+                            {(prevPost || nextPost) && (
+                                <nav aria-label="Artwork navigation" className="flex items-center justify-between pt-8 border-t border-gray-200">
+                                    {prevPost ? (
+                                        <Link
+                                            href={prevPost.urlPath}
+                                            className="group flex flex-col items-start gap-0.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                                        >
+                                            <span className="text-xs uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors">← Previous</span>
+                                            <span className="font-light">{prevPost.title}</span>
+                                        </Link>
+                                    ) : <span />}
+                                    {nextPost ? (
+                                        <Link
+                                            href={nextPost.urlPath}
+                                            className="group flex flex-col items-end gap-0.5 text-sm text-gray-500 hover:text-gray-900 transition-colors text-right"
+                                        >
+                                            <span className="text-xs uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors">Next →</span>
+                                            <span className="font-light">{nextPost.title}</span>
+                                        </Link>
+                                    ) : <span />}
+                                </nav>
                             )}
                         </div>
                     </div>

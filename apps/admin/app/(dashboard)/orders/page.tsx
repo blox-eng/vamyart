@@ -6,14 +6,23 @@ import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
 
+type ShipDraft = { carrier: "DHL" | "GLS" | "UPS" | "Econt" | "Other"; trackingNumber: string; note: string };
+
 export default function OrdersPage() {
   const toast = useToast();
   const { data: orderList, refetch, isLoading: ordersLoading } = trpc.orders.list.useQuery();
   const markShipped = trpc.orders.markShipped.useMutation({
-    onSuccess: () => { refetch(); toast("order marked shipped", "success"); },
-    onError: () => toast("failed to update order", "error"),
+    onSuccess: () => { refetch(); toast("tracking email sent", "success"); },
+    onError: (e) => toast(e.message || "failed to send tracking", "error"),
   });
-  const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<Record<string, ShipDraft>>({});
+
+  function getDraft(orderId: string): ShipDraft {
+    return drafts[orderId] ?? { carrier: "DHL", trackingNumber: "", note: "" };
+  }
+  function setDraft(orderId: string, patch: Partial<ShipDraft>) {
+    setDrafts((prev) => ({ ...prev, [orderId]: { ...getDraft(orderId), ...patch } }));
+  }
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -87,32 +96,60 @@ export default function OrdersPage() {
                 </td>
                 <td className="px-4 py-3">
                   {o.status === "paid" && (
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        placeholder="Tracking #"
-                        value={trackingInputs[o.id] ?? ""}
-                        onChange={(e) =>
-                          setTrackingInputs((prev) => ({ ...prev, [o.id]: e.target.value }))
-                        }
-                        className="border px-2 py-1 rounded text-xs w-28"
+                    <div className="flex flex-col gap-2 max-w-xs">
+                      <div className="flex gap-2 items-center">
+                        <select
+                          value={getDraft(o.id).carrier}
+                          onChange={(e) => setDraft(o.id, { carrier: e.target.value as ShipDraft["carrier"] })}
+                          className="border px-2 py-1 rounded text-xs bg-white"
+                        >
+                          <option value="DHL">DHL</option>
+                          <option value="GLS">GLS</option>
+                          <option value="UPS">UPS</option>
+                          <option value="Econt">Econt</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="Tracking #"
+                          value={getDraft(o.id).trackingNumber}
+                          onChange={(e) => setDraft(o.id, { trackingNumber: e.target.value })}
+                          className="border px-2 py-1 rounded text-xs flex-1 min-w-0"
+                        />
+                      </div>
+                      <textarea
+                        placeholder="Optional note to buyer"
+                        value={getDraft(o.id).note}
+                        onChange={(e) => setDraft(o.id, { note: e.target.value })}
+                        rows={2}
+                        className="border px-2 py-1 rounded text-xs resize-none"
                       />
                       <button
-                        onClick={() =>
+                        onClick={() => {
+                          const d = getDraft(o.id);
+                          if (!d.trackingNumber) return;
                           markShipped.mutate({
                             id: o.id,
-                            trackingNumber: trackingInputs[o.id],
-                          })
-                        }
-                        disabled={markShipped.isPending}
-                        className="text-xs bg-black text-white px-2 py-1 rounded disabled:opacity-50"
+                            carrier: d.carrier,
+                            trackingNumber: d.trackingNumber,
+                            note: d.note || undefined,
+                          });
+                        }}
+                        disabled={markShipped.isPending || !getDraft(o.id).trackingNumber}
+                        className="text-xs bg-black text-white px-3 py-1.5 rounded disabled:opacity-50"
                       >
-                        Ship
+                        {markShipped.isPending ? "Sending…" : "Mark shipped & send tracking"}
                       </button>
                     </div>
                   )}
-                  {o.trackingNumber && (
-                    <p className="text-xs text-gray-500 mt-1">{o.trackingNumber}</p>
+                  {o.status === "shipped" && o.trackingNumber && (
+                    <div className="flex flex-col">
+                      <p className="text-xs text-gray-500">
+                        {o.trackingCarrier ? `${o.trackingCarrier} · ` : ""}
+                        {o.trackingNumber}
+                      </p>
+                      <span className="text-xs text-gray-400 mt-0.5">Tracking sent ✓</span>
+                    </div>
                   )}
                 </td>
               </tr>

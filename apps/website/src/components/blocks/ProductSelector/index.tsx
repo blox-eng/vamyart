@@ -5,10 +5,43 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
+    const [termsAccepted, setTermsAccepted] = useState(false);
 
-    const { data: productList } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
+    const productsQuery = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
+    const { data: productList, isLoading: productsLoading, isError: productsError } = productsQuery;
     const createSession = trpc.checkout.createSession.useMutation();
 
+    if (productsLoading) {
+        return (
+            <div className="border border-black p-6 mt-4 space-y-3 animate-pulse" aria-busy="true" aria-label="Loading available pieces">
+                <div className="h-3 w-32 bg-gray-200" />
+                <div className="h-12 bg-gray-100" />
+                <div className="h-12 bg-gray-100" />
+                <div className="h-12 bg-gray-100" />
+                <div className="h-10 w-full bg-gray-200 mt-3" />
+            </div>
+        );
+    }
+    if (productsError) {
+        return (
+            <div role="alert" aria-live="polite" className="border border-black p-6 mt-4">
+                <h3 className="text-xs uppercase tracking-widest mb-2">Available pieces</h3>
+                <p className="text-sm text-gray-600 mb-3">We couldn&rsquo;t load availability right now.</p>
+                <button
+                    type="button"
+                    onClick={() => productsQuery.refetch()}
+                    className="text-sm underline underline-offset-2 hover:no-underline"
+                >
+                    Try again
+                </button>
+                <p className="text-xs text-gray-500 mt-3">
+                    Or{' '}
+                    <a href="/get-a-piece" className="underline hover:no-underline">send an inquiry</a>
+                    {' '}and Maeve will follow up personally.
+                </p>
+            </div>
+        );
+    }
     if (!productList || productList.length === 0) return null;
 
     // Flatten all variants across products
@@ -38,7 +71,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
 
     return (
         <div className="border border-black p-6 mt-4">
-            <h3 className="text-xs uppercase tracking-widest mb-4">Available Prints</h3>
+            <h3 className="text-xs uppercase tracking-widest mb-4">Available pieces</h3>
             <div className="space-y-2 mb-6">
                 {variants.map(v => (
                     <label
@@ -56,7 +89,6 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                             />
                             <div>
                                 <p className="text-sm font-medium">{v.name}</p>
-                                <p className="text-xs text-gray-500">{v.productName}</p>
                             </div>
                         </div>
                         <div className="text-right">
@@ -76,13 +108,36 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             {checkoutError && (
                 <p className="text-sm text-red-600 mb-3">{checkoutError}</p>
             )}
+            <label className="flex items-start gap-3 cursor-pointer mt-4 mb-3">
+                <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-0.5 shrink-0 focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2"
+                />
+                <span className="text-xs text-gray-600">
+                    I have read and accept the{' '}
+                    <a href="/terms" target="_blank" rel="noreferrer" className="underline hover:no-underline">Terms</a>
+                    {' '}and{' '}
+                    <a href="/privacy" target="_blank" rel="noreferrer" className="underline hover:no-underline">Privacy Policy</a>.
+                </span>
+            </label>
             <button
                 onClick={handleBuy}
-                disabled={!selectedVariantId || isRedirecting}
-                className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-40"
+                disabled={!selectedVariantId || !termsAccepted || isRedirecting}
+                className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-60"
             >
-                {isRedirecting ? 'Redirecting to payment…' : 'Buy'}
+                {isRedirecting
+                    ? 'Redirecting to payment…'
+                    : !selectedVariantId
+                        ? 'Select a piece to buy'
+                        : !termsAccepted
+                            ? 'Accept terms to continue'
+                            : 'Buy'}
             </button>
+            <p className="text-xs text-gray-500 mt-3 text-center">
+                Secure checkout via Stripe. Card, Apple Pay, Google Pay.
+            </p>
         </div>
     );
 }

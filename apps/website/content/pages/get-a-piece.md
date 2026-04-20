@@ -24,7 +24,7 @@ seo:
   type: Seo
   metaTitle: Acquire a Work — Maeve Vamy
   metaDescription: Interested in acquiring an original painting by Maeve Vamy? Reach out directly.
-  addTitleSuffix: true
+  addTitleSuffix: false
   socialImage: /images/main-hero.jpg
   metaTags: []
 ---

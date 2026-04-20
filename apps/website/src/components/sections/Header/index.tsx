@@ -100,9 +100,6 @@ function HeaderLogoLeftPrimaryLeft(props) {
                     <ListOfLinks links={secondaryLinks} enableAnnotations={enableAnnotations} />
                 </ul>
             )}
-            <div className={classNames('hidden lg:flex lg:items-center', secondaryLinks.length === 0 && 'ml-auto')}>
-                <LocaleSwitcher />
-            </div>
             {(primaryLinks.length > 0 || secondaryLinks.length > 0) && <MobileMenu {...props} />}
         </div>
     );

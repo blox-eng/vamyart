@@ -13,7 +13,7 @@ export function BidWidget({ artworkSlug }: { artworkSlug: string }) {
     const [showModal, setShowModal] = useState(false);
     const [bidSuccess, setBidSuccess] = useState(false);
 
-    const { data: auction, refetch } = trpc.auctions.getByArtworkSlug.useQuery(
+    const { data: auction, isLoading: auctionLoading, refetch } = trpc.auctions.getByArtworkSlug.useQuery(
         { slug: artworkSlug },
         { refetchInterval: 30_000, retry: false } // 30s polling fallback
     );
@@ -32,6 +32,15 @@ export function BidWidget({ artworkSlug }: { artworkSlug: string }) {
         return () => { supabase.removeChannel(channel); };
     }, [auction?.id, refetch]);
 
+    if (auctionLoading) {
+        return (
+            <div className="border border-gray-200 p-6 mt-8 animate-pulse" aria-busy="true" aria-label="Checking auction status">
+                <div className="h-3 w-32 bg-gray-100 mb-3" />
+                <div className="h-8 w-40 bg-gray-200 mb-4" />
+                <div className="h-10 w-full bg-gray-100" />
+            </div>
+        );
+    }
     if (!auction || auction.status !== 'active') return null;
 
     const deadline = new Date(auction.deadline);

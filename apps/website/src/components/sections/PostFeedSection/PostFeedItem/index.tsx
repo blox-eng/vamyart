@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { mapStylesToClassNames as mapStyles } from '../../../../utils/map-styles-to-class-names';
 import { getPageUrl } from '../../../../utils/page-utils';
 import Link from '../../../atoms/Link';
-import ImageBlock from '../../../blocks/ImageBlock';
+import LazyImage from '../../../atoms/LazyImage';
 import { deriveArtworkDisplayData } from '../../../../utils/artwork-product';
 
 export default function PostFeedItem(props) {
@@ -49,13 +49,14 @@ export default function PostFeedItem(props) {
         >
             <div className={classNames('w-full', 'flex', mapFlexDirectionStyles(flexDirection, hasThumbnail), 'gap-6')}>
                 {hasThumbnail && (
-                    <ImageBlock
-                        {...post.featuredImage}
+                    <LazyImage
+                        src={post.featuredImage.url}
+                        alt={post.featuredImage.altText || post.title || ''}
                         className={classNames({
                             'xs:w-[50%] xs:shrink-0': hasBigThumbnail && (flexDirection === 'row' || flexDirection === 'row-reversed'),
                             'xs:w-[28.4%] xs:shrink-0': !hasBigThumbnail && (flexDirection === 'row' || flexDirection === 'row-reversed')
                         })}
-                        imageClassName="w-full h-full object-cover"
+                        imgClassName="w-full h-full object-cover"
                         {...(hasAnnotations && { 'data-sb-field-path': 'featuredImage' })}
                     />
                 )}
