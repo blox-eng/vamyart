@@ -23,26 +23,6 @@ styles:
     flexDirection: row
 type: PostLayout
 author: content/data/person1.json
-bottomSections:
-  - type: GenericSection
-    subtitle: ''
-    text: ''
-    actions:
-      - type: Button
-        label: Inquire about this piece
-        altText: ''
-        url: '/get-a-piece?piece=first-contact'
-        showIcon: false
-        icon: arrowRight
-        iconPosition: right
-        style: primary
-        elementId: ''
-    colors: bg-light-fg-dark
-    styles:
-      self:
-        flexDirection: row
-        justifyContent: center
-      subtitle:
-        textAlign: left
+bottomSections: []
 ---
 This painting is inspired by humanity's drive to break barriers and chase what seems out of reach. To anyone out there with a dream: stay bold, aim high, stay on aim, don't give up.
