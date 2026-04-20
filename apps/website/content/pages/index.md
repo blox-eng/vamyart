@@ -29,12 +29,12 @@ sections:
         style: secondary
         elementId: ''
     media:
-      url: /images/gray-painting-placeholder-no-frame-hang-square-vamy.png
+      url: /images/whispers.jpg
       altText: A painting by Maeve Vamy, oil on canvas
       elementId: ''
       type: ImageBlock
     badge:
-      label: Original oil paintings
+      label: Original fine art
       color: text-primary
       type: Badge
     elementId: ''
@@ -62,7 +62,7 @@ sections:
         title: Oil
         subtitle: On Canvas
         text: |
-          Oil painting doesn't apologize for its mess, or its refusal
+          Fine art doesn't apologize for its mess, or its refusal
           to be rushed. Every brushstroke carries weight, every layer tells a
           story, and every piece demands time to breathe.
         actions: []
@@ -205,9 +205,8 @@ sections:
     colors: bg-light-fg-dark
     type: GenericSection
 seo:
-  metaTitle: Vamy - Fine Arts
-  metaDescription: Welcome to the world of Maeve Vamy
-  socialImage: /images/main-hero.jpg
+  metaTitle: Maeve Vamy — Original Fine Art
+  metaDescription: Original fine art by Maeve Vamy. Muted seascapes, abstract figurations, and surreal studies in oil on canvas from her studio in Stara Zagora, Bulgaria.
   type: Seo
   addTitleSuffix: false
 type: PageLayout
