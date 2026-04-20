@@ -49,7 +49,7 @@ sections:
       *   Detailed photographs
 
 
-      *   Price in EUR (prices do not include VAT; Мейв Вами ЕООД is not VAT registered)
+      *   Price in EUR (prices do not include VAT; applicable VAT, duties and taxes are determined by the customer&rsquo;s location and are the buyer&rsquo;s responsibility)
 
 
       *   Authenticity guarantee
