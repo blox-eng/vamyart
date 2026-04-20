@@ -20,7 +20,7 @@ export default function GetAPiece({ site }: { site: any }) {
         ? new URLSearchParams(window.location.search).get('piece') ?? ''
         : (router.query.piece as string) ?? '';
 
-    const { data: product } = trpc.products.getByArtworkSlug.useQuery(
+    const { data: product, isLoading: isProductLoading } = trpc.products.getByArtworkSlug.useQuery(
         { slug: pieceSlug },
         { enabled: !!pieceSlug, staleTime: Infinity, retry: false }
     );
@@ -73,7 +73,14 @@ export default function GetAPiece({ site }: { site: any }) {
 
                             {/* ── Left panel: context ───────────────────────── */}
                             <aside className="lg:col-span-2 mb-12 lg:mb-0">
-                                {artwork ? (
+                                {pieceSlug && isProductLoading ? (
+                                    <div className="mb-10 animate-pulse" aria-busy="true" aria-label="Loading artwork details">
+                                        <div className="w-full aspect-[3/4] bg-gray-100 rounded-sm mb-6" />
+                                        <div className="h-5 w-2/3 bg-gray-100 rounded mb-2" />
+                                        <div className="h-3 w-1/3 bg-gray-100 rounded mb-1" />
+                                        <div className="h-3 w-1/4 bg-gray-100 rounded mb-4" />
+                                    </div>
+                                ) : artwork ? (
                                     <div className="mb-10">
                                         <img
                                             src={`/images/${artwork.slug}.jpg`}
