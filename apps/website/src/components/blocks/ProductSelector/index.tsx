@@ -7,7 +7,8 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
     const [termsAccepted, setTermsAccepted] = useState(false);
 
-    const { data: productList, isLoading: productsLoading } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
+    const productsQuery = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
+    const { data: productList, isLoading: productsLoading, isError: productsError } = productsQuery;
     const createSession = trpc.checkout.createSession.useMutation();
 
     if (productsLoading) {
@@ -18,6 +19,26 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                 <div className="h-12 bg-gray-100" />
                 <div className="h-12 bg-gray-100" />
                 <div className="h-10 w-full bg-gray-200 mt-3" />
+            </div>
+        );
+    }
+    if (productsError) {
+        return (
+            <div className="border border-black p-6 mt-4">
+                <h3 className="text-xs uppercase tracking-widest mb-2">Available pieces</h3>
+                <p className="text-sm text-gray-600 mb-3">We couldn&rsquo;t load availability right now.</p>
+                <button
+                    type="button"
+                    onClick={() => productsQuery.refetch()}
+                    className="text-sm underline underline-offset-2 hover:no-underline"
+                >
+                    Try again
+                </button>
+                <p className="text-xs text-gray-500 mt-3">
+                    Or{' '}
+                    <a href="/get-a-piece" className="underline hover:no-underline">send an inquiry</a>
+                    {' '}and Maeve will follow up personally.
+                </p>
             </div>
         );
     }
