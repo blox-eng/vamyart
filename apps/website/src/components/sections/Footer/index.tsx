@@ -74,7 +74,7 @@ export default function Footer(props) {
 
                 {/* Row 2: Bottom bar */}
                 <div className="border-t pt-6 mt-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
-                    <p>&copy; {new Date().getFullYear()} Vamy</p>
+                    <p>&copy; {new Date().getFullYear()} Maeve Vamy</p>
                     {legalLinks.length > 0 && (
                         <ul
                             className="flex items-center gap-1"
