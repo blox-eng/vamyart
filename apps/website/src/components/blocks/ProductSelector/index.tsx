@@ -24,7 +24,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     }
     if (productsError) {
         return (
-            <div className="border border-black p-6 mt-4">
+            <div role="alert" aria-live="polite" className="border border-black p-6 mt-4">
                 <h3 className="text-xs uppercase tracking-widest mb-2">Available pieces</h3>
                 <p className="text-sm text-gray-600 mb-3">We couldn&rsquo;t load availability right now.</p>
                 <button
