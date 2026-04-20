@@ -49,8 +49,13 @@ export default function GetAPiece({ site }: { site: any }) {
 
     const createInquiry = trpc.inquiries.create.useMutation();
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
         setStatus('idle');
         try {
             await createInquiry.mutateAsync({ name, email, pieceInterest: piece, message: message || undefined });
@@ -259,7 +264,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                 <span>Something went wrong — please try again.</span>
                                                 <button
                                                     type="submit"
-                                                    disabled={createInquiry.isPending}
+                                                    disabled={createInquiry.isPending || !terms}
                                                     className="text-red-700 underline underline-offset-2 hover:no-underline disabled:opacity-50"
                                                 >
                                                     Try again
