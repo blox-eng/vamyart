@@ -29,7 +29,7 @@ bottomSections:
     text: ''
     actions:
       - type: Button
-        label: INQUIRE ABOUT THE ORIGINAL
+        label: Inquire about this piece
         altText: ''
         url: '/get-a-piece?piece=first-contact'
         showIcon: false
