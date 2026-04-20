@@ -15,6 +15,12 @@ type LazyImageProps = {
 export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', onLoad, ...rest }: LazyImageProps) {
     const [loaded, setLoaded] = React.useState(false);
     const [errored, setErrored] = React.useState(false);
+
+    React.useEffect(() => {
+        setLoaded(false);
+        setErrored(false);
+    }, [src]);
+
     const resolvedSrc = errored ? FALLBACK_SRC : src;
 
     return (
