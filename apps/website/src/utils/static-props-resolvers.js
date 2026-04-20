@@ -43,9 +43,12 @@ const StaticPropsResolvers = {
         const resolved = resolveReferences(props, ['author', 'category'], data.objects, debugContext);
         const urlPath = resolved.__metadata?.urlPath;
         if (typeof urlPath === 'string' && urlPath.startsWith('/gallery/')) {
-            const galleryPosts = getAllPostsSorted(data.objects).filter(
+            let galleryPosts = getAllPostsSorted(data.objects).filter(
                 (p) => typeof p.__metadata?.urlPath === 'string' && p.__metadata.urlPath.startsWith('/gallery/')
             );
+            if (!process.env.stackbitPreview) {
+                galleryPosts = galleryPosts.filter(isPublished);
+            }
             const idx = galleryPosts.findIndex((p) => p.__metadata?.urlPath === urlPath);
             const prev = idx > 0 ? galleryPosts[idx - 1] : null;
             const next = idx >= 0 && idx < galleryPosts.length - 1 ? galleryPosts[idx + 1] : null;
