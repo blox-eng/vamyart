@@ -78,7 +78,12 @@ export default function GetAPiece({ site }: { site: any }) {
                                         <img
                                             src={`/images/${artwork.slug}.jpg`}
                                             alt={artwork.title}
-                                            className="w-full aspect-[3/4] object-cover rounded-sm mb-6 shadow-sm"
+                                            className="w-full aspect-[3/4] object-cover rounded-sm mb-6 shadow-sm bg-gray-50"
+                                            onError={(e) => {
+                                                const t = e.currentTarget;
+                                                if (t.src.endsWith('/images/img-placeholder.svg')) return;
+                                                t.src = '/images/img-placeholder.svg';
+                                            }}
                                         />
                                         <h2 className="text-xl font-light mb-1">{artwork.title}</h2>
                                         {medium && <p className="text-sm text-gray-500">{medium}</p>}
