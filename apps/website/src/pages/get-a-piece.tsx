@@ -248,7 +248,9 @@ export default function GetAPiece({ site }: { site: any }) {
                                             />
                                             <span className="text-sm text-gray-500">
                                                 I have read and accept the{' '}
-                                                <a href="/terms" className="underline hover:no-underline" target="_blank">legal terms</a>
+                                                <a href="/terms" className="underline hover:no-underline" target="_blank" rel="noreferrer">Terms</a>
+                                                {' '}and{' '}
+                                                <a href="/privacy" className="underline hover:no-underline" target="_blank" rel="noreferrer">Privacy Policy</a>.
                                             </span>
                                         </label>
 

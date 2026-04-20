@@ -124,13 +124,15 @@ export default function ReachOutBlock() {
                 />
                 <span className="text-sm text-gray-500">
                     I have read and accept the{' '}
-                    <a href="/terms" className="underline hover:no-underline" target="_blank" rel="noreferrer">legal terms</a>
+                    <a href="/terms" className="underline hover:no-underline" target="_blank" rel="noreferrer">Terms</a>
+                    {' '}and{' '}
+                    <a href="/privacy" className="underline hover:no-underline" target="_blank" rel="noreferrer">Privacy Policy</a>.
                 </span>
             </label>
 
             <div className="flex items-center justify-between pt-1">
                 <p className="text-xs text-gray-400">
-                    Maeve replies personally — no bots, no templates.
+                    I'll reply personally — usually within 2 working days. — Maeve
                 </p>
                 <button
                     type="submit"
