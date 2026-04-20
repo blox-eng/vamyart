@@ -32,7 +32,7 @@ export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, markdown_content, bottomSections = [], medium, dimensions, price, pieceId } = page;
+    const { title, markdown_content, bottomSections = [], medium, dimensions, price, pieceId, prevPost, nextPost } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
@@ -112,6 +112,29 @@ export default function PostLayout(props) {
                                     <BidWidget artworkSlug={artworkSlug} />
                                     <ProductSelector artworkSlug={artworkSlug} />
                                 </div>
+                            )}
+
+                            {(prevPost || nextPost) && (
+                                <nav aria-label="Artwork navigation" className="flex items-center justify-between pt-8 border-t border-gray-200">
+                                    {prevPost ? (
+                                        <Link
+                                            href={prevPost.urlPath}
+                                            className="group flex flex-col items-start gap-0.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                                        >
+                                            <span className="text-xs uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors">← Previous</span>
+                                            <span className="font-light">{prevPost.title}</span>
+                                        </Link>
+                                    ) : <span />}
+                                    {nextPost ? (
+                                        <Link
+                                            href={nextPost.urlPath}
+                                            className="group flex flex-col items-end gap-0.5 text-sm text-gray-500 hover:text-gray-900 transition-colors text-right"
+                                        >
+                                            <span className="text-xs uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors">Next →</span>
+                                            <span className="font-light">{nextPost.title}</span>
+                                        </Link>
+                                    ) : <span />}
+                                </nav>
                             )}
                         </div>
                     </div>

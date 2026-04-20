@@ -40,7 +40,19 @@ export function resolveStaticProps(urlPath, data) {
 
 const StaticPropsResolvers = {
     PostLayout: (props, data, debugContext) => {
-        return resolveReferences(props, ['author', 'category'], data.objects, debugContext);
+        const resolved = resolveReferences(props, ['author', 'category'], data.objects, debugContext);
+        const urlPath = resolved.__metadata?.urlPath;
+        if (typeof urlPath === 'string' && urlPath.startsWith('/gallery/')) {
+            const galleryPosts = getAllPostsSorted(data.objects).filter(
+                (p) => typeof p.__metadata?.urlPath === 'string' && p.__metadata.urlPath.startsWith('/gallery/')
+            );
+            const idx = galleryPosts.findIndex((p) => p.__metadata?.urlPath === urlPath);
+            const prev = idx > 0 ? galleryPosts[idx - 1] : null;
+            const next = idx >= 0 && idx < galleryPosts.length - 1 ? galleryPosts[idx + 1] : null;
+            resolved.prevPost = prev ? { title: prev.title, urlPath: prev.__metadata.urlPath } : null;
+            resolved.nextPost = next ? { title: next.title, urlPath: next.__metadata.urlPath } : null;
+        }
+        return resolved;
     },
     PostFeedLayout: (props, data) => {
         const numOfPostsPerPage = props.numOfPostsPerPage ?? 10;
