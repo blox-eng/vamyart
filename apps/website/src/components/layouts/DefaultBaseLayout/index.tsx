@@ -10,9 +10,9 @@ export default function DefaultBaseLayout(props) {
 
     return (
         <div className={classNames('sb-page', pageMeta.pageCssClasses)} {...(enableAnnotations && { 'data-sb-object-id': pageMeta.id })}>
-            <div className="sb-base sb-default-base-layout">
+            <div className="sb-base sb-default-base-layout min-h-screen flex flex-col">
                 {site.header && <Header {...site.header} enableAnnotations={enableAnnotations} />}
-                {props.children}
+                <div className="flex-1">{props.children}</div>
                 {site.footer && <Footer {...site.footer} enableAnnotations={enableAnnotations} />}
             </div>
         </div>
