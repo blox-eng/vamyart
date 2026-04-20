@@ -81,6 +81,7 @@ export const orders = pgTable("orders", {
   stripeSessionId: text("stripe_session_id").notNull().unique(),
   status: text("status").notNull().default("paid"), // paid | shipped | cancelled
   trackingNumber: text("tracking_number"),
+  trackingCarrier: text("tracking_carrier"),
   shippedAt: timestamp("shipped_at", { withTimezone: true }),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
