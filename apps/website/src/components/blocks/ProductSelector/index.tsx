@@ -6,9 +6,20 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-    const { data: productList } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
+    const { data: productList, isLoading: productsLoading } = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
     const createSession = trpc.checkout.createSession.useMutation();
 
+    if (productsLoading) {
+        return (
+            <div className="border border-black p-6 mt-4 space-y-3 animate-pulse" aria-busy="true" aria-label="Loading available pieces">
+                <div className="h-3 w-32 bg-gray-200" />
+                <div className="h-12 bg-gray-100" />
+                <div className="h-12 bg-gray-100" />
+                <div className="h-12 bg-gray-100" />
+                <div className="h-10 w-full bg-gray-200 mt-3" />
+            </div>
+        );
+    }
     if (!productList || productList.length === 0) return null;
 
     // Flatten all variants across products
@@ -38,7 +49,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
 
     return (
         <div className="border border-black p-6 mt-4">
-            <h3 className="text-xs uppercase tracking-widest mb-4">Available Prints</h3>
+            <h3 className="text-xs uppercase tracking-widest mb-4">Available pieces</h3>
             <div className="space-y-2 mb-6">
                 {variants.map(v => (
                     <label
@@ -56,7 +67,6 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                             />
                             <div>
                                 <p className="text-sm font-medium">{v.name}</p>
-                                <p className="text-xs text-gray-500">{v.productName}</p>
                             </div>
                         </div>
                         <div className="text-right">
@@ -79,9 +89,13 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             <button
                 onClick={handleBuy}
                 disabled={!selectedVariantId || isRedirecting}
-                className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-40"
+                className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors disabled:opacity-60"
             >
-                {isRedirecting ? 'Redirecting to payment…' : 'Buy'}
+                {isRedirecting
+                    ? 'Redirecting to payment…'
+                    : !selectedVariantId
+                        ? 'Select a piece to buy'
+                        : 'Buy'}
             </button>
         </div>
     );
