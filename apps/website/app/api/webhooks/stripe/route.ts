@@ -94,12 +94,16 @@ export async function POST(req: NextRequest) {
       .map(escapeHtml)
       .join(', ');
 
-    await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL!,
-      to: process.env.RESEND_ARTIST_EMAIL!,
-      subject: "New order received",
-      html: `<p>New order from ${escapeHtml(customer?.name ?? "")} (${escapeHtml(customer?.email ?? "")}). Ship to: ${formattedAddress}.</p>`,
-    });
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL!,
+        to: process.env.RESEND_ARTIST_EMAIL!,
+        subject: "New order received",
+        html: `<p>New order from ${escapeHtml(customer?.name ?? "")} (${escapeHtml(customer?.email ?? "")}). Ship to: ${formattedAddress}.</p>`,
+      });
+    } catch (err) {
+      console.error("[stripe-webhook] artist notification email failed", { orderId: inserted.id, err });
+    }
   }
 
   return new Response(null, { status: 200 });
