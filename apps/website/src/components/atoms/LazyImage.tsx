@@ -10,15 +10,15 @@ type LazyImageProps = {
     imgClassName?: string;
     loading?: 'lazy' | 'eager';
     onLoad?: () => void;
-};
+} & Omit<React.HTMLAttributes<HTMLDivElement>, 'className' | 'onLoad'>;
 
-export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', onLoad }: LazyImageProps) {
+export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', onLoad, ...rest }: LazyImageProps) {
     const [loaded, setLoaded] = React.useState(false);
     const [errored, setErrored] = React.useState(false);
     const resolvedSrc = errored ? FALLBACK_SRC : src;
 
     return (
-        <div className={classNames('relative bg-gray-100 overflow-hidden', className)}>
+        <div className={classNames('relative bg-gray-100 overflow-hidden', className)} {...rest}>
             <img
                 src={resolvedSrc}
                 alt={alt}

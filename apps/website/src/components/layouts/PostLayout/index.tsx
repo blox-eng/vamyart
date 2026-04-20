@@ -5,6 +5,7 @@ import Markdown from 'markdown-to-jsx';
 import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
+import LazyImage from '../../atoms/LazyImage';
 import { formatPrice } from '../../../lib/formatPrice';
 
 // Loaded client-side only — they use tRPC hooks and Supabase realtime
@@ -49,10 +50,12 @@ export default function PostLayout(props) {
                         {/* Left column — artwork image */}
                         {featuredImageUrl && (
                             <div className="lg:sticky lg:top-8 lg:self-start mb-8 lg:mb-0">
-                                <img
+                                <LazyImage
                                     src={featuredImageUrl}
                                     alt={featuredImageAlt}
-                                    className="w-full h-auto"
+                                    className="w-full"
+                                    imgClassName="h-auto"
+                                    loading="eager"
                                     {...(enableAnnotations && { 'data-sb-field-path': 'featuredImage.url' })}
                                 />
                             </div>
