@@ -30,8 +30,13 @@ export default function ReachOutBlock() {
         }
     }
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+        const form = e.currentTarget;
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
         await submit();
     }
 
@@ -52,7 +57,7 @@ export default function ReachOutBlock() {
                     <button
                         type="button"
                         onClick={submit}
-                        disabled={createInquiry.isPending}
+                        disabled={createInquiry.isPending || !terms}
                         className="text-red-700 underline underline-offset-2 hover:no-underline disabled:opacity-50"
                     >
                         Try again
