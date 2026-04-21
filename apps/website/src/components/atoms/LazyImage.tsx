@@ -13,19 +13,27 @@ type LazyImageProps = {
 } & Omit<React.HTMLAttributes<HTMLDivElement>, 'className' | 'onLoad'>;
 
 export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', onLoad, ...rest }: LazyImageProps) {
+    const imgRef = React.useRef<HTMLImageElement>(null);
     const [loaded, setLoaded] = React.useState(false);
     const [errored, setErrored] = React.useState(false);
 
     React.useEffect(() => {
         setLoaded(false);
         setErrored(false);
-    }, [src]);
+        // If the browser already has the image (cached / SSR), onLoad won't fire — sync state manually.
+        const img = imgRef.current;
+        if (img?.complete && img.naturalWidth > 0) {
+            setLoaded(true);
+            onLoad?.();
+        }
+    }, [src, onLoad]);
 
     const resolvedSrc = errored ? FALLBACK_SRC : src;
 
     return (
         <div className={classNames('relative bg-gray-100 overflow-hidden', className)} {...rest}>
             <img
+                ref={imgRef}
                 src={resolvedSrc}
                 alt={alt}
                 loading={loading}
