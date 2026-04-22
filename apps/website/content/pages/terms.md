@@ -77,6 +77,12 @@ sections:
       and payment. This constitutes acceptance of your purchase.
 
 
+      ## Right of withdrawal
+
+      <a id="withdrawal"></a>
+
+      Under EU Consumer Rights Directive 2011/83/EU, you have the right to withdraw from this purchase within 14 days of receiving the piece, without giving any reason. To exercise this right, email maeve@vamy.art with your order number before the 14-day period expires. The piece must be returned in its original condition and packaging; return shipping is the buyer's responsibility unless the item arrived damaged.
+
       ## **Shipping and Delivery**
 
 
