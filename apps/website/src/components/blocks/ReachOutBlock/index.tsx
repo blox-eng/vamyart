@@ -137,7 +137,7 @@ export default function ReachOutBlock() {
 
             <div className="flex items-center justify-between pt-1">
                 <p className="text-xs text-gray-400">
-                    I'll reply personally — usually within 2 working days. — Maeve
+                    A personal reply from Maeve — usually within 2 working days.
                 </p>
                 <button
                     type="submit"
