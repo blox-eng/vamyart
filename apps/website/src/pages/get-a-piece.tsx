@@ -277,7 +277,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                 {createInquiry.isPending ? 'Sending…' : 'Send inquiry'}
                                             </button>
                                             <p className="text-xs text-gray-400 mt-3">
-                                                I'll reply personally — usually within 2 working days. — Maeve
+                                                A personal reply from Maeve — usually within 2 working days.
                                             </p>
                                         </div>
                                     </form>
