@@ -62,6 +62,9 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
 
     if (variants.length === 0) return null;
 
+    const selectedVariant = variants.find(v => v.id === selectedVariantId) ?? null;
+    const priceLabel = selectedVariant ? `€${Number(selectedVariant.price).toLocaleString()}` : '';
+
     // Resolve shipping from first product (all products in an artwork share one method)
     const shippingMethod = productList?.[0]?.shippingMethod;
     const shippingDisplay = shippingMethod?.displayText ?? null;
@@ -133,6 +136,12 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                     <a href="/privacy" target="_blank" rel="noreferrer" className="underline hover:no-underline">Privacy Policy</a>.
                 </span>
             </label>
+            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+                Prices include VAT where applicable. You have a 14-day right of withdrawal after delivery —{' '}
+                <a href="/terms#withdrawal" className="underline hover:no-underline" target="_blank" rel="noreferrer">
+                    details
+                </a>.
+            </p>
             <button
                 onClick={handleBuy}
                 disabled={!selectedVariantId || !termsAccepted || isRedirecting}
@@ -144,7 +153,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                         ? 'Select a piece to buy'
                         : !termsAccepted
                             ? 'Accept terms to continue'
-                            : 'Buy'}
+                            : `Buy — pay ${priceLabel}`}
             </button>
             <p className="text-xs text-gray-500 mt-3 text-center">
                 Secure checkout via Stripe. Card, Apple Pay, Google Pay.
