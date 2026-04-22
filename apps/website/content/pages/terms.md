@@ -49,7 +49,7 @@ sections:
       *   Detailed photographs
 
 
-      *   Price in EUR (prices do not include VAT; applicable VAT, duties and taxes are determined by the customer&rsquo;s location and are the buyer&rsquo;s responsibility)
+      *   Price in EUR (prices do not include VAT; applicable VAT, duties and taxes are determined by the customer's location and are the buyer's responsibility)
 
 
       *   Authenticity guarantee
@@ -89,13 +89,15 @@ sections:
 
       **Model withdrawal form** (complete and return only if you wish to withdraw):
 
-      > To Maeve Vamy, maeve@vamy.art:
-      > I hereby give notice that I withdraw from my contract of sale of the following piece:
-      > — Order number: _______
-      > — Ordered on / received on: _______
-      > — Name of consumer: _______
-      > — Address of consumer: _______
-      > — Date: _______
+      <blockquote>
+      To Maeve Vamy, maeve@vamy.art:<br>
+      I hereby give notice that I withdraw from my contract of sale of the following piece:<br>
+      — Order number: ——————<br>
+      — Ordered on / received on: ——————<br>
+      — Name of consumer: ——————<br>
+      — Address of consumer: ——————<br>
+      — Date: ——————
+      </blockquote>
 
       ## **Shipping and Delivery**
 
