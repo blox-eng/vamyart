@@ -207,8 +207,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     value={piece}
                                                     onChange={e => setPiece(e.target.value)}
                                                     required
-                                                    disabled={!!artwork}
-                                                    className={`w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors ${artwork ? 'bg-gray-50 text-gray-600 cursor-not-allowed' : ''}`}
+                                                    className="w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors"
                                                 >
                                                     <option value="">— select a piece</option>
                                                     {ARTWORKS.map(a => (
@@ -219,10 +218,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                 </select>
                                                 {artwork && (
                                                     <p className="text-xs text-gray-400 mt-1.5">
-                                                        Pre-filled from the artwork page.{' '}
-                                                        <button type="button" onClick={() => setPiece('')} className="underline hover:no-underline">
-                                                            Change
-                                                        </button>
+                                                        Pre-filled from the artwork page — tap to change.
                                                     </p>
                                                 )}
                                             </div>
