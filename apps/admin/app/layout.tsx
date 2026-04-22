@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "vamy — Admin",
+  title: "Maeve Studio",
   robots: "noindex, nofollow",
 };
 
@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased font-sans">
         <Providers>{children}</Providers>
       </body>
     </html>
