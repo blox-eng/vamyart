@@ -80,8 +80,9 @@ sections:
       ## **Shipping and Delivery**
 
 
-      **Delivery Timeline:** Artworks will be shipped within 30 days of payment
-      confirmation, unless otherwise agreed.
+      **Delivery Timeline:**
+      - Originals: shipped within 30 days of payment confirmation.
+      - Prints: shipped within 7 working days of payment confirmation (14 days at peak periods).
 
 
 

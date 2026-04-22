@@ -16,6 +16,7 @@ describe("renderOrderReceiptHtml", () => {
             postalCode: "75001",
             country: "France",
         },
+        leadTime: "within 30 days",
         termsUrl: "https://vamy.art/terms",
         privacyUrl: "https://vamy.art/privacy",
     };
@@ -31,6 +32,11 @@ describe("renderOrderReceiptHtml", () => {
         expect(html).toContain("Paris");
         expect(html).toContain("75001");
         expect(html).toContain("— Maeve");
+    });
+
+    it("interpolates leadTime into the body", () => {
+        const html = renderOrderReceiptHtml({ ...sample, leadTime: "within 7 days" });
+        expect(html).toContain("ship within 7 days");
     });
 
     it("escapes HTML in user-controlled fields", () => {
