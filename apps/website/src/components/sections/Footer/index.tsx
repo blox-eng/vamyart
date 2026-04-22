@@ -29,7 +29,7 @@ export default function Footer(props) {
             )}
             {...(enableAnnotations && { 'data-sb-object-id': props?.__metadata?.id })}
         >
-            <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-6xl">
                 {/* Row 1: Logo + Newsletter + Social */}
                 <div className="flex flex-col md:flex-row gap-12 md:gap-16">
                     {/* Left: Logo + name */}
