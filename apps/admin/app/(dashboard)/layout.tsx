@@ -12,19 +12,19 @@ function WelcomeToast() {
   React.useEffect(() => {
     if (sessionStorage.getItem("vamy-admin-just-logged-in")) {
       sessionStorage.removeItem("vamy-admin-just-logged-in");
-      toast("welcome back", "success");
+      toast("welcome back, Maeve", "success");
     }
   }, [toast]);
   return null;
 }
 
 const navItems = [
-  { href: "/auctions", label: "Auctions", icon: LayoutGrid },
-  { href: "/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/artworks", label: "Artworks", icon: ImageIcon },
-  { href: "/inquiries", label: "Inquiries", icon: Mail },
-  { href: "/shipping", label: "Shipping", icon: Truck },
-  { href: "/banners", label: "Banners", icon: Megaphone },
+  { href: "/auctions",  label: "Auctions",      icon: LayoutGrid },
+  { href: "/orders",    label: "Sales",          icon: ShoppingBag },
+  { href: "/artworks",  label: "Pieces",         icon: ImageIcon },
+  { href: "/inquiries", label: "Messages",       icon: Mail },
+  { href: "/shipping",  label: "Shipping",       icon: Truck },
+  { href: "/banners",   label: "Announcements",  icon: Megaphone },
 ];
 
 export default function DashboardLayout({
@@ -49,9 +49,9 @@ export default function DashboardLayout({
         <aside className="w-56 bg-white border-r flex flex-col shrink-0">
           <div className="p-6 border-b">
             <div className="flex items-center gap-3">
-            <img src="/vamy-black.png" alt="vamy" className="h-6 w-auto" />
-            <span className="text-sm font-light tracking-widest text-gray-500">admin</span>
-          </div>
+              <img src="/vamy-black.png" alt="vamy" className="h-6 w-auto" />
+              <span className="text-sm font-light tracking-widest text-gray-500">studio</span>
+            </div>
           </div>
           <nav className="flex-1 p-3 space-y-1" aria-label="Main navigation">
             {navItems.map(({ href, label, icon: Icon }) => (
