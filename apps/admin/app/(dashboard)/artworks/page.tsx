@@ -280,7 +280,7 @@ export default function ArtworksPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-light mb-8">Artworks &amp; Products</h1>
+      <h1 className="text-2xl font-light mb-8">Pieces</h1>
 
       {/* Artwork dropdown */}
       {artworkEntries.length > 0 && (

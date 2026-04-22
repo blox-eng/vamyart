@@ -15,7 +15,7 @@ export default function InquiriesPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-light mb-8">Inquiries</h1>
+      <h1 className="text-2xl font-light mb-8">Messages</h1>
 
       {inquiriesLoading ? (
         <SkeletonTable rows={5} cols={5} />

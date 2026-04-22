@@ -26,7 +26,7 @@ export default function OrdersPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-light mb-8">Orders</h1>
+      <h1 className="text-2xl font-light mb-8">Sales</h1>
 
       {ordersLoading ? (
         <SkeletonTable rows={5} cols={6} />
