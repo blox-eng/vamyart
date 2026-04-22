@@ -10,6 +10,17 @@ function getBaseUrl() {
     return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 }
 
+function AppInner({ Component, pageProps }) {
+    const slug = typeof window !== 'undefined' ? window.location.pathname.replace(/^\/|\/$/g, '') || 'home' : 'home';
+    const { data: banner } = trpc.banners.getActive.useQuery({ slug }, { staleTime: 60_000 });
+    return (
+        <>
+            <AnnouncementBanner banner={banner ?? null} />
+            <Component {...pageProps} />
+        </>
+    );
+}
+
 export default function MyApp({ Component, pageProps }) {
     const [queryClient] = React.useState(() => new QueryClient());
     const [trpcClient] = React.useState(() =>
@@ -25,8 +36,7 @@ export default function MyApp({ Component, pageProps }) {
     return (
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
             <QueryClientProvider client={queryClient}>
-                <AnnouncementBanner banner={pageProps?.site?.activeBanner ?? null} />
-                <Component {...pageProps} />
+                <AppInner Component={Component} pageProps={pageProps} />
             </QueryClientProvider>
         </trpc.Provider>
     );
