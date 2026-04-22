@@ -4,6 +4,13 @@ import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml } from 
 import { eq, sql } from "drizzle-orm";
 import { Resend } from "resend";
 
+function inferLeadTime(productType: string | null | undefined): string {
+    const t = (productType ?? "").toLowerCase();
+    if (t.includes("original")) return "within 30 days";
+    if (t.includes("print")) return "within 7 days";
+    return "within 14 days";
+}
+
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY!);
   const body = await req.text();
@@ -66,6 +73,7 @@ export async function POST(req: NextRequest) {
         pieceName: variant?.product?.artwork?.title ?? variant?.product?.name ?? "Your piece",
         variantName: variant?.name ?? "",
         medium: attrs.medium ?? null,
+        leadTime: inferLeadTime(variant?.product?.productType),
         totalPaidEur: (session.amount_total ?? 0) / 100,
         shippingAddress: {
           line1: address?.line1 ?? null,

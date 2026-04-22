@@ -77,11 +77,32 @@ sections:
       and payment. This constitutes acceptance of your purchase.
 
 
+      ## Right of withdrawal
+
+      <a id="withdrawal"></a>
+
+      Under EU Consumer Rights Directive 2011/83/EU, you have the right to withdraw from this purchase within 14 days of receiving the piece, without giving any reason.
+
+      **How to exercise the right:** Send an unequivocal statement of your decision to withdraw — by email to maeve@vamy.art with your order number, or by post to the address on file — before the 14-day period expires. You may use the model withdrawal form below, though it is not obligatory.
+
+      **Effects of withdrawal:** We will reimburse all payments received from you, including the standard delivery cost, no later than 14 days after we receive the returned piece (or evidence that you have sent it back). Reimbursement will use the same means of payment you used, unless we agree otherwise. We may withhold reimbursement until we have received the piece back. You must send the piece back without undue delay and in any event no later than 14 days from the day you communicate your withdrawal. Return shipping costs are your responsibility unless the piece arrived damaged. You are only liable for any diminished value of the piece resulting from handling other than what is necessary to establish its nature, characteristics and functioning.
+
+      **Model withdrawal form** (complete and return only if you wish to withdraw):
+
+      > To Maeve Vamy, maeve@vamy.art:
+      > I hereby give notice that I withdraw from my contract of sale of the following piece:
+      > — Order number: _______
+      > — Ordered on / received on: _______
+      > — Name of consumer: _______
+      > — Address of consumer: _______
+      > — Date: _______
+
       ## **Shipping and Delivery**
 
 
-      **Delivery Timeline:** Artworks will be shipped within 30 days of payment
-      confirmation, unless otherwise agreed.
+      **Delivery Timeline:**
+      - Originals: shipped within 30 days of payment confirmation.
+      - Prints: shipped within 7 working days of payment confirmation (14 days at peak periods).
 
 
 

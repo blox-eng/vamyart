@@ -14,6 +14,7 @@ export type OrderReceiptData = {
         postalCode: string | null;
         country: string | null;
     };
+    leadTime: string;
     termsUrl: string;
     privacyUrl: string;
 };
@@ -39,7 +40,7 @@ export function renderOrderReceiptHtml(d: OrderReceiptData): string {
 <p style="font-size:12px;color:#888;margin:0 0 32px;">Order ${escapeHtml(d.orderNumber)}</p>
 
 <p style="font-size:16px;line-height:1.5;margin:0 0 20px;">Thank you, ${escapeHtml(d.buyerName)}.</p>
-<p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 28px;">Your piece will ship within 30 days. I'll email you tracking details once it's on its way.</p>
+<p style="font-size:14px;line-height:1.6;color:#444;margin:0 0 28px;">Your piece will ship ${escapeHtml(d.leadTime)}. I'll email you tracking details once it's on its way.</p>
 
 <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;border-bottom:1px solid #eee;padding:16px 0;margin-bottom:28px;">
 <tr><td style="padding:8px 0;font-size:13px;color:#666;width:40%;">Piece</td><td style="padding:8px 0;font-size:13px;">${escapeHtml(d.pieceName)}</td></tr>
