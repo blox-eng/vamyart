@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { trpc } from '../../../lib/trpc';
 
 export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
@@ -6,6 +6,17 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
     const [termsAccepted, setTermsAccepted] = useState(false);
+
+    useEffect(() => {
+        function onPageShow(e: PageTransitionEvent) {
+            if (e.persisted) {
+                setIsRedirecting(false);
+                setCheckoutError(null);
+            }
+        }
+        window.addEventListener('pageshow', onPageShow);
+        return () => window.removeEventListener('pageshow', onPageShow);
+    }, []);
 
     const productsQuery = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
     const { data: productList, isLoading: productsLoading, isError: productsError } = productsQuery;
