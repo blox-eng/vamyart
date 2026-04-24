@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
+import { TRPCError } from "@trpc/server";
 import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { productVariants, shippingMethods } from "../../schema";
@@ -22,9 +23,11 @@ export const checkoutRouter = router({
         },
       });
 
-      if (!variant) throw new Error("Variant not found");
+      if (!variant) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
+      }
       if (!variant.available || variant.stockQuantity <= 0) {
-        throw new Error("Out of stock");
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "OUT_OF_STOCK" });
       }
 
       // Resolve shipping: product's assigned method, or fall back to global default
