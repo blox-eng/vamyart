@@ -10,6 +10,7 @@ import { artworksRouter } from "./routers/artworks";
 import { shippingMethodsRouter } from "./routers/shippingMethods";
 import { bannersRouter } from "./routers/banners";
 import { artworkImagesRouter } from "./routers/artworkImages";
+import { waitlistRouter } from "./routers/waitlist";
 
 export const appRouter = router({
   inquiries: inquiriesRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   shippingMethods: shippingMethodsRouter,
   banners: bannersRouter,
   artworkImages: artworkImagesRouter,
+  waitlist: waitlistRouter,
 });
 
 export type AppRouter = typeof appRouter;
