@@ -43,6 +43,8 @@ export default function ArtworksPage() {
     onError: () => toast("failed to update shipping", "error"),
   });
 
+  const utils = trpc.useUtils();
+
   const updateVariant = trpc.products.updateVariant.useMutation({
     onSuccess: async (_, vars) => {
       const editedProduct = (productList ?? []).find((p) =>
@@ -198,7 +200,22 @@ export default function ArtworksPage() {
     if (d.dimensions) attributes.dimensions = d.dimensions;
     updateVariant.mutate(
       { id, name: d.name, price: Number(d.price), stockQuantity: Number(d.stock), available: d.available, attributes },
-      { onSuccess: () => cancelEditVariant(id) }
+      {
+        onSuccess: (result) => {
+          cancelEditVariant(id);
+          if (result && typeof result === 'object' && 'notified' in result) {
+            const n = (result as { notified: number }).notified;
+            const f = (result as { failed: number }).failed;
+            if (n > 0 || f > 0) {
+              const parts: string[] = [];
+              if (n > 0) parts.push(`${n} waitlist subscriber${n === 1 ? '' : 's'} notified`);
+              if (f > 0) parts.push(`${f} failed — check logs`);
+              if (typeof window !== 'undefined') window.alert(`Saved. ${parts.join(', ')}.`);
+            }
+          }
+          utils.waitlist.countForVariant.invalidate({ variantId: id });
+        },
+      }
     );
   }
 
@@ -663,7 +680,7 @@ export default function ArtworksPage() {
                         <tr key={v.id} className="border-b last:border-0 hover:bg-gray-50 group">
                           <td className="py-2 pr-3">{v.name}</td>
                           <td className="py-2 pr-3">€{Number(v.price).toLocaleString()}</td>
-                          <td className="py-2 pr-3">{v.stockQuantity}</td>
+                          <td className="py-2 pr-3">{v.stockQuantity}<WaitlistBadge variantId={v.id} /></td>
                           <td className="py-2 pr-3">
                             <span
                               className={`px-2 py-0.5 rounded text-xs ${
@@ -863,5 +880,18 @@ export default function ArtworksPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function WaitlistBadge({ variantId }: { variantId: string }) {
+  const { data } = trpc.waitlist.countForVariant.useQuery({ variantId });
+  if (!data || data.count === 0) return null;
+  return (
+    <span
+      className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded ml-2"
+      title={`${data.count} ${data.count === 1 ? 'person is' : 'people are'} waiting for this variant`}
+    >
+      {data.count} waiting
+    </span>
   );
 }
