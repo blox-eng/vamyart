@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { trpc } from '../../../lib/trpc';
 
 export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
@@ -6,6 +6,9 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
     const [termsAccepted, setTermsAccepted] = useState(false);
+    const [notifyForVariantId, setNotifyForVariantId] = useState<string | null>(null);
+    const [notifyEmail, setNotifyEmail] = useState('');
+    const [notifySubmitted, setNotifySubmitted] = useState<string | null>(null);
 
     useEffect(() => {
         function onPageShow(e: PageTransitionEvent) {
@@ -18,9 +21,18 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
         return () => window.removeEventListener('pageshow', onPageShow);
     }, []);
 
-    const productsQuery = trpc.products.listByArtworkSlug.useQuery({ slug: artworkSlug }, { retry: false });
+    const productsQuery = trpc.products.listByArtworkSlug.useQuery(
+        { slug: artworkSlug },
+        {
+            retry: false,
+            staleTime: 10_000,
+            refetchOnWindowFocus: true,
+            refetchOnMount: true,
+        },
+    );
     const { data: productList, isLoading: productsLoading, isError: productsError } = productsQuery;
     const createSession = trpc.checkout.createSession.useMutation();
+    const waitlistSubscribe = trpc.waitlist.subscribe.useMutation();
 
     if (productsLoading) {
         return (
@@ -55,17 +67,14 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     }
     if (!productList || productList.length === 0) return null;
 
-    // Flatten all variants across products
     const variants = productList.flatMap(p =>
         p.variants.map(v => ({ ...v, productName: p.name }))
     );
-
     if (variants.length === 0) return null;
 
     const selectedVariant = variants.find(v => v.id === selectedVariantId) ?? null;
     const priceLabel = selectedVariant ? `€${Number(selectedVariant.price).toLocaleString()}` : '';
 
-    // Resolve shipping from first product (all products in an artwork share one method)
     const shippingMethod = productList?.[0]?.shippingMethod;
     const shippingDisplay = shippingMethod?.displayText ?? null;
     const shippingClass = shippingMethod?.type === 'free' ? 'text-green-600' : 'text-gray-500';
@@ -78,8 +87,28 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             const { url } = await createSession.mutateAsync({ variantId: selectedVariantId });
             window.location.href = url;
         } catch (err) {
-            setCheckoutError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+            const code = (err as { data?: { code?: string } })?.data?.code;
+            const message = err instanceof Error ? err.message : '';
+            if (code === 'PRECONDITION_FAILED' && message === 'OUT_OF_STOCK') {
+                await productsQuery.refetch();
+                setNotifyForVariantId(selectedVariantId);
+                setCheckoutError("This piece just sold. Leave your email below and we’ll notify you once, when it’s available again.");
+            } else {
+                setCheckoutError(message || 'Something went wrong. Please try again.');
+            }
             setIsRedirecting(false);
+        }
+    }
+
+    async function handleNotifySubmit(e: FormEvent) {
+        e.preventDefault();
+        if (!notifyForVariantId || !notifyEmail) return;
+        try {
+            await waitlistSubscribe.mutateAsync({ variantId: notifyForVariantId, email: notifyEmail });
+            setNotifySubmitted(notifyForVariantId);
+            setNotifyEmail('');
+        } catch {
+            // error surfaced via waitlistSubscribe.error below
         }
     }
 
@@ -87,32 +116,86 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
         <div className="border border-black p-6 mt-4">
             <h3 className="text-xs uppercase tracking-widest mb-4">Available pieces</h3>
             <div className="space-y-2 mb-6">
-                {variants.map(v => (
-                    <label
-                        key={v.id}
-                        className={`flex items-center justify-between p-3 border cursor-pointer transition-colors ${selectedVariantId === v.id ? 'border-black bg-gray-50' : 'border-neutral hover:border-dark'}`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="radio"
-                                name="variant"
-                                value={v.id}
-                                checked={selectedVariantId === v.id}
-                                onChange={() => { setSelectedVariantId(v.id); setCheckoutError(null); }}
-                                className="sr-only"
-                            />
-                            <div>
-                                <p className="text-sm font-medium">{v.name}</p>
-                            </div>
+                {variants.map(v => {
+                    const isOut = !v.available || v.stockQuantity <= 0;
+                    const showNotify = isOut && notifyForVariantId === v.id;
+                    const submitted = notifySubmitted === v.id;
+                    return (
+                        <div key={v.id}>
+                            <label
+                                className={`flex items-center justify-between p-3 border transition-colors ${
+                                    isOut
+                                        ? 'border-neutral opacity-70 cursor-default'
+                                        : selectedVariantId === v.id
+                                            ? 'border-black bg-gray-50 cursor-pointer'
+                                            : 'border-neutral hover:border-dark cursor-pointer'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="radio"
+                                        name="variant"
+                                        value={v.id}
+                                        disabled={isOut}
+                                        checked={selectedVariantId === v.id}
+                                        onChange={() => { setSelectedVariantId(v.id); setCheckoutError(null); }}
+                                        className="sr-only"
+                                    />
+                                    <div>
+                                        <p className="text-sm font-medium">{v.name}</p>
+                                    </div>
+                                </div>
+                                <div className="text-right flex items-center gap-3">
+                                    <div>
+                                        <p className="text-sm">€{Number(v.price).toLocaleString()}</p>
+                                        <p className={`text-xs ${v.stockQuantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                            {v.stockQuantity > 0 ? 'In stock' : 'Out of stock'}
+                                        </p>
+                                    </div>
+                                    {isOut && !showNotify && !submitted && (
+                                        <button
+                                            type="button"
+                                            onClick={() => { setNotifyForVariantId(v.id); setNotifySubmitted(null); }}
+                                            className="text-xs underline hover:no-underline"
+                                        >
+                                            Notify me
+                                        </button>
+                                    )}
+                                </div>
+                            </label>
+                            {showNotify && !submitted && (
+                                <form onSubmit={handleNotifySubmit} className="flex flex-col gap-1 mt-2">
+                                    <div className="flex gap-2 items-start">
+                                        <input
+                                            type="email"
+                                            required
+                                            placeholder="you@example.com"
+                                            value={notifyEmail}
+                                            onChange={(e) => setNotifyEmail(e.target.value)}
+                                            className="flex-1 border border-neutral px-3 py-2 text-sm"
+                                            aria-label={`Email to be notified when ${v.name} is available`}
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={waitlistSubscribe.isPending}
+                                            className="bg-black text-white px-4 py-2 text-xs tracking-wide disabled:opacity-60"
+                                        >
+                                            {waitlistSubscribe.isPending ? 'Sending…' : 'Notify me'}
+                                        </button>
+                                    </div>
+                                    {waitlistSubscribe.isError && (
+                                        <p className="text-xs text-red-500">Something went wrong — please try again.</p>
+                                    )}
+                                </form>
+                            )}
+                            {submitted && (
+                                <p className="text-xs text-green-700 mt-2">
+                                    ✓ We&rsquo;ll email you once, the next time this piece is available.
+                                </p>
+                            )}
                         </div>
-                        <div className="text-right">
-                            <p className="text-sm">€{Number(v.price).toLocaleString()}</p>
-                            <p className={`text-xs ${v.stockQuantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                {v.stockQuantity > 0 ? 'In stock' : 'Out of stock'}
-                            </p>
-                        </div>
-                    </label>
-                ))}
+                    );
+                })}
             </div>
             {shippingDisplay && (
                 <p className={`text-xs mb-3 ${shippingClass}`}>
