@@ -76,7 +76,7 @@ sections:
               - pb-8
               - pr-8
             borderRadius: none
-            flexDirection: row
+            flexDirection: col
             justifyContent: center
             textAlign: left
         image:
@@ -109,7 +109,7 @@ sections:
               - pb-8
               - pr-8
             borderRadius: none
-            flexDirection: row
+            flexDirection: col
             textAlign: left
             justifyContent: center
         type: FeaturedItem
@@ -134,7 +134,7 @@ sections:
               - pb-8
               - pr-8
             borderRadius: none
-            flexDirection: row
+            flexDirection: col
         type: FeaturedItem
       - title: Craft
         subtitle: On Quality
@@ -155,7 +155,7 @@ sections:
               - pb-8
               - pr-8
             borderRadius: none
-            flexDirection: row
+            flexDirection: col
             textAlign: left
             justifyContent: center
         type: FeaturedItem
