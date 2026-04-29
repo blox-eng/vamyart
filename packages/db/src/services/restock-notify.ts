@@ -62,26 +62,42 @@ export async function notifyWaitlistForVariant(
     privacyUrl: `${siteUrl}/privacy`,
   });
 
+  // Send-then-mark, not transactional: if the process crashes between resend.emails.send
+  // and the notifiedAt update, the same subscriber may be re-emailed on the next restock.
+  // Acceptable trade — duplicate notify is mild; silent miss (mark-then-send) is worse.
+  const CHUNK_SIZE = 10;
   let notified = 0;
   let failed = 0;
-  for (const row of rows) {
-    try {
-      await resend.emails.send({
-        from: fromEmail,
-        to: row.email,
-        replyTo: "maeve@vamy.art",
-        subject: "The piece you asked about is available again",
-        html,
-      });
-      await db
-        .update(variantWaitlist)
-        .set({ notifiedAt: new Date() })
-        .where(eq(variantWaitlist.id, row.id));
-      notified += 1;
-    } catch (err) {
-      failed += 1;
-      console.error("[restock-notify] send failed", { variantId, waitlistRowId: row.id, err });
-    }
+  for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+    const chunk = rows.slice(i, i + CHUNK_SIZE);
+    const results = await Promise.allSettled(
+      chunk.map(async (row) => {
+        await resend.emails.send({
+          from: fromEmail,
+          to: row.email,
+          replyTo: "maeve@vamy.art",
+          subject: "The piece you asked about is available again",
+          html,
+        });
+        await db
+          .update(variantWaitlist)
+          .set({ notifiedAt: new Date() })
+          .where(eq(variantWaitlist.id, row.id));
+        return row.id;
+      }),
+    );
+    results.forEach((r, idx) => {
+      if (r.status === "fulfilled") {
+        notified += 1;
+      } else {
+        failed += 1;
+        console.error("[restock-notify] send failed", {
+          variantId,
+          waitlistRowId: chunk[idx]!.id,
+          err: r.reason,
+        });
+      }
+    });
   }
   return { notified, failed };
 }
