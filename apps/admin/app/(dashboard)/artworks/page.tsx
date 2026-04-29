@@ -206,14 +206,15 @@ export default function ArtworksPage() {
           if (result && typeof result === 'object' && 'notified' in result) {
             const n = (result as { notified: number }).notified;
             const f = (result as { failed: number }).failed;
-            if (n > 0 || f > 0) {
-              const parts: string[] = [];
-              if (n > 0) parts.push(`${n} waitlist subscriber${n === 1 ? '' : 's'} notified`);
-              if (f > 0) parts.push(`${f} failed — check logs`);
-              if (typeof window !== 'undefined') window.alert(`Saved. ${parts.join(', ')}.`);
+            if (n > 0) {
+              toast(`${n} waitlist subscriber${n === 1 ? '' : 's'} notified`, "success");
+            }
+            if (f > 0) {
+              toast(`${f} waitlist email${f === 1 ? '' : 's'} failed — check logs`, "error");
             }
           }
           utils.waitlist.countForVariant.invalidate({ variantId: id });
+          utils.waitlist.listForVariant.invalidate({ variantId: id });
         },
       }
     );
@@ -884,14 +885,67 @@ export default function ArtworksPage() {
 }
 
 function WaitlistBadge({ variantId }: { variantId: string }) {
+  const [open, setOpen] = useState(false);
   const { data } = trpc.waitlist.countForVariant.useQuery({ variantId });
+  const list = trpc.waitlist.listForVariant.useQuery(
+    { variantId },
+    { enabled: open },
+  );
   if (!data || data.count === 0) return null;
   return (
-    <span
-      className="inline-block text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded ml-2"
-      title={`${data.count} ${data.count === 1 ? 'person is' : 'people are'} waiting for this variant`}
-    >
-      {data.count} waiting
+    <span className="relative inline-block ml-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 px-2 py-0.5 rounded"
+        title="Show waitlist subscribers"
+      >
+        {data.count} waiting
+      </button>
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setOpen(false)}
+            aria-hidden
+          />
+          <div className="absolute z-20 right-0 mt-1 w-72 bg-white border rounded-lg shadow-lg p-3 text-left">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-gray-700">Waitlist</p>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-xs text-gray-400 hover:text-gray-700"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            {list.isLoading && <p className="text-xs text-gray-400">Loading…</p>}
+            {!list.isLoading && (list.data?.length ?? 0) === 0 && (
+              <p className="text-xs text-gray-400">No subscribers.</p>
+            )}
+            {!list.isLoading && (list.data?.length ?? 0) > 0 && (
+              <ul className="max-h-64 overflow-y-auto space-y-1">
+                {list.data?.map((row) => (
+                  <li key={row.id} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="truncate" title={row.email}>{row.email}</span>
+                    {row.notifiedAt ? (
+                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-gray-400">
+                        notified
+                      </span>
+                    ) : (
+                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-amber-600">
+                        waiting
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
     </span>
   );
 }
