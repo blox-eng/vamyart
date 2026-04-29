@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { eq, and } from "drizzle-orm";
+import { detectRestockTransition, notifyWaitlistForVariant } from "../../services/restock-notify";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { products, productVariants, artworks } from "../../schema";
@@ -105,6 +106,12 @@ export const productsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      const before = await db.query.productVariants.findFirst({
+        where: eq(productVariants.id, input.id),
+        columns: { available: true, stockQuantity: true },
+      });
+      if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
+
       await db
         .update(productVariants)
         .set({
@@ -113,7 +120,17 @@ export const productsRouter = router({
           updatedAt: new Date(),
         })
         .where(eq(productVariants.id, input.id));
-      return { success: true };
+
+      const after = {
+        available: input.available ?? before.available,
+        stockQuantity: input.stockQuantity,
+      };
+      let notified = 0;
+      let failed = 0;
+      if (detectRestockTransition(before, after)) {
+        ({ notified, failed } = await notifyWaitlistForVariant(input.id));
+      }
+      return { success: true, notified, failed };
     }),
 
   updateVariant: protectedProcedure
@@ -128,6 +145,12 @@ export const productsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      const before = await db.query.productVariants.findFirst({
+        where: eq(productVariants.id, input.id),
+        columns: { available: true, stockQuantity: true },
+      });
+      if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
+
       const [v] = await db
         .update(productVariants)
         .set({
@@ -140,7 +163,14 @@ export const productsRouter = router({
         })
         .where(eq(productVariants.id, input.id))
         .returning();
-      return v;
+
+      const after = { available: input.available, stockQuantity: input.stockQuantity };
+      let notified = 0;
+      let failed = 0;
+      if (detectRestockTransition(before, after)) {
+        ({ notified, failed } = await notifyWaitlistForVariant(input.id));
+      }
+      return { ...v, notified, failed };
     }),
 
   deleteVariant: protectedProcedure

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml } from "@vamy/db";
-import { eq, sql } from "drizzle-orm";
+import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition } from "@vamy/db";
+import { eq, sql, and, ne } from "drizzle-orm";
 import { Resend } from "resend";
 
 function inferLeadTime(productType: string | null | undefined): string {
@@ -111,6 +111,62 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
       console.error("[stripe-webhook] artist notification email failed", { orderId: inserted.id, err });
+    }
+  }
+
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId = typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+    if (!paymentIntentId) return new Response(null, { status: 200 });
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const sessions = await stripe.checkout.sessions.list({
+      payment_intent: paymentIntentId,
+      limit: 1,
+    });
+    const session = sessions.data[0];
+    if (!session) return new Response(null, { status: 200 });
+
+    // Idempotent: only flip + restock the first time we see a refund for this order.
+    const updated = await db
+      .update(orders)
+      .set({ status: "refunded" })
+      .where(and(eq(orders.stripeSessionId, session.id), ne(orders.status, "refunded")))
+      .returning({ id: orders.id, productVariantId: orders.productVariantId });
+    if (updated.length === 0) return new Response(null, { status: 200 });
+
+    const variantId = updated[0]!.productVariantId;
+
+    const variantBefore = await db.query.productVariants.findFirst({
+      where: eq(productVariants.id, variantId),
+      columns: { available: true, stockQuantity: true },
+    });
+
+    const [variantAfter] = await db
+      .update(productVariants)
+      .set({ stockQuantity: sql`stock_quantity + 1`, updatedAt: new Date() })
+      .where(eq(productVariants.id, variantId))
+      .returning({ available: productVariants.available, stockQuantity: productVariants.stockQuantity });
+
+    const shouldNotify =
+      variantBefore &&
+      variantAfter &&
+      detectRestockTransition(variantBefore, variantAfter);
+
+    if (shouldNotify) {
+      try {
+        const result = await notifyWaitlistForVariant(variantId);
+        if (result.failed > 0) {
+          console.error("[stripe-webhook] some waitlist notifications failed on refund", {
+            variantId,
+            ...result,
+          });
+        }
+      } catch (err) {
+        console.error("[stripe-webhook] waitlist notify failed on refund", { variantId, err });
+      }
     }
   }
 

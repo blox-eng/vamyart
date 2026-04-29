@@ -9,6 +9,7 @@ import {
   timestamp,
   jsonb,
   inet,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -70,6 +71,26 @@ export const productVariants = pgTable("product_variants", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ─── Variant Waitlist (back-in-stock notifications) ──────────────────────────
+export const variantWaitlist = pgTable(
+  "variant_waitlist",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productVariantId: uuid("product_variant_id")
+      .notNull()
+      .references(() => productVariants.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    notifiedAt: timestamp("notified_at", { withTimezone: true }),
+  },
+  (t) => ({
+    uniqueEmailVariant: unique("variant_waitlist_email_variant_unique").on(
+      t.email,
+      t.productVariantId,
+    ),
+  }),
+);
+
 // ─── Orders ───────────────────────────────────────────────────────────────────
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -79,7 +100,7 @@ export const orders = pgTable("orders", {
   shippingAddress: jsonb("shipping_address").notNull(),
   amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }).notNull(),
   stripeSessionId: text("stripe_session_id").notNull().unique(),
-  status: text("status").notNull().default("paid"), // paid | shipped | cancelled
+  status: text("status").notNull().default("paid"), // paid | shipped | cancelled | refunded
   trackingNumber: text("tracking_number"),
   trackingCarrier: text("tracking_carrier"),
   shippedAt: timestamp("shipped_at", { withTimezone: true }),
@@ -183,6 +204,13 @@ export const shippingMethodsRelations = relations(shippingMethods, ({ many }) =>
 
 export const productVariantsRelations = relations(productVariants, ({ one }) => ({
   product: one(products, { fields: [productVariants.productId], references: [products.id] }),
+}));
+
+export const variantWaitlistRelations = relations(variantWaitlist, ({ one }) => ({
+  productVariant: one(productVariants, {
+    fields: [variantWaitlist.productVariantId],
+    references: [productVariants.id],
+  }),
 }));
 
 export const ordersRelations = relations(orders, ({ one }) => ({
