@@ -100,7 +100,7 @@ export const orders = pgTable("orders", {
   shippingAddress: jsonb("shipping_address").notNull(),
   amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }).notNull(),
   stripeSessionId: text("stripe_session_id").notNull().unique(),
-  status: text("status").notNull().default("paid"), // paid | shipped | cancelled
+  status: text("status").notNull().default("paid"), // paid | shipped | cancelled | refunded
   trackingNumber: text("tracking_number"),
   trackingCarrier: text("tracking_carrier"),
   shippedAt: timestamp("shipped_at", { withTimezone: true }),

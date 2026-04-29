@@ -117,7 +117,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             <h3 className="text-xs uppercase tracking-widest mb-4">Available pieces</h3>
             <div className="space-y-2 mb-6">
                 {variants.map(v => {
-                    const isOut = v.stockQuantity <= 0;
+                    const isOut = !v.available || v.stockQuantity <= 0;
                     const showNotify = isOut && notifyForVariantId === v.id;
                     const submitted = notifySubmitted === v.id;
                     return (
@@ -164,23 +164,28 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                                 </div>
                             </label>
                             {showNotify && !submitted && (
-                                <form onSubmit={handleNotifySubmit} className="flex gap-2 mt-2 items-start">
-                                    <input
-                                        type="email"
-                                        required
-                                        placeholder="you@example.com"
-                                        value={notifyEmail}
-                                        onChange={(e) => setNotifyEmail(e.target.value)}
-                                        className="flex-1 border border-neutral px-3 py-2 text-sm"
-                                        aria-label={`Email to be notified when ${v.name} is available`}
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={waitlistSubscribe.isPending}
-                                        className="bg-black text-white px-4 py-2 text-xs tracking-wide disabled:opacity-60"
-                                    >
-                                        {waitlistSubscribe.isPending ? 'Sending…' : 'Notify me'}
-                                    </button>
+                                <form onSubmit={handleNotifySubmit} className="flex flex-col gap-1 mt-2">
+                                    <div className="flex gap-2 items-start">
+                                        <input
+                                            type="email"
+                                            required
+                                            placeholder="you@example.com"
+                                            value={notifyEmail}
+                                            onChange={(e) => setNotifyEmail(e.target.value)}
+                                            className="flex-1 border border-neutral px-3 py-2 text-sm"
+                                            aria-label={`Email to be notified when ${v.name} is available`}
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={waitlistSubscribe.isPending}
+                                            className="bg-black text-white px-4 py-2 text-xs tracking-wide disabled:opacity-60"
+                                        >
+                                            {waitlistSubscribe.isPending ? 'Sending…' : 'Notify me'}
+                                        </button>
+                                    </div>
+                                    {waitlistSubscribe.isError && (
+                                        <p className="text-xs text-red-500">Something went wrong — please try again.</p>
+                                    )}
                                 </form>
                             )}
                             {submitted && (

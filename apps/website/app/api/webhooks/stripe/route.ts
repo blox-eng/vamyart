@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant } from "@vamy/db";
+import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition } from "@vamy/db";
 import { eq, sql, and, ne } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -138,21 +138,35 @@ export async function POST(req: NextRequest) {
     if (updated.length === 0) return new Response(null, { status: 200 });
 
     const variantId = updated[0]!.productVariantId;
-    await db
+
+    const variantBefore = await db.query.productVariants.findFirst({
+      where: eq(productVariants.id, variantId),
+      columns: { available: true, stockQuantity: true },
+    });
+
+    const [variantAfter] = await db
       .update(productVariants)
       .set({ stockQuantity: sql`stock_quantity + 1`, updatedAt: new Date() })
-      .where(eq(productVariants.id, variantId));
+      .where(eq(productVariants.id, variantId))
+      .returning({ available: productVariants.available, stockQuantity: productVariants.stockQuantity });
 
-    try {
-      const result = await notifyWaitlistForVariant(variantId);
-      if (result.failed > 0) {
-        console.error("[stripe-webhook] some waitlist notifications failed on refund", {
-          variantId,
-          ...result,
-        });
+    const shouldNotify =
+      variantBefore &&
+      variantAfter &&
+      detectRestockTransition(variantBefore, variantAfter);
+
+    if (shouldNotify) {
+      try {
+        const result = await notifyWaitlistForVariant(variantId);
+        if (result.failed > 0) {
+          console.error("[stripe-webhook] some waitlist notifications failed on refund", {
+            variantId,
+            ...result,
+          });
+        }
+      } catch (err) {
+        console.error("[stripe-webhook] waitlist notify failed on refund", { variantId, err });
       }
-    } catch (err) {
-      console.error("[stripe-webhook] waitlist notify failed on refund", { variantId, err });
     }
   }
 
