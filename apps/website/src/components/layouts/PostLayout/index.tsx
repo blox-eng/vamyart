@@ -11,18 +11,7 @@ import { formatPrice } from '../../../lib/formatPrice';
 // Loaded client-side only — they use tRPC hooks and Supabase realtime
 const ProductSelector = dynamic(
     () => import('../../blocks/ProductSelector').then((m) => ({ default: m.ProductSelector })),
-    {
-        ssr: false,
-        loading: () => (
-            <div className="space-y-3 animate-pulse">
-                <div className="h-4 w-32 bg-gray-200 rounded" />
-                <div className="h-12 w-full bg-gray-100 rounded" />
-                <div className="h-12 w-full bg-gray-100 rounded" />
-                <div className="h-12 w-full bg-gray-100 rounded" />
-                <div className="h-10 w-full bg-gray-200 rounded" />
-            </div>
-        ),
-    }
+    { ssr: false }
 );
 const BidWidget = dynamic(
     () => import('../../blocks/BidWidget').then((m) => ({ default: m.BidWidget })),
