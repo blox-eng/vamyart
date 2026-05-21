@@ -57,3 +57,6 @@ tmp*
 # screenshots
 *.png
 .superpowers/
+
+# Local Claude Code config
+.claude/
