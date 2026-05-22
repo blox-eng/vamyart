@@ -47,7 +47,7 @@ export default function ArtworksPage() {
   });
 
   const reorder = trpc.artworks.reorder.useMutation({
-    onSuccess: async () => { await revalidatePaths(["/gallery"]); refetchArtworks(); toast("Order updated", "success"); },
+    onSuccess: async () => { await revalidatePaths(["/", "/gallery"]); refetchArtworks(); toast("Order updated", "success"); },
     onError: () => toast("Failed to reorder", "error"),
   });
 
