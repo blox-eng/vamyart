@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { router, protectedProcedure } from "../index";
+import { eq, and, ne, asc } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
+import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { artworks } from "../../schema";
 
@@ -28,6 +29,32 @@ export function artworkDeleteBlockReason(input: {
   return null;
 }
 
+const contentFields = {
+  title: z.string().min(1),
+  slug: z.string().min(1).optional(),
+  year: z.number().int().nullable().optional(),
+  medium: z.string().nullable().optional(),
+  dimensions: z.string().nullable().optional(),
+  status: z.enum(["available", "bidding", "sold"]).optional(),
+  excerpt: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  featured: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+  seoTitle: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
+};
+
+// Throws CONFLICT if slug is taken by a different artwork.
+async function assertSlugFree(slug: string, exceptId?: string) {
+  const existing = await db
+    .select({ id: artworks.id })
+    .from(artworks)
+    .where(exceptId ? and(eq(artworks.slug, slug), ne(artworks.id, exceptId)) : eq(artworks.slug, slug));
+  if (existing.length > 0) {
+    throw new TRPCError({ code: "CONFLICT", message: `Slug "${slug}" is already in use.` });
+  }
+}
+
 export const artworksRouter = router({
   list: protectedProcedure.query(async () => {
     return db.query.artworks.findMany({
@@ -35,19 +62,47 @@ export const artworksRouter = router({
     });
   }),
 
-  update: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-        title: z.string().min(1).optional(),
-        medium: z.string().optional(),
-        dimensions: z.string().optional(),
-        year: z.number().int().optional(),
-        status: z.enum(["available", "bidding", "sold"]).optional(),
-      })
-    )
+  create: protectedProcedure
+    .input(z.object(contentFields))
     .mutation(async ({ input }) => {
-      const { id, ...fields } = input;
+      const slug = slugify(input.slug ?? input.title);
+      if (!slug) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Could not derive a slug from the title." });
+      }
+      await assertSlugFree(slug);
+      const [a] = await db
+        .insert(artworks)
+        .values({
+          slug,
+          title: input.title,
+          year: input.year ?? null,
+          medium: input.medium ?? null,
+          dimensions: input.dimensions ?? null,
+          status: input.status ?? "available",
+          excerpt: input.excerpt ?? null,
+          description: input.description ?? null,
+          featured: input.featured ?? false,
+          sortOrder: input.sortOrder ?? 0,
+          seoTitle: input.seoTitle ?? null,
+          seoDescription: input.seoDescription ?? null,
+        })
+        .returning();
+      return a;
+    }),
+
+  update: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }).extend(contentFields).partial({ title: true }))
+    .mutation(async ({ input }) => {
+      const { id, slug, ...rest } = input;
+      const fields: Record<string, unknown> = { ...rest };
+      if (slug !== undefined) {
+        const normalized = slugify(slug);
+        if (!normalized) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Slug cannot be empty." });
+        }
+        await assertSlugFree(normalized, id);
+        fields.slug = normalized;
+      }
       const [a] = await db
         .update(artworks)
         .set({ ...fields, updatedAt: new Date() })
