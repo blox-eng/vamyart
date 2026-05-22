@@ -26,6 +26,12 @@ export const artworks = pgTable("artworks", {
   medium: text("medium"),
   dimensions: text("dimensions"),
   status: text("status").notNull().default("available"), // available | bidding | sold
+  excerpt: text("excerpt"),
+  description: text("description"),
+  featured: boolean("featured").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

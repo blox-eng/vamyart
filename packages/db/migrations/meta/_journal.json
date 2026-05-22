@@ -43,6 +43,13 @@
       "when": 1777039835295,
       "tag": "0005_parched_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779449018396,
+      "tag": "0006_premium_jubilee",
+      "breakpoints": true
     }
   ]
 }
