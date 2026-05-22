@@ -100,7 +100,8 @@ export async function getStaticProps() {
 
   const items = artworks.map((a) => ({
     title: a.title,
-    slug: `/gallery/${a.slug}`,
+    // Bare slug: getPageUrl() (page-utils) prepends "/gallery" for PostLayout items.
+    slug: a.slug,
     excerpt: a.excerpt ?? '',
     featuredImage: a.primaryImage
       ? { url: a.primaryImage.url, altText: a.primaryImage.altText, type: 'ImageBlock' }

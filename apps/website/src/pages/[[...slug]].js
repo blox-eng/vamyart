@@ -7,8 +7,7 @@ import { resolveStaticPaths } from '../utils/static-paths-resolvers';
 import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../utils/seo-utils';
 import { appRouter } from '@vamy/db/trpc';
 
-// Scaffolding for Tasks 5-7: server-side DB injection into getStaticProps
-// Used in the homepage, gallery, and artwork detail blocks below
+// Server-side tRPC caller for homepage DB injection (featured image + active banner).
 const serverTrpc = appRouter.createCaller({ userId: null });
 
 
