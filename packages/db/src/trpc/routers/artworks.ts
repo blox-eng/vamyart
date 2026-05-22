@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { createClient } from "@supabase/supabase-js";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { artworks, products, productVariants, orders, auctions, artworkImages } from "../../schema";
+import { artworks, products, productVariants, orders, auctions, bids, artworkImages } from "../../schema";
 
 export function slugify(input: string): string {
   return input
@@ -147,9 +147,10 @@ export const artworksRouter = router({
         : [];
 
       const auctionRows = await db
-        .select({ status: auctions.status })
+        .select({ id: auctions.id, status: auctions.status })
         .from(auctions)
         .where(eq(auctions.artworkId, input.id));
+      const auctionIds = auctionRows.map((a) => a.id);
 
       const blockReason = artworkDeleteBlockReason({
         orderCount: orderRows.length,
@@ -175,6 +176,10 @@ export const artworksRouter = router({
       }
 
       await db.transaction(async (tx) => {
+        if (auctionIds.length) {
+          await tx.delete(bids).where(inArray(bids.auctionId, auctionIds));
+          await tx.delete(auctions).where(inArray(auctions.id, auctionIds));
+        }
         if (variantIds.length) {
           await tx.delete(productVariants).where(inArray(productVariants.id, variantIds));
         }
@@ -210,6 +215,9 @@ export const artworksRouter = router({
         .set({ featured: input.featured, updatedAt: new Date() })
         .where(eq(artworks.id, input.id))
         .returning();
+      if (!a) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
+      }
       return a;
     }),
 });
