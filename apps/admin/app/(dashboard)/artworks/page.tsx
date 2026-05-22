@@ -5,6 +5,8 @@ import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import { revalidatePaths } from "@/lib/revalidate";
+import { NewPieceForm } from "./NewPieceForm";
+import { EditPiecePanel } from "./EditPiecePanel";
 
 type VariantDraft = {
   name: string;
@@ -28,6 +30,7 @@ export default function ArtworksPage() {
   const toast = useToast();
 
   const { data: productList, refetch, isLoading: productsLoading } = trpc.products.listAll.useQuery();
+  const { data: artworkList, refetch: refetchArtworks } = trpc.artworks.list.useQuery();
   const { data: shippingMethodsList, isLoading: shippingMethodsLoading } = trpc.shippingMethods.list.useQuery();
   const setFeatured = trpc.products.setFeatured.useMutation({
     onSuccess: async () => {
@@ -41,6 +44,11 @@ export default function ArtworksPage() {
   const updateShipping = trpc.products.updateShippingMethod.useMutation({
     onSuccess: () => { refetch(); toast("shipping updated", "success"); },
     onError: () => toast("failed to update shipping", "error"),
+  });
+
+  const reorder = trpc.artworks.reorder.useMutation({
+    onSuccess: async () => { await revalidatePaths(["/gallery"]); refetchArtworks(); toast("Order updated", "success"); },
+    onError: () => toast("Failed to reorder", "error"),
   });
 
   const utils = trpc.useUtils();
@@ -97,17 +105,29 @@ export default function ArtworksPage() {
 
   const artworkEntries = useMemo(() => {
     const map = new Map<string, { artwork: any; products: any[] }>();
+    for (const a of artworkList ?? []) {
+      map.set(a.id, { artwork: a, products: [] });
+    }
     for (const p of productList ?? []) {
       const key = p.artworkId ?? "none";
       if (!map.has(key)) map.set(key, { artwork: p.artwork, products: [] });
       map.get(key)!.products.push(p);
     }
     return [...map.entries()];
-  }, [productList]);
+  }, [artworkList, productList]);
 
   const selectedKey = selectedArtworkId ?? artworkEntries[0]?.[0] ?? null;
   const selectedEntry = artworkEntries.find(([k]) => k === selectedKey);
   const selected = selectedEntry?.[1];
+
+  function moveSelected(direction: -1 | 1) {
+    const ids = (artworkList ?? []).map((a) => a.id);
+    const i = ids.indexOf(selectedKey ?? "");
+    const j = i + direction;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    reorder.mutate({ orderedIds: ids });
+  }
 
   // ── Image gallery ────────────────────────────────────────────────────────────
 
@@ -300,6 +320,8 @@ export default function ArtworksPage() {
     <div className="p-8 max-w-5xl mx-auto">
       <h1 className="text-2xl font-light mb-8">Pieces</h1>
 
+      <NewPieceForm onCreated={(id) => { refetchArtworks(); setSelectedArtworkId(id); }} />
+
       {/* Artwork dropdown */}
       {artworkEntries.length > 0 && (
         <div className="mb-8">
@@ -323,7 +345,17 @@ export default function ArtworksPage() {
               </option>
             ))}
           </select>
+          <button type="button" onClick={() => moveSelected(-1)} className="ml-2 text-xs border px-2 py-1 rounded" title="Move earlier">↑</button>
+          <button type="button" onClick={() => moveSelected(1)} className="text-xs border px-2 py-1 rounded" title="Move later">↓</button>
         </div>
+      )}
+
+      {selected?.artwork && selectedKey !== "none" && (
+        <EditPiecePanel
+          artwork={selected.artwork}
+          onChanged={() => { refetchArtworks(); refetch(); }}
+          onDeleted={() => { setSelectedArtworkId(null); refetchArtworks(); refetch(); }}
+        />
       )}
 
       {/* Image Gallery */}

@@ -67,7 +67,7 @@ async function assertSlugFree(slug: string, exceptId?: string) {
 export const artworksRouter = router({
   list: protectedProcedure.query(async () => {
     return db.query.artworks.findMany({
-      orderBy: (artworks, { asc }) => [asc(artworks.title)],
+      orderBy: (artworks, { asc }) => [asc(artworks.sortOrder), asc(artworks.title)],
     });
   }),
 
