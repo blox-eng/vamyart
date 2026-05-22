@@ -11,6 +11,21 @@ function toJson(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+// Mirror the markdown content pipeline (local-content.ts): every object with a
+// `type` gets `__metadata.modelName` so the section/component registry can resolve it.
+function withMetadata(value) {
+  if (Array.isArray(value)) return value.map(withMetadata);
+  if (value && typeof value === 'object') {
+    const next = {};
+    for (const [k, v] of Object.entries(value)) next[k] = withMetadata(v);
+    if (typeof next.type === 'string' && !next.__metadata) {
+      next.__metadata = { modelName: next.type };
+    }
+    return next;
+  }
+  return value;
+}
+
 // CTA block copied from the retired content/pages/gallery/index.md `bottomSections`.
 const BOTTOM_SECTIONS = [
   {
@@ -100,7 +115,7 @@ export async function getStaticProps() {
     title: 'Gallery',
     enableSearch: false,
     topSections: [],
-    bottomSections: BOTTOM_SECTIONS,
+    bottomSections: withMetadata(BOTTOM_SECTIONS),
     seo: {
       metaTitle: 'Gallery - Maeve Vamy',
       metaDescription:
