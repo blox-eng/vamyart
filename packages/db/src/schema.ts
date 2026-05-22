@@ -29,6 +29,7 @@ export const artworks = pgTable("artworks", {
   excerpt: text("excerpt"),
   description: text("description"),
   featured: boolean("featured").notNull().default(false),
+  published: boolean("published").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
   seoTitle: text("seo_title"),
   seoDescription: text("seo_description"),

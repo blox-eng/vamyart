@@ -50,6 +50,13 @@
       "when": 1779449018396,
       "tag": "0006_premium_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779460954807,
+      "tag": "0007_concerned_triton",
+      "breakpoints": true
     }
   ]
 }

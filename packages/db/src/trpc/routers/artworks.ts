@@ -47,6 +47,7 @@ const contentFields = {
   excerpt: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   featured: z.boolean().optional(),
+  published: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
   seoTitle: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),
@@ -90,6 +91,7 @@ export const artworksRouter = router({
           excerpt: input.excerpt ?? null,
           description: input.description ?? null,
           featured: input.featured ?? false,
+          published: input.published ?? false,
           sortOrder: input.sortOrder ?? 0,
           seoTitle: input.seoTitle ?? null,
           seoDescription: input.seoDescription ?? null,
@@ -223,6 +225,7 @@ export const artworksRouter = router({
 
   listPublic: publicProcedure.query(async () => {
     const rows = await db.query.artworks.findMany({
+      where: (a, { eq }) => eq(a.published, true),
       orderBy: (a, { asc }) => [asc(a.sortOrder), asc(a.title)],
       with: {
         images: {
@@ -260,7 +263,7 @@ export const artworksRouter = router({
           images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] },
         },
       });
-      if (!a) return null;
+      if (!a || !a.published) return null;
       const primary = a.images.find((img) => img.isPrimary) ?? a.images[0] ?? null;
       return {
         id: a.id,
@@ -270,6 +273,7 @@ export const artworksRouter = router({
         medium: a.medium,
         dimensions: a.dimensions,
         status: a.status,
+        published: a.published,
         excerpt: a.excerpt,
         description: a.description,
         seoTitle: a.seoTitle,

@@ -1,0 +1,1 @@
+ALTER TABLE "artworks" ADD COLUMN "published" boolean DEFAULT false NOT NULL;
