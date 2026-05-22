@@ -94,7 +94,7 @@ export const artworksRouter = router({
     .input(z.object({ id: z.string().uuid() }).extend(contentFields).partial({ title: true }))
     .mutation(async ({ input }) => {
       const { id, slug, ...rest } = input;
-      const fields: Record<string, unknown> = { ...rest };
+      const fields: Partial<typeof artworks.$inferInsert> = { ...rest };
       if (slug !== undefined) {
         const normalized = slugify(slug);
         if (!normalized) {
@@ -108,6 +108,9 @@ export const artworksRouter = router({
         .set({ ...fields, updatedAt: new Date() })
         .where(eq(artworks.id, id))
         .returning();
+      if (!a) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
+      }
       return a;
     }),
 });
