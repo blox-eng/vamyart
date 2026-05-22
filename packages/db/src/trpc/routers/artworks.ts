@@ -220,4 +220,70 @@ export const artworksRouter = router({
       }
       return a;
     }),
+
+  listPublic: publicProcedure.query(async () => {
+    const rows = await db.query.artworks.findMany({
+      orderBy: (a, { asc }) => [asc(a.sortOrder), asc(a.title)],
+      with: {
+        images: {
+          orderBy: (img, { asc }) => [asc(img.sortOrder)],
+        },
+      },
+    });
+    return rows.map((a) => {
+      const primary = a.images.find((img) => img.isPrimary) ?? a.images[0] ?? null;
+      return {
+        id: a.id,
+        slug: a.slug,
+        title: a.title,
+        excerpt: a.excerpt,
+        medium: a.medium,
+        dimensions: a.dimensions,
+        featured: a.featured,
+        sortOrder: a.sortOrder,
+        primaryImage: primary
+          ? {
+              url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
+              altText: primary.altText ?? a.title,
+            }
+          : null,
+      };
+    });
+  }),
+
+  getBySlug: publicProcedure
+    .input(z.object({ slug: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const a = await db.query.artworks.findFirst({
+        where: (art, { eq }) => eq(art.slug, input.slug),
+        with: {
+          images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] },
+        },
+      });
+      if (!a) return null;
+      const primary = a.images.find((img) => img.isPrimary) ?? a.images[0] ?? null;
+      return {
+        id: a.id,
+        slug: a.slug,
+        title: a.title,
+        year: a.year,
+        medium: a.medium,
+        dimensions: a.dimensions,
+        status: a.status,
+        excerpt: a.excerpt,
+        description: a.description,
+        seoTitle: a.seoTitle,
+        seoDescription: a.seoDescription,
+        primaryImage: primary
+          ? {
+              url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
+              altText: primary.altText ?? a.title,
+            }
+          : null,
+        images: a.images.map((img) => ({
+          url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${img.storagePath}`,
+          altText: img.altText ?? a.title,
+        })),
+      };
+    }),
 });
