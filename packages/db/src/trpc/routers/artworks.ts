@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { eq, and, ne, asc } from "drizzle-orm";
+import { eq, and, ne, asc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { createClient } from "@supabase/supabase-js";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { artworks } from "../../schema";
+import { artworks, products, productVariants, orders, auctions, artworkImages } from "../../schema";
 
 export function slugify(input: string): string {
   return input
@@ -27,6 +28,13 @@ export function artworkDeleteBlockReason(input: {
     return "This piece has an active auction and cannot be deleted.";
   }
   return null;
+}
+
+function getStorageClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase env vars not set");
+  return createClient(url, key);
 }
 
 const contentFields = {
@@ -111,6 +119,97 @@ export const artworksRouter = router({
       if (!a) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
       }
+      return a;
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const productRows = await db
+        .select({ id: products.id })
+        .from(products)
+        .where(eq(products.artworkId, input.id));
+      const productIds = productRows.map((p) => p.id);
+
+      const variantRows = productIds.length
+        ? await db
+            .select({ id: productVariants.id })
+            .from(productVariants)
+            .where(inArray(productVariants.productId, productIds))
+        : [];
+      const variantIds = variantRows.map((v) => v.id);
+
+      const orderRows = variantIds.length
+        ? await db
+            .select({ id: orders.id })
+            .from(orders)
+            .where(inArray(orders.productVariantId, variantIds))
+        : [];
+
+      const auctionRows = await db
+        .select({ status: auctions.status })
+        .from(auctions)
+        .where(eq(auctions.artworkId, input.id));
+
+      const blockReason = artworkDeleteBlockReason({
+        orderCount: orderRows.length,
+        auctionStatuses: auctionRows.map((a) => a.status),
+      });
+      if (blockReason) {
+        throw new TRPCError({ code: "CONFLICT", message: blockReason });
+      }
+
+      // Remove image objects from storage (best-effort), then cascade-delete rows.
+      const images = await db
+        .select({ storagePath: artworkImages.storagePath })
+        .from(artworkImages)
+        .where(eq(artworkImages.artworkId, input.id));
+      if (images.length) {
+        try {
+          await getStorageClient()
+            .storage.from("artwork-images")
+            .remove(images.map((i) => i.storagePath));
+        } catch {
+          // Storage cleanup is best-effort; DB rows are the source of truth.
+        }
+      }
+
+      await db.transaction(async (tx) => {
+        if (variantIds.length) {
+          await tx.delete(productVariants).where(inArray(productVariants.id, variantIds));
+        }
+        if (productIds.length) {
+          await tx.delete(products).where(inArray(products.id, productIds));
+        }
+        await tx.delete(artworkImages).where(eq(artworkImages.artworkId, input.id));
+        await tx.delete(artworks).where(eq(artworks.id, input.id));
+      });
+
+      return { success: true };
+    }),
+
+  reorder: protectedProcedure
+    .input(z.object({ orderedIds: z.array(z.string().uuid()) }))
+    .mutation(async ({ input }) => {
+      await db.transaction(async (tx) => {
+        for (let i = 0; i < input.orderedIds.length; i++) {
+          await tx
+            .update(artworks)
+            .set({ sortOrder: i, updatedAt: new Date() })
+            .where(eq(artworks.id, input.orderedIds[i]));
+        }
+      });
+      return { success: true };
+    }),
+
+  setFeatured: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), featured: z.boolean() }))
+    .mutation(async ({ input }) => {
+      const [a] = await db
+        .update(artworks)
+        .set({ featured: input.featured, updatedAt: new Date() })
+        .where(eq(artworks.id, input.id))
+        .returning();
       return a;
     }),
 });
