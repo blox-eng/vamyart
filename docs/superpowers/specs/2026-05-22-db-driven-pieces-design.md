@@ -80,22 +80,24 @@ Carve the gallery out of the markdown catch-all into dedicated DB-backed routes.
 
 - `src/pages/gallery/index.js`
   - `getStaticProps` reads `artworks.listPublic`.
-  - Returns `revalidate: 300` (time-based safety net) alongside on-demand revalidation.
+  - Returns `revalidate: 3600` (matches existing catch-all ISR convention) alongside on-demand revalidation.
   - Reuses the existing gallery listing presentation; feed it DB-derived items instead of markdown `page.items`.
 - `src/pages/gallery/[slug].js`
   - `getStaticPaths` returns known slugs with `fallback: 'blocking'` so a brand-new piece renders on first request before any revalidation arrives.
-  - `getStaticProps` reads `artworks.getBySlug`; returns `notFound: true` for unknown slug; `revalidate: 300`.
+  - `getStaticProps` reads `artworks.getBySlug`; returns `notFound: true` for unknown slug; `revalidate: 3600`.
   - Reuses the existing `PostLayout` + `ProductSelector` components, fed DB-derived props (title, excerpt, description paragraphs, medium, dimensions, SEO, images) instead of frontmatter. `ProductSelector` continues to fetch products client-side by slug as it does today.
 - Remove the 3 markdown gallery files and gallery `index.md` after migration. Confirm the catch-all no longer needs its build-time DB injection for `/gallery*` (that logic moves into the dedicated routes).
 
-### 4. Instant publishing (on-demand revalidation)
+### 4. Instant publishing (on-demand revalidation) — REUSE EXISTING
 
-- New API route `apps/website/src/pages/api/revalidate.js`:
-  - Validates a shared secret (`REVALIDATE_SECRET`) from query/header; 401 otherwise.
-  - Accepts the affected slug(s); calls `res.revalidate('/gallery')` and `res.revalidate('/gallery/<slug>')`.
-  - Returns `{ revalidated: true }`; on error returns 500 (Next keeps serving the last good page).
-- Admin mutations fire-and-forget a POST to the website's revalidate URL (env-configured `WEBSITE_REVALIDATE_URL` + `REVALIDATE_SECRET`), with a short timeout. A revalidation hiccup must never fail the admin mutation — it logs and moves on; the 300s ISR fallback heals it.
-- Admin and website are **separate Netlify sites**, so this is a cross-site HTTP call. Both sites need `REVALIDATE_SECRET`; the admin also needs `WEBSITE_REVALIDATE_URL`.
+This infrastructure **already exists** (built for the ISR work, `docs/superpowers/specs/2026-03-11-isr-caching-design.md`) and is in use by the product/image mutations. We reuse it as-is:
+
+- `apps/website/src/pages/api/revalidate.ts` — POST endpoint, timing-safe secret check (`x-revalidate-secret` header or `secret` query vs `REVALIDATION_SECRET`), accepts comma-separated `paths`, calls `res.revalidate(path)` for each. Returns `{ revalidated: true }` / 500 on error.
+- `apps/admin/lib/revalidate.ts` — `revalidatePaths(paths: string[])` helper. Fire-and-forget POST to `${NEXT_PUBLIC_WEBSITE_URL}/api/revalidate?paths=…` with the secret header; swallows errors (logs a warning) so a revalidation hiccup never fails the admin mutation. The catch-all's `revalidate: 3600` ISR fallback heals any missed ping.
+
+Env vars already configured on both Netlify sites: `REVALIDATION_SECRET` (both), `NEXT_PUBLIC_WEBSITE_URL` (admin). **No new env vars or endpoints.**
+
+The new admin artwork mutations call `revalidatePaths(["/", "/gallery", \`/gallery/${slug}\`])` in their `onSuccess`, exactly as the existing product/image handlers do.
 
 ### 5. Admin UI (`apps/admin/app/(dashboard)/artworks`)
 
