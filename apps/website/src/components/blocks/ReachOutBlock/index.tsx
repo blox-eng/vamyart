@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { trpc } from '../../../lib/trpc';
-import { ARTWORKS, COMMISSION_OPTION, OTHER_OPTION } from '../../../lib/artworks';
+import { COMMISSION_OPTION, OTHER_OPTION } from '../../../lib/artworks';
 
 const INPUT_CLASS =
     'w-full border border-gray-200 px-4 py-3 rounded text-sm focus:outline-none focus:border-black focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 transition-colors';
@@ -14,6 +14,9 @@ export default function ReachOutBlock() {
     const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
 
     const createInquiry = trpc.inquiries.create.useMutation();
+    // Published pieces drive the dropdown (DB-backed) — no hardcoded list.
+    const artworksQuery = trpc.artworks.listPublic.useQuery(undefined, { staleTime: 60_000 });
+    const pieces = artworksQuery.data ?? [];
 
     async function submit() {
         setStatus('idle');
@@ -98,7 +101,7 @@ export default function ReachOutBlock() {
                     className={`${INPUT_CLASS} bg-white`}
                 >
                     <option value="">— pick a piece or just say hello</option>
-                    {ARTWORKS.map((a) => (
+                    {pieces.map((a) => (
                         <option key={a.slug} value={a.title}>{a.title}</option>
                     ))}
                     <option value={COMMISSION_OPTION.title}>{COMMISSION_OPTION.title}</option>
