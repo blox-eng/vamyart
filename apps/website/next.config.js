@@ -14,6 +14,13 @@ const nextConfig = {
     transpilePackages: ['@vamy/ui', '@vamy/db'],
     // Keep Node.js-only packages (postgres driver, resend, stripe) out of the client bundle.
     serverExternalPackages: ['postgres', 'resend', 'stripe'],
+    // allContent() reads content/{pages,data} via a runtime glob, which Next's file
+    // tracing can't statically detect — so the markdown/JSON wouldn't be bundled into
+    // the serverless functions and getStaticProps would fail (undefined `site`) on any
+    // on-demand / ISR render. Force-include the content dir for the pages that read it.
+    outputFileTracingIncludes: {
+        '**': ['./content/**/*'],
+    },
     // Type-checking is run separately via `tsc --noEmit` in CI.
     typescript: {
         ignoreBuildErrors: true,
