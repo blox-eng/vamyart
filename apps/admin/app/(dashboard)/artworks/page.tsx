@@ -68,7 +68,7 @@ export default function ArtworksPage() {
   });
   const deleteVariant = trpc.products.deleteVariant.useMutation({
     onSuccess: () => { refetch(); toast("variant deleted", "success"); },
-    onError: () => toast("failed to delete variant", "error"),
+    onError: (e) => toast(e.message || "failed to delete variant", "error"),
   });
   const createVariant = trpc.products.createVariant.useMutation({
     onSuccess: () => { refetch(); toast("variant added", "success"); },
