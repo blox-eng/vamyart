@@ -154,6 +154,7 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                                                 className="h-full"
                                                 imageClassName="h-full w-auto object-cover"
                                                 sizes="auto"
+                                                loading="lazy"
                                                 {...(setIndex === 0 && hasAnnotations && { 'data-sb-field-path': `.${index}` })}
                                             />
                                         </a>
@@ -164,6 +165,7 @@ function ImageGalleryAnimatedGrid({ images = [], motion, hasTopMargin, hasAnnota
                                             className="h-full flex-shrink-0"
                                             imageClassName="h-full w-auto object-cover"
                                             sizes="auto"
+                                            loading="lazy"
                                             {...(setIndex === 0 && hasAnnotations && { 'data-sb-field-path': `.${index}` })}
                                         />
                                     )
