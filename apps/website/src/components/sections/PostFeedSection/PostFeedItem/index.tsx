@@ -52,9 +52,11 @@ export default function PostFeedItem(props) {
                     <LazyImage
                         src={post.featuredImage.url}
                         alt={post.featuredImage.altText || post.title || ''}
+                        sizes="(min-width: 640px) 33vw, 100vw"
                         className={classNames({
                             'xs:w-[50%] xs:shrink-0': hasBigThumbnail && (flexDirection === 'row' || flexDirection === 'row-reversed'),
-                            'xs:w-[28.4%] xs:shrink-0': !hasBigThumbnail && (flexDirection === 'row' || flexDirection === 'row-reversed')
+                            'xs:w-[28.4%] xs:shrink-0': !hasBigThumbnail && (flexDirection === 'row' || flexDirection === 'row-reversed'),
+                            'aspect-[4/5]': flexDirection === 'col' || flexDirection === 'col-reverse'
                         })}
                         imgClassName="w-full h-full object-cover"
                         {...(hasAnnotations && { 'data-sb-field-path': 'featuredImage' })}

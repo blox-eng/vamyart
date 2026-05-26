@@ -1,10 +1,14 @@
-import { describe, it, expect } from "vitest";
-import { eq, and } from "drizzle-orm";
+import { describe, it, expect, afterAll } from "vitest";
+import { eq, and, inArray } from "drizzle-orm";
 import { createCaller } from "../root";
 import { db } from "../../client";
 import { variantWaitlist, productVariants, products, artworks } from "../../schema";
 
 const ctx = { db, userId: null } as const;
+
+const createdArtworkIds: string[] = [];
+const createdProductIds: string[] = [];
+const createdVariantIds: string[] = [];
 
 async function seedVariant() {
   const [aw] = await db.insert(artworks).values({ slug: `wl-${Date.now()}-${Math.random()}`, title: "T" }).returning();
@@ -13,8 +17,24 @@ async function seedVariant() {
     .insert(productVariants)
     .values({ productId: p.id, name: "V", price: "10", stockQuantity: 0, available: true })
     .returning();
+  createdArtworkIds.push(aw.id);
+  createdProductIds.push(p.id);
+  createdVariantIds.push(v.id);
   return v;
 }
+
+afterAll(async () => {
+  if (createdVariantIds.length) {
+    await db.delete(variantWaitlist).where(inArray(variantWaitlist.productVariantId, createdVariantIds));
+    await db.delete(productVariants).where(inArray(productVariants.id, createdVariantIds));
+  }
+  if (createdProductIds.length) {
+    await db.delete(products).where(inArray(products.id, createdProductIds));
+  }
+  if (createdArtworkIds.length) {
+    await db.delete(artworks).where(inArray(artworks.id, createdArtworkIds));
+  }
+});
 
 describe("waitlist.subscribe", () => {
   it("creates a new row for a new email/variant pair", async () => {

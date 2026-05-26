@@ -4,7 +4,23 @@ import { eq, and } from "drizzle-orm";
 import { detectRestockTransition, notifyWaitlistForVariant } from "../../services/restock-notify";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { products, productVariants, artworks } from "../../schema";
+import { products, productVariants, artworks, orders, auctions } from "../../schema";
+
+// Orders and auctions reference a variant with RESTRICT — deleting a variant they
+// point at would orphan financial/auction history, so block it (deactivate instead).
+// variant_waitlist cascades, so it needs no guard.
+export function variantDeleteBlockReason(input: {
+  orderCount: number;
+  auctionCount: number;
+}): string | null {
+  if (input.orderCount > 0) {
+    return "This variant has orders and cannot be deleted. Mark it unavailable instead.";
+  }
+  if (input.auctionCount > 0) {
+    return "This variant is linked to an auction and cannot be deleted.";
+  }
+  return null;
+}
 
 export const productsRouter = router({
   getFeatured: publicProcedure.query(async () => {
@@ -176,8 +192,40 @@ export const productsRouter = router({
   deleteVariant: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
+      const orderRows = await db
+        .select({ id: orders.id })
+        .from(orders)
+        .where(eq(orders.productVariantId, input.id));
+      const auctionRows = await db
+        .select({ id: auctions.id })
+        .from(auctions)
+        .where(eq(auctions.productVariantId, input.id));
+
+      const blockReason = variantDeleteBlockReason({
+        orderCount: orderRows.length,
+        auctionCount: auctionRows.length,
+      });
+      if (blockReason) {
+        throw new TRPCError({ code: "CONFLICT", message: blockReason });
+      }
+
+      // variant_waitlist rows cascade automatically.
       await db.delete(productVariants).where(eq(productVariants.id, input.id));
       return { success: true };
+    }),
+
+  // Pure visibility flip — deliberately NOT updateVariantStock, which would trip
+  // detectRestockTransition and email the waitlist when re-showing a variant.
+  setVariantAvailable: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), available: z.boolean() }))
+    .mutation(async ({ input }) => {
+      const [v] = await db
+        .update(productVariants)
+        .set({ available: input.available, updatedAt: new Date() })
+        .where(eq(productVariants.id, input.id))
+        .returning();
+      if (!v) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
+      return v;
     }),
 
   updateProduct: protectedProcedure

@@ -20,6 +20,7 @@ node_modules/
 /.next/
 */.next/
 /out/
+*.tsbuildinfo
 
 # production
 /build

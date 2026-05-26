@@ -7,14 +7,9 @@ import { resolveStaticPaths } from '../utils/static-paths-resolvers';
 import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../utils/seo-utils';
 import { appRouter } from '@vamy/db/trpc';
 
-// Scaffolding for Tasks 5-7: server-side DB injection into getStaticProps
-// Used in the homepage, gallery, and artwork detail blocks below
+// Server-side tRPC caller for homepage DB injection (featured image + active banner).
 const serverTrpc = appRouter.createCaller({ userId: null });
 
-// Strip non-serializable values (Date objects from Drizzle) before returning via getStaticProps
-function toJson(value) {
-    return JSON.parse(JSON.stringify(value));
-}
 
 function Page(props) {
     const { page, site } = props;
@@ -53,7 +48,9 @@ export function getStaticPaths() {
     const data = allContent();
     const paths = resolveStaticPaths(data);
     // Exclude paths handled by dedicated page files
-    const filtered = paths.filter(p => p !== "/get-a-piece");
+    const filtered = paths.filter(
+        (p) => p !== "/get-a-piece" && p !== "/gallery" && !p.startsWith("/gallery/")
+    );
     return { paths: filtered, fallback: 'blocking' };
 }
 
@@ -93,68 +90,6 @@ export async function getStaticProps({ params }) {
             }
         } catch {
             // No banner — component handles null gracefully
-        }
-    }
-
-    // Gallery index: attach product data to posts for server-side rendering
-    if (urlPath === '/gallery' && props.page?.items) {
-        try {
-            props.page.items = await Promise.all(
-                props.page.items.map(async (post) => {
-                    const postSlug = post.__metadata?.urlPath?.split('/').filter(Boolean).pop();
-                    if (!postSlug) return post;
-                    try {
-                        const products = await serverTrpc.products.listByArtworkSlug({ slug: postSlug });
-                        let updatedPost = { ...post };
-                        if (products.length > 0) {
-                            updatedPost.artworkProducts = toJson(products);
-                            const artworkId = products[0].artworkId;
-                            if (artworkId) {
-                                const images = await serverTrpc.artworkImages.list({ artworkId });
-                                const primary = images.find(img => img.isPrimary);
-                                if (primary) {
-                                    updatedPost.featuredImage = {
-                                        ...(post.featuredImage || {}),
-                                        url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-                                        altText: primary.altText || post.featuredImage?.altText || post.title,
-                                    };
-                                }
-                            }
-                        }
-                        return updatedPost;
-                    } catch {
-                        // Product unavailable for this slug
-                    }
-                    return post;
-                })
-            );
-        } catch {
-            // Products unavailable at build time — cards render without pricing
-        }
-    }
-
-    // Gallery detail: /gallery/{slug} — exactly 2 path segments
-    if (urlPath.startsWith('/gallery/') && urlPath.split('/').filter(Boolean).length === 2) {
-        const artworkSlug = urlPath.split('/').filter(Boolean).pop();
-        try {
-            const products = await serverTrpc.products.listByArtworkSlug({ slug: artworkSlug });
-            if (products.length > 0) {
-                props.page.artworkProducts = toJson(products);
-                const artworkId = products[0].artworkId;
-                if (artworkId) {
-                    const images = await serverTrpc.artworkImages.list({ artworkId });
-                    const primary = images.find(img => img.isPrimary);
-                    if (primary) {
-                        props.page.featuredImage = {
-                            ...(props.page.featuredImage || {}),
-                            url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-                            altText: primary.altText || props.page.featuredImage?.altText || props.page.title,
-                        };
-                    }
-                }
-            }
-        } catch {
-            // Product unavailable at build time — detail renders without pricing
         }
     }
 

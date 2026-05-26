@@ -45,6 +45,8 @@ export default function PostLayout(props) {
                                     className="w-full"
                                     imgClassName="h-auto"
                                     loading="eager"
+                                    fetchPriority="high"
+                                    sizes="(min-width: 1024px) 50vw, 100vw"
                                     {...(enableAnnotations && { 'data-sb-field-path': 'featuredImage.url' })}
                                 />
                             </div>

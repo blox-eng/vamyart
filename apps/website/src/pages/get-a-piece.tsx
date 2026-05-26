@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Header from '../components/sections/Header';
 import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
-import { ARTWORKS, COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
+import { COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
 import { formatPrice } from '../lib/formatPrice';
 import LazyImage from '../components/atoms/LazyImage';
 
@@ -48,6 +48,9 @@ export default function GetAPiece({ site }: { site: any }) {
     }, [artwork?.title]);
 
     const createInquiry = trpc.inquiries.create.useMutation();
+    // Published pieces drive the dropdown (DB-backed) — no hardcoded list.
+    const piecesQuery = trpc.artworks.listPublic.useQuery(undefined, { staleTime: 60_000 });
+    const pieces = piecesQuery.data ?? [];
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -108,6 +111,8 @@ export default function GetAPiece({ site }: { site: any }) {
                                             className="w-full shadow-sm mb-6"
                                             imgClassName="h-auto"
                                             loading="eager"
+                                            fetchPriority="high"
+                                            sizes="(min-width: 1024px) 40vw, 100vw"
                                         />
                                         <h2 className="text-xl font-light mb-1">{artwork.title}</h2>
                                         {medium && <p className="text-sm text-gray-500">{medium}</p>}
@@ -210,7 +215,7 @@ export default function GetAPiece({ site }: { site: any }) {
                                                     className="w-full border border-gray-200 px-4 py-3 rounded text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-black/60 focus-visible:ring-offset-2 focus:border-black transition-colors"
                                                 >
                                                     <option value="">— select a piece</option>
-                                                    {ARTWORKS.map(a => (
+                                                    {pieces.map(a => (
                                                         <option key={a.slug} value={a.title}>{a.title}</option>
                                                     ))}
                                                     <option value={COMMISSION_OPTION.title}>{COMMISSION_OPTION.title}</option>
