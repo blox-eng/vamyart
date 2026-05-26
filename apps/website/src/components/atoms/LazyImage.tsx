@@ -1,5 +1,6 @@
 import * as React from 'react';
 import classNames from 'classnames';
+import { netlifyImage, netlifyImageSrcSet } from '../../utils/netlify-image';
 
 const FALLBACK_SRC = '/images/img-placeholder.svg';
 
@@ -9,10 +10,12 @@ type LazyImageProps = {
     className?: string;
     imgClassName?: string;
     loading?: 'lazy' | 'eager';
+    widths?: number[];
+    sizes?: string;
     onLoad?: () => void;
 } & Omit<React.HTMLAttributes<HTMLDivElement>, 'className' | 'onLoad'>;
 
-export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', onLoad, ...rest }: LazyImageProps) {
+export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', widths = [400, 800, 1200, 1600], sizes = '100vw', onLoad, ...rest }: LazyImageProps) {
     const imgRef = React.useRef<HTMLImageElement>(null);
     const [loaded, setLoaded] = React.useState(false);
     const [errored, setErrored] = React.useState(false);
@@ -29,12 +32,16 @@ export default function LazyImage({ src, alt, className, imgClassName, loading =
     }, [src, onLoad]);
 
     const resolvedSrc = errored ? FALLBACK_SRC : src;
+    const optimizedSrc = netlifyImage(resolvedSrc, { width: widths[widths.length - 1] });
+    const srcSet = netlifyImageSrcSet(resolvedSrc, widths) || undefined;
 
     return (
         <div className={classNames('relative bg-gray-100 overflow-hidden', className)} {...rest}>
             <img
                 ref={imgRef}
-                src={resolvedSrc}
+                src={optimizedSrc}
+                srcSet={srcSet}
+                sizes={srcSet ? sizes : undefined}
                 alt={alt}
                 loading={loading}
                 onLoad={() => { setLoaded(true); onLoad?.(); }}
