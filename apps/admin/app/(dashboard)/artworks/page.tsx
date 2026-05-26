@@ -70,6 +70,10 @@ export default function ArtworksPage() {
     onSuccess: () => { refetch(); toast("variant deleted", "success"); },
     onError: (e) => toast(e.message || "failed to delete variant", "error"),
   });
+  const setVariantAvailable = trpc.products.setVariantAvailable.useMutation({
+    onSuccess: (v) => { refetch(); toast(v.available ? "Shown in store" : "Hidden from store", "success"); },
+    onError: (e) => toast(e.message || "failed to update visibility", "error"),
+  });
   const createVariant = trpc.products.createVariant.useMutation({
     onSuccess: () => { refetch(); toast("variant added", "success"); },
     onError: () => toast("failed to add variant", "error"),
@@ -585,7 +589,7 @@ export default function ArtworksPage() {
                       <th className="pb-2 pr-3">Variant</th>
                       <th className="pb-2 pr-3">Price</th>
                       <th className="pb-2 pr-3">Stock</th>
-                      <th className="pb-2 pr-3">Available</th>
+                      <th className="pb-2 pr-3" title="Hidden variants don't appear on the customer's piece page at all (unlike out-of-stock, which is still shown)">Shown in store</th>
                       <th className="pb-2"></th>
                     </tr>
                   </thead>
@@ -715,15 +719,19 @@ export default function ArtworksPage() {
                           <td className="py-2 pr-3">€{Number(v.price).toLocaleString()}</td>
                           <td className="py-2 pr-3">{v.stockQuantity}<WaitlistBadge variantId={v.id} /></td>
                           <td className="py-2 pr-3">
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs ${
+                            <button
+                              type="button"
+                              onClick={() => setVariantAvailable.mutate({ id: v.id, available: !v.available })}
+                              disabled={setVariantAvailable.isPending}
+                              title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
+                              className={`px-2 py-0.5 rounded text-xs disabled:opacity-50 ${
                                 v.available
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-gray-100 text-gray-500"
+                                  ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                               }`}
                             >
-                              {v.available ? "yes" : "no"}
-                            </span>
+                              {v.available ? "Visible" : "Hidden"}
+                            </button>
                           </td>
                           <td className="py-2">
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

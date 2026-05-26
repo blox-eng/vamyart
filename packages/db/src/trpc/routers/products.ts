@@ -214,6 +214,20 @@ export const productsRouter = router({
       return { success: true };
     }),
 
+  // Pure visibility flip — deliberately NOT updateVariantStock, which would trip
+  // detectRestockTransition and email the waitlist when re-showing a variant.
+  setVariantAvailable: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), available: z.boolean() }))
+    .mutation(async ({ input }) => {
+      const [v] = await db
+        .update(productVariants)
+        .set({ available: input.available, updatedAt: new Date() })
+        .where(eq(productVariants.id, input.id))
+        .returning();
+      if (!v) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
+      return v;
+    }),
+
   updateProduct: protectedProcedure
     .input(
       z.object({
