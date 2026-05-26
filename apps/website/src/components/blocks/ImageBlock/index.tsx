@@ -2,10 +2,10 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to-class-names';
-import { netlifyImage, netlifyImageSrcSet } from '../../../utils/netlify-image';
+import { netlifyImage, netlifyImageSrcSet, DEFAULT_WIDTHS } from '../../../utils/netlify-image';
 
 export default function ImageBlock(props) {
-    const { elementId, className, imageClassName, url, altText = '', styles = {} } = props;
+    const { elementId, className, imageClassName, url, altText = '', sizes = '100vw', styles = {} } = props;
     if (!url) {
         return null;
     }
@@ -27,7 +27,7 @@ export default function ImageBlock(props) {
         styles?.self?.borderRadius ? mapStyles({ borderRadius: styles?.self?.borderRadius }) : undefined
     );
 
-    const optimizedUrl = netlifyImage(url, { width: 1600 });
+    const optimizedUrl = netlifyImage(url, { width: DEFAULT_WIDTHS[DEFAULT_WIDTHS.length - 1] });
     const srcSet = netlifyImageSrcSet(url) || undefined;
 
     return (
@@ -46,7 +46,7 @@ export default function ImageBlock(props) {
                 className={imgClassName}
                 src={optimizedUrl}
                 srcSet={srcSet}
-                sizes={srcSet ? '100vw' : undefined}
+                sizes={srcSet ? sizes : undefined}
                 alt={altText}
             />
         </div>

@@ -5,7 +5,7 @@ export type NetlifyImageOpts = {
     fit?: 'cover' | 'contain' | 'fill';
 };
 
-const DEFAULT_WIDTHS = [400, 800, 1200, 1600];
+export const DEFAULT_WIDTHS = [400, 800, 1200, 1600];
 
 // SVGs don't raster-transform, data URIs are inline, and an already-rewritten URL
 // must not be double-wrapped. The placeholder fallback is an SVG, so it falls here too.

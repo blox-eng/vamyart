@@ -111,6 +111,8 @@ export default function GetAPiece({ site }: { site: any }) {
                                             className="w-full shadow-sm mb-6"
                                             imgClassName="h-auto"
                                             loading="eager"
+                                            fetchPriority="high"
+                                            sizes="(min-width: 1024px) 40vw, 100vw"
                                         />
                                         <h2 className="text-xl font-light mb-1">{artwork.title}</h2>
                                         {medium && <p className="text-sm text-gray-500">{medium}</p>}

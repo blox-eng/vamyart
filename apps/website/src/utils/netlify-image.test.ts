@@ -64,4 +64,16 @@ describe("runtime gate", () => {
     vi.stubEnv("NODE_ENV", "development");
     expect(netlifyImageSrcSet("/a.jpg", [400, 800])).toBe("");
   });
+
+  it("netlifyImageSrcSet returns '' for a non-transformable src even in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("stackbitPreview", "");
+    expect(netlifyImageSrcSet("/x.svg", [400])).toBe("");
+  });
+
+  it("netlifyImage passes through a non-transformable src in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("stackbitPreview", "");
+    expect(netlifyImage("/x.svg", { width: 400 })).toBe("/x.svg");
+  });
 });
