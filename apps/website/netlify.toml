@@ -4,3 +4,6 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[images]
+  remote_images = ["https://ytgbohzmipyfrezsctbl\\.supabase\\.co/.*"]
