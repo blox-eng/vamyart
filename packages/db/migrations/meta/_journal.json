@@ -57,6 +57,13 @@
       "when": 1779460954807,
       "tag": "0007_concerned_triton",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779900219985,
+      "tag": "0008_hard_changeling",
+      "breakpoints": true
     }
   ]
 }

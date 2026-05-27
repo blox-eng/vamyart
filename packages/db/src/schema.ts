@@ -11,7 +11,7 @@ import {
   inet,
   unique,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export const shippingMethodType = pgEnum("shipping_method_type", ["free", "paid", "custom"]);
@@ -158,6 +158,21 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
   subscribedAt: timestamp("subscribed_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Contacts (CRM) ───────────────────────────────────────────────────────────
+// Canonical person, keyed by email. Identity (email/name) is upserted from every
+// touchpoint; tags/notes/doNotContact are artist-entered and never auto-clobbered.
+// Per-person activity history is derived at read time from the source tables.
+export const contacts = pgTable("contacts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
+  notes: text("notes"),
+  doNotContact: boolean("do_not_contact").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 
