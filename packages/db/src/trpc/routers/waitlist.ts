@@ -3,6 +3,7 @@ import { eq, and, isNull, sql } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { variantWaitlist, productVariants } from "../../schema";
+import { upsertContact } from "../../services/upsert-contact";
 
 export const waitlistRouter = router({
   subscribe: publicProcedure
@@ -25,6 +26,11 @@ export const waitlistRouter = router({
           target: [variantWaitlist.email, variantWaitlist.productVariantId],
           set: { notifiedAt: null },
         });
+      try {
+        await upsertContact(db, { email: input.email });
+      } catch (err) {
+        console.error("[waitlist] contact upsert failed", err);
+      }
       return { success: true };
     }),
 

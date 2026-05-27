@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutGrid, ShoppingBag, ImageIcon, Mail, Truck, Megaphone, LogOut, Menu, X } from "lucide-react";
+import { LayoutGrid, ShoppingBag, ImageIcon, Mail, Truck, Megaphone, LogOut, Menu, X, Users } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import React, { useEffect, useRef, useState } from "react";
@@ -23,6 +23,7 @@ const navItems = [
   { href: "/orders",    label: "Sales",          icon: ShoppingBag },
   { href: "/artworks",  label: "Pieces",         icon: ImageIcon },
   { href: "/inquiries", label: "Messages",       icon: Mail },
+  { href: "/people",    label: "People",         icon: Users },
   { href: "/shipping",  label: "Shipping",       icon: Truck },
   { href: "/banners",   label: "Announcements",  icon: Megaphone },
 ];

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { inquiries } from "../../schema";
+import { upsertContact } from "../../services/upsert-contact";
 import { Resend } from "resend";
 import { escapeHtml } from "../../utils/escape-html";
 
@@ -19,6 +20,11 @@ export const inquiriesRouter = router({
     .mutation(async ({ input }) => {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await db.insert(inquiries).values(input);
+      try {
+        await upsertContact(db, { email: input.email, name: input.name });
+      } catch (err) {
+        console.error("[inquiries] contact upsert failed", err);
+      }
 
       // Notify artist
       await resend.emails.send({

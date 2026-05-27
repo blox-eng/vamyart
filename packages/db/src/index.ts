@@ -10,3 +10,4 @@ export {
   type VariantStockState,
   type RestockNotifyResult,
 } from "./services/restock-notify";
+export { upsertContact } from "./services/upsert-contact";
