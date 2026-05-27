@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { eq, and, ne, asc, inArray } from "drizzle-orm";
+import { eq, and, ne, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { createClient } from "@supabase/supabase-js";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { artworks, products, productVariants, orders, auctions, bids, artworkImages } from "../../schema";
+import { artworks, products, productVariants, orders, auctions } from "../../schema";
 
 export function slugify(input: string): string {
   return input
@@ -28,13 +27,6 @@ export function artworkDeleteBlockReason(input: {
     return "This piece has an active auction and cannot be deleted.";
   }
   return null;
-}
-
-function getStorageClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Supabase env vars not set");
-  return createClient(url, key);
 }
 
 const contentFields = {
@@ -67,6 +59,7 @@ async function assertSlugFree(slug: string, exceptId?: string) {
 export const artworksRouter = router({
   list: protectedProcedure.query(async () => {
     return db.query.artworks.findMany({
+      where: (a, { isNull }) => isNull(a.deletedAt),
       orderBy: (artworks, { asc }) => [asc(artworks.sortOrder), asc(artworks.title)],
     });
   }),
@@ -149,10 +142,9 @@ export const artworksRouter = router({
         : [];
 
       const auctionRows = await db
-        .select({ id: auctions.id, status: auctions.status })
+        .select({ status: auctions.status })
         .from(auctions)
         .where(eq(auctions.artworkId, input.id));
-      const auctionIds = auctionRows.map((a) => a.id);
 
       const blockReason = artworkDeleteBlockReason({
         orderCount: orderRows.length,
@@ -162,38 +154,37 @@ export const artworksRouter = router({
         throw new TRPCError({ code: "CONFLICT", message: blockReason });
       }
 
-      // Remove image objects from storage (best-effort), then cascade-delete rows.
-      const images = await db
-        .select({ storagePath: artworkImages.storagePath })
-        .from(artworkImages)
-        .where(eq(artworkImages.artworkId, input.id));
-      if (images.length) {
-        try {
-          await getStorageClient()
-            .storage.from("artwork-images")
-            .remove(images.map((i) => i.storagePath));
-        } catch {
-          // Storage cleanup is best-effort; DB rows are the source of truth.
-        }
+      const [a] = await db
+        .update(artworks)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(artworks.id, input.id))
+        .returning();
+      if (!a) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
       }
-
-      await db.transaction(async (tx) => {
-        if (auctionIds.length) {
-          await tx.delete(bids).where(inArray(bids.auctionId, auctionIds));
-          await tx.delete(auctions).where(inArray(auctions.id, auctionIds));
-        }
-        if (variantIds.length) {
-          await tx.delete(productVariants).where(inArray(productVariants.id, variantIds));
-        }
-        if (productIds.length) {
-          await tx.delete(products).where(inArray(products.id, productIds));
-        }
-        await tx.delete(artworkImages).where(eq(artworkImages.artworkId, input.id));
-        await tx.delete(artworks).where(eq(artworks.id, input.id));
-      });
-
       return { success: true };
     }),
+
+  restore: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const [a] = await db
+        .update(artworks)
+        .set({ deletedAt: null, updatedAt: new Date() })
+        .where(eq(artworks.id, input.id))
+        .returning();
+      if (!a) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
+      }
+      return a;
+    }),
+
+  listTrashed: protectedProcedure.query(async () => {
+    return db.query.artworks.findMany({
+      where: (a, { isNull, not }) => not(isNull(a.deletedAt)),
+      orderBy: (a, { desc }) => [desc(a.deletedAt)],
+    });
+  }),
 
   reorder: protectedProcedure
     .input(z.object({ orderedIds: z.array(z.string().uuid()) }))
@@ -225,7 +216,7 @@ export const artworksRouter = router({
 
   listPublic: publicProcedure.query(async () => {
     const rows = await db.query.artworks.findMany({
-      where: (a, { eq }) => eq(a.published, true),
+      where: (a, { eq, and, isNull }) => and(eq(a.published, true), isNull(a.deletedAt)),
       orderBy: (a, { asc }) => [asc(a.sortOrder), asc(a.title)],
       with: {
         images: {
@@ -263,7 +254,7 @@ export const artworksRouter = router({
           images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] },
         },
       });
-      if (!a || !a.published) return null;
+      if (!a || !a.published || a.deletedAt) return null;
       const primary = a.images.find((img) => img.isPrimary) ?? a.images[0] ?? null;
       return {
         id: a.id,
