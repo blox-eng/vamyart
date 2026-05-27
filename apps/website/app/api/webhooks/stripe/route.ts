@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition } from "@vamy/db";
+import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition, upsertContact } from "@vamy/db";
 import { eq, sql, and, ne } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -54,6 +54,8 @@ export async function POST(req: NextRequest) {
         .update(productVariants)
         .set({ stockQuantity: sql`GREATEST(stock_quantity - 1, 0)`, updatedAt: new Date() })
         .where(eq(productVariants.id, variantId));
+
+      await upsertContact(tx, { email: customer?.email ?? "", name: customer?.name ?? null });
 
       return rows;
     });

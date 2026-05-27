@@ -3,6 +3,7 @@ import { eq, desc, sql } from "drizzle-orm";
 import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { bids, auctions } from "../../schema";
+import { upsertContact } from "../../services/upsert-contact";
 import { Resend } from "resend";
 import { escapeHtml } from "../../utils/escape-html";
 
@@ -90,6 +91,8 @@ export const bidsRouter = router({
             updatedAt: new Date(),
           })
           .where(eq(auctions.id, input.auctionId));
+
+        await upsertContact(tx, { email: input.bidderEmail, name: input.bidderName });
 
         return [auctionRow, inserted] as const;
       });
