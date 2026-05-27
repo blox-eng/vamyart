@@ -342,59 +342,59 @@ export default function AuctionsPage() {
                       <p className="text-xs text-gray-400">No bids yet.</p>
                     ) : (
                       <>
-                      <table className="hidden sm:table w-full text-xs">
-                        <thead>
-                          <tr className="text-left text-gray-400 border-b">
-                            <th className="pb-1 pr-4 font-normal">Bidder</th>
-                            <th className="pb-1 pr-4 font-normal">Amount</th>
-                            <th className="pb-1 font-normal">Placed</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {a.bids?.map((b: any, i: number) => (
-                            <tr key={b.id} className="border-b last:border-0">
-                              <td className="py-1.5 pr-4">
-                                <span className="font-medium">{b.bidderName}</span>
-                                <a
-                                  href={`mailto:${b.bidderEmail}`}
-                                  className="ml-2 text-blue-500 hover:underline"
-                                >
-                                  {b.bidderEmail}
-                                </a>
-                                {i === 0 && (
-                                  <span className="ml-2 text-green-600 font-medium">
-                                    · leading
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-1.5 pr-4 font-medium">
-                                €{Number(b.amount).toLocaleString()}
-                              </td>
-                              <td className="py-1.5 text-gray-400">
-                                {formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}
-                              </td>
+                        <table className="hidden sm:table w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-gray-400 border-b">
+                              <th className="pb-1 pr-4 font-normal">Bidder</th>
+                              <th className="pb-1 pr-4 font-normal">Amount</th>
+                              <th className="pb-1 font-normal">Placed</th>
                             </tr>
+                          </thead>
+                          <tbody>
+                            {a.bids?.map((b: any, i: number) => (
+                              <tr key={b.id} className="border-b last:border-0">
+                                <td className="py-1.5 pr-4">
+                                  <span className="font-medium">{b.bidderName}</span>
+                                  <a
+                                    href={`mailto:${b.bidderEmail}`}
+                                    className="ml-2 text-blue-500 hover:underline"
+                                  >
+                                    {b.bidderEmail}
+                                  </a>
+                                  {i === 0 && (
+                                    <span className="ml-2 text-green-600 font-medium">
+                                      · leading
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-1.5 pr-4 font-medium">
+                                  €{Number(b.amount).toLocaleString()}
+                                </td>
+                                <td className="py-1.5 text-gray-400">
+                                  {formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {/* Mobile bid cards */}
+                        <div className="sm:hidden space-y-2">
+                          {a.bids?.map((b: any, i: number) => (
+                            <div key={b.id} className="border rounded p-2 text-xs bg-white">
+                              <div className="flex justify-between gap-2">
+                                <span className="font-medium">{b.bidderName}</span>
+                                <span className="font-medium">€{Number(b.amount).toLocaleString()}</span>
+                              </div>
+                              <a href={`mailto:${b.bidderEmail}`} className="text-blue-500 hover:underline break-all">
+                                {b.bidderEmail}
+                              </a>
+                              <div className="flex justify-between text-gray-400 mt-1">
+                                <span>{formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}</span>
+                                {i === 0 && <span className="text-green-600 font-medium">leading</span>}
+                              </div>
+                            </div>
                           ))}
-                        </tbody>
-                      </table>
-                      {/* Mobile bid cards */}
-                      <div className="sm:hidden space-y-2">
-                        {a.bids?.map((b: any, i: number) => (
-                          <div key={b.id} className="border rounded p-2 text-xs bg-white">
-                            <div className="flex justify-between gap-2">
-                              <span className="font-medium">{b.bidderName}</span>
-                              <span className="font-medium">€{Number(b.amount).toLocaleString()}</span>
-                            </div>
-                            <a href={`mailto:${b.bidderEmail}`} className="text-blue-500 hover:underline break-all">
-                              {b.bidderEmail}
-                            </a>
-                            <div className="flex justify-between text-gray-400 mt-1">
-                              <span>{formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}</span>
-                              {i === 0 && <span className="text-green-600 font-medium">leading</span>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                        </div>
                       </>
                     )}
                   </div>
