@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, ShoppingBag, ImageIcon, Mail, Truck, Megaphone, LogOut, Menu, X } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 import { ToastProvider, useToast } from "@/components/ui/toast";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 function WelcomeToast() {
   const toast = useToast();
@@ -36,6 +36,16 @@ export default function DashboardLayout({
   const router = useRouter();
   const supabase = createClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerRef = useRef<HTMLElement>(null);
+
+  // Focus into the drawer when it opens.
+  useEffect(() => { if (drawerOpen) drawerRef.current?.focus(); }, [drawerOpen]);
+
+  // Lock body scroll while drawer is open.
+  useEffect(() => {
+    document.body.classList.toggle("overflow-hidden", drawerOpen);
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [drawerOpen]);
 
   // Close the mobile drawer whenever the route changes.
   useEffect(() => { setDrawerOpen(false); }, [pathname]);
@@ -108,6 +118,9 @@ export default function DashboardLayout({
           />
         )}
         <aside
+          ref={drawerRef}
+          tabIndex={-1}
+          inert={!drawerOpen ? true : undefined}
           className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col shrink-0 transition-transform duration-200 lg:hidden ${
             drawerOpen ? "translate-x-0" : "-translate-x-full"
           }`}
