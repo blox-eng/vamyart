@@ -71,7 +71,9 @@ export default function OrdersPage() {
                 </td>
               </tr>
             )}
-            {orderList?.map((o) => (
+            {orderList?.map((o) => {
+              const address = formatAddress(o.shippingAddress);
+              return (
               <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50 align-top">
                 <td className="px-4 py-3">
                   <p className="font-medium">{o.buyerName}</p>
@@ -81,9 +83,9 @@ export default function OrdersPage() {
                   >
                     {o.buyerEmail}
                   </a>
-                  {formatAddress(o.shippingAddress) && (
+                  {address && (
                     <p className="text-xs text-gray-500 mt-1 whitespace-pre-line">
-                      {formatAddress(o.shippingAddress)}
+                      {address}
                     </p>
                   )}
                 </td>
@@ -171,7 +173,8 @@ export default function OrdersPage() {
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -181,7 +184,9 @@ export default function OrdersPage() {
         {orderList?.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-8">No orders yet.</p>
         )}
-        {orderList?.map((o) => (
+        {orderList?.map((o) => {
+          const address = formatAddress(o.shippingAddress);
+          return (
           <div key={o.id} className="bg-white border rounded-lg p-4 space-y-3 text-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -205,9 +210,9 @@ export default function OrdersPage() {
                 {o.status}
               </span>
             </div>
-            {formatAddress(o.shippingAddress) && (
+            {address && (
               <p className="text-xs text-gray-500 whitespace-pre-line">
-                {formatAddress(o.shippingAddress)}
+                {address}
               </p>
             )}
             <div className="flex justify-between text-gray-600">
@@ -237,7 +242,8 @@ export default function OrdersPage() {
               pending={markShipped.isPending}
             />
           </div>
-        ))}
+          );
+        })}
       </div>
       </>
       )}

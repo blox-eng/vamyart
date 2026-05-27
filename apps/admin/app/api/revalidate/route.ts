@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ ok: res.ok }, { status: res.ok ? 200 : 502 });
   } catch (err) {
-    return NextResponse.json({ ok: false, error: String(err) }, { status: 502 });
+    console.error("Website revalidation request failed", err);
+    return NextResponse.json({ ok: false, error: "Revalidation request failed" }, { status: 502 });
   }
 }
