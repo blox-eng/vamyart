@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll, beforeAll } from "vitest";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { createCaller } from "../root";
 import { db } from "../../client";
 import { contacts, inquiries, bids, auctions, artworks } from "../../schema";
