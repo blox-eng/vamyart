@@ -24,10 +24,13 @@ export function variantDeleteBlockReason(input: {
 
 export const productsRouter = router({
   getFeatured: publicProcedure.query(async () => {
-    return db.query.products.findFirst({
+    const product = await db.query.products.findFirst({
       where: and(eq(products.active, true), eq(products.featured, true)),
       with: { artwork: true, variants: true },
     });
+    // A trashed (soft-deleted) artwork must never surface on the public homepage hero.
+    if (product?.artwork?.deletedAt) return null;
+    return product;
   }),
 
   getByArtworkSlug: publicProcedure

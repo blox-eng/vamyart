@@ -26,6 +26,9 @@ export const checkoutRouter = router({
       if (!variant) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
       }
+      if (variant.product.artwork?.deletedAt) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
+      }
       if (!variant.available || variant.stockQuantity <= 0) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: "OUT_OF_STOCK" });
       }

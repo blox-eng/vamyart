@@ -101,4 +101,17 @@ describe("artworks soft delete", () => {
     const row = await db.query.artworks.findFirst({ where: eq(artworks.id, a.id) });
     expect(row!.deletedAt).toBeNull();
   });
+
+  it("getFeatured never returns a piece whose artwork has been soft-deleted", async () => {
+    const a = await makeArtwork(`${slug}-featured`, "Featured Piece");
+    await db
+      .insert(products)
+      .values({ artworkId: a.id, name: "Featured Print", productType: "print", active: true, featured: true })
+      .returning();
+
+    await caller.artworks.delete({ id: a.id });
+
+    const featured = await caller.products.getFeatured();
+    expect(featured?.artworkId).not.toBe(a.id);
+  });
 });
