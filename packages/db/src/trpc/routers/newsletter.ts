@@ -14,7 +14,11 @@ export const newsletterRouter = router({
         .values({ email: input.email })
         .onConflictDoNothing();
 
-      await upsertContact(db, { email: input.email });
+      try {
+        await upsertContact(db, { email: input.email });
+      } catch (err) {
+        console.error("[newsletter] contact upsert failed", err);
+      }
 
       // Sync to Buttondown
       const bdRes = await fetch("https://api.buttondown.email/v1/subscribers", {

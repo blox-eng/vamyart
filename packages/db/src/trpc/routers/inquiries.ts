@@ -20,7 +20,11 @@ export const inquiriesRouter = router({
     .mutation(async ({ input }) => {
       const resend = new Resend(process.env.RESEND_API_KEY);
       await db.insert(inquiries).values(input);
-      await upsertContact(db, { email: input.email, name: input.name });
+      try {
+        await upsertContact(db, { email: input.email, name: input.name });
+      } catch (err) {
+        console.error("[inquiries] contact upsert failed", err);
+      }
 
       // Notify artist
       await resend.emails.send({

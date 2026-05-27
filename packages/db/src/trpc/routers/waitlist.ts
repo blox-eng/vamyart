@@ -26,7 +26,11 @@ export const waitlistRouter = router({
           target: [variantWaitlist.email, variantWaitlist.productVariantId],
           set: { notifiedAt: null },
         });
-      await upsertContact(db, { email: input.email });
+      try {
+        await upsertContact(db, { email: input.email });
+      } catch (err) {
+        console.error("[waitlist] contact upsert failed", err);
+      }
       return { success: true };
     }),
 
