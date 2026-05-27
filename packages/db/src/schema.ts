@@ -175,7 +175,6 @@ export const contacts = pgTable("contacts", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-
 // ─── Shipping Methods ─────────────────────────────────────────────────────────
 export const shippingMethods = pgTable("shipping_methods", {
   id: uuid("id").primaryKey().defaultRandom(),
