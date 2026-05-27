@@ -14,13 +14,14 @@ export default function InquiriesPage() {
   });
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-5xl mx-auto">
       <h1 className="text-2xl font-light mb-8">Messages</h1>
 
       {inquiriesLoading ? (
         <SkeletonTable rows={5} cols={5} />
       ) : (
-      <div className="bg-white border rounded-lg overflow-hidden">
+      <>
+      <div className="hidden lg:block bg-white border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
@@ -85,6 +86,50 @@ export default function InquiriesPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Mobile cards */}
+      <div className="lg:hidden space-y-3">
+        {inquiryList?.length === 0 && (
+          <p className="text-center text-gray-400 text-sm py-8">No inquiries yet.</p>
+        )}
+        {inquiryList?.map((inq) => (
+          <div key={inq.id} className="bg-white border rounded-lg p-4 space-y-2 text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium">{inq.name}</p>
+                <a
+                  href={`mailto:${inq.email}?subject=Re: ${inq.pieceInterest}&body=Hi ${inq.name},%0A%0A`}
+                  className="text-xs text-blue-600 hover:underline break-all"
+                >
+                  {inq.email}
+                </a>
+              </div>
+              <span
+                className={`shrink-0 px-2 py-1 rounded text-xs font-medium ${
+                  inq.handledAt ? "bg-gray-100 text-gray-500" : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {inq.handledAt ? "handled" : "open"}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500">Piece: <span className="text-gray-700">{inq.pieceInterest}</span></p>
+            <p className="text-gray-600">{inq.message ?? "—"}</p>
+            <p className="text-xs text-gray-400">
+              {formatDistanceToNow(new Date(inq.createdAt), { addSuffix: true })}
+            </p>
+            {!inq.handledAt && (
+              <button
+                onClick={() => markHandled.mutate({ id: inq.id })}
+                disabled={markHandled.isPending}
+                className="text-xs border px-3 py-2 rounded text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Mark handled
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+      </>
       )}
     </div>
   );
