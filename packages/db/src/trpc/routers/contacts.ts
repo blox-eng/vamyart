@@ -61,11 +61,11 @@ export const contactsRouter = router({
 
       const email = contact.email;
       const [inqs, bds, ords, wl, ns] = await Promise.all([
-        db.select().from(inquiries).where(eq(inquiries.email, email)),
-        db.select().from(bids).where(eq(bids.bidderEmail, email)),
-        db.select().from(orders).where(eq(orders.buyerEmail, email)),
-        db.select().from(variantWaitlist).where(eq(variantWaitlist.email, email)),
-        db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.email, email)),
+        db.select().from(inquiries).where(sql`lower(${inquiries.email}) = ${email}`),
+        db.select().from(bids).where(sql`lower(${bids.bidderEmail}) = ${email}`),
+        db.select().from(orders).where(sql`lower(${orders.buyerEmail}) = ${email}`),
+        db.select().from(variantWaitlist).where(sql`lower(${variantWaitlist.email}) = ${email}`),
+        db.select().from(newsletterSubscribers).where(sql`lower(${newsletterSubscribers.email}) = ${email}`),
       ]);
 
       const timeline: TimelineEvent[] = [

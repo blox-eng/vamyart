@@ -85,3 +85,30 @@ describe("contacts.update", () => {
     await expect(anon.contacts.list({})).rejects.toThrow();
   });
 });
+
+describe("contacts.get with mixed-case source email", () => {
+  const mixed = `Mixed-${Date.now()}-${Math.random()}@Example.com`;
+  const lowered = mixed.toLowerCase();
+
+  afterAll(async () => {
+    await db.delete(inquiries).where(eq(inquiries.email, mixed));
+    await db.delete(contacts).where(eq(contacts.email, lowered));
+  });
+
+  it("matches the inquiry timeline event despite email casing", async () => {
+    const caller = createCaller(ctx);
+    // Public inquiry stores the email as-typed (mixed case); upsertContact lowercases the contact.
+    await caller.inquiries.create({
+      name: "Casing Tester",
+      email: mixed,
+      pieceInterest: "Casing Piece",
+      message: "hi",
+    });
+    const list = await caller.contacts.list({ search: lowered });
+    const found = list.items.find((c) => c.email === lowered);
+    expect(found).toBeTruthy();
+    const res = await caller.contacts.get({ id: found!.id });
+    expect(res.contact.email).toBe(lowered);
+    expect(res.timeline.map((e) => e.type)).toContain("inquiry");
+  });
+});
