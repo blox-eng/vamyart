@@ -8,6 +8,25 @@ import { SkeletonTable } from "@/components/ui/skeleton";
 
 type ShipDraft = { carrier: "DHL" | "GLS" | "UPS" | "Econt" | "Other"; trackingNumber: string; note: string };
 
+// Render a shipping address as readable lines. Returns null for empty/absent
+// addresses (e.g. the `{}` guest checkout default) so nothing is shown.
+function formatAddress(addr: unknown): string | null {
+  if (!addr) return null;
+  if (typeof addr === "string") return addr.trim() || null;
+  if (typeof addr !== "object") return null;
+  const a = addr as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : v != null ? String(v) : "");
+  const lines = [
+    str(a.name),
+    str(a.line1),
+    str(a.line2),
+    [str(a.postalCode ?? a.zip), str(a.city)].filter(Boolean).join(" "),
+    str(a.state),
+    str(a.country),
+  ].filter(Boolean);
+  return lines.length ? lines.join("\n") : null;
+}
+
 export default function OrdersPage() {
   const toast = useToast();
   const { data: orderList, refetch, isLoading: ordersLoading } = trpc.orders.list.useQuery();
@@ -62,11 +81,9 @@ export default function OrdersPage() {
                   >
                     {o.buyerEmail}
                   </a>
-                  {!!o.shippingAddress && (
+                  {formatAddress(o.shippingAddress) && (
                     <p className="text-xs text-gray-500 mt-1 whitespace-pre-line">
-                      {typeof o.shippingAddress === "string"
-                        ? o.shippingAddress
-                        : JSON.stringify(o.shippingAddress as object, null, 2)}
+                      {formatAddress(o.shippingAddress)}
                     </p>
                   )}
                 </td>
@@ -188,11 +205,9 @@ export default function OrdersPage() {
                 {o.status}
               </span>
             </div>
-            {!!o.shippingAddress && (
+            {formatAddress(o.shippingAddress) && (
               <p className="text-xs text-gray-500 whitespace-pre-line">
-                {typeof o.shippingAddress === "string"
-                  ? o.shippingAddress
-                  : JSON.stringify(o.shippingAddress as object, null, 2)}
+                {formatAddress(o.shippingAddress)}
               </p>
             )}
             <div className="flex justify-between text-gray-600">
