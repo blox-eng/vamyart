@@ -82,7 +82,7 @@ export default function BannersPage() {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 sm:p-8 max-w-3xl">
       <h1 className="text-2xl font-light mb-8">Announcement Banners</h1>
 
       {bannersLoading ? (
@@ -106,22 +106,22 @@ export default function BannersPage() {
                 </div>
               </div>
             ) : (
-              <div key={b.id} className="border rounded-lg p-4 flex items-center justify-between gap-4">
+              <div key={b.id} className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{b.text}</p>
                   <p className="text-xs text-gray-400">{b.scope === "global" ? "All pages" : `Page: /${b.pageSlug}`}</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
                     onClick={() => toggleActive(b)}
-                    className={`px-3 py-1 rounded text-xs font-medium ${b.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                    className={`px-3 py-2 rounded text-xs font-medium ${b.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
                   >
                     {b.isActive ? "Live" : "Off"}
                   </button>
-                  <button onClick={() => startEdit(b)} className="border px-3 py-1 rounded text-xs">Edit</button>
+                  <button onClick={() => startEdit(b)} className="border px-3 py-2 rounded text-xs">Edit</button>
                   <button
                     onClick={() => handleDelete(b.id)}
-                    className={`px-3 py-1 rounded text-xs ${confirmDelete === b.id ? "bg-red-600 text-white" : "border text-red-600"}`}
+                    className={`px-3 py-2 rounded text-xs ${confirmDelete === b.id ? "bg-red-600 text-white" : "border text-red-600"}`}
                   >
                     {confirmDelete === b.id ? "Confirm" : "Delete"}
                   </button>

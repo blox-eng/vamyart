@@ -321,7 +321,7 @@ export default function ArtworksPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-5xl mx-auto">
       <h1 className="text-2xl font-light mb-8">Pieces</h1>
 
       <NewPieceForm onCreated={(id) => { refetchArtworks(); setSelectedArtworkId(id); }} />
@@ -349,8 +349,8 @@ export default function ArtworksPage() {
               </option>
             ))}
           </select>
-          <button type="button" onClick={() => moveSelected(-1)} className="ml-2 text-xs border px-2 py-1 rounded" title="Move earlier">↑</button>
-          <button type="button" onClick={() => moveSelected(1)} className="text-xs border px-2 py-1 rounded" title="Move later">↓</button>
+          <button type="button" onClick={() => moveSelected(-1)} className="ml-2 text-sm border px-3 py-2 rounded" title="Move earlier">↑</button>
+          <button type="button" onClick={() => moveSelected(1)} className="text-sm border px-3 py-2 rounded" title="Move later">↓</button>
         </div>
       )}
 
@@ -392,14 +392,14 @@ export default function ArtworksPage() {
 
               {/* Image grid */}
               {imagesList.isLoading && (
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="aspect-square bg-gray-100 animate-pulse rounded" />
                   ))}
                 </div>
               )}
               {!imagesList.isLoading && (imagesList.data?.length ?? 0) > 0 && (
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {imagesList.data?.map((img) => (
                     <div key={img.id} className="relative group rounded overflow-hidden bg-gray-100">
                       <img
@@ -412,7 +412,7 @@ export default function ArtworksPage() {
                           ★ Primary
                         </span>
                       )}
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-black/60 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         {!img.isPrimary && (
                           <button
                             onClick={() => setPrimaryImage.mutate({ id: img.id })}
@@ -583,7 +583,7 @@ export default function ArtworksPage() {
 
               {/* Variants table */}
               <div className="px-6 py-4">
-                <table className="w-full text-sm mb-4">
+                <table className="hidden lg:table w-full text-sm mb-4">
                   <thead>
                     <tr className="text-left text-xs text-gray-500 uppercase tracking-wide border-b">
                       <th className="pb-2 pr-3">Variant</th>
@@ -768,6 +768,114 @@ export default function ArtworksPage() {
                   </tbody>
                 </table>
 
+                {/* Mobile variant cards */}
+                <div className="lg:hidden space-y-3 mb-4">
+                  {p.variants.map((v: any) => {
+                    const ve = editingVariant[v.id];
+                    if (ve) {
+                      return (
+                        <div key={v.id} className="border rounded-lg p-3 bg-blue-50 space-y-2">
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-0.5">Name</label>
+                            <input
+                              className="border rounded px-2 py-1.5 text-sm w-full"
+                              value={ve.name}
+                              onChange={(e) => setEditingVariant((prev) => ({ ...prev, [v.id]: { ...ve, name: e.target.value } }))}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="block text-xs text-gray-500 mb-0.5">Price (€)</label>
+                              <input
+                                type="number" min="0" step="0.01"
+                                className="border rounded px-2 py-1.5 text-sm w-full"
+                                value={ve.price}
+                                onChange={(e) => setEditingVariant((prev) => ({ ...prev, [v.id]: { ...ve, price: e.target.value } }))}
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-xs text-gray-500 mb-0.5">Stock</label>
+                              <input
+                                type="number" min="0"
+                                className="border rounded px-2 py-1.5 text-sm w-full"
+                                value={ve.stock}
+                                onChange={(e) => setEditingVariant((prev) => ({ ...prev, [v.id]: { ...ve, stock: e.target.value } }))}
+                              />
+                            </div>
+                          </div>
+                          <label className="flex items-center gap-2 text-xs text-gray-600">
+                            <input
+                              type="checkbox"
+                              checked={ve.available}
+                              onChange={(e) => setEditingVariant((prev) => ({ ...prev, [v.id]: { ...ve, available: e.target.checked } }))}
+                            />
+                            Shown in store
+                          </label>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-0.5">Medium</label>
+                            <input
+                              className="border rounded px-2 py-1.5 text-sm w-full"
+                              value={ve.medium}
+                              onChange={(e) => setEditingVariant((prev) => ({ ...prev, [v.id]: { ...ve, medium: e.target.value } }))}
+                              placeholder="e.g. Giclée on Hahnemühle"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-0.5">Dimensions</label>
+                            <input
+                              className="border rounded px-2 py-1.5 text-sm w-full"
+                              value={ve.dimensions}
+                              onChange={(e) => setEditingVariant((prev) => ({ ...prev, [v.id]: { ...ve, dimensions: e.target.value } }))}
+                              placeholder="e.g. 30 × 40 cm"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => saveVariant(v.id)} disabled={updateVariant.isPending} className="text-xs bg-black text-white px-3 py-2 rounded disabled:opacity-50">Save</button>
+                            <button onClick={() => cancelEditVariant(v.id)} className="text-xs border px-3 py-2 rounded">Cancel</button>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={v.id} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-medium text-sm">{v.name}</p>
+                          <button
+                            type="button"
+                            onClick={() => setVariantAvailable.mutate({ id: v.id, available: !v.available })}
+                            disabled={setVariantAvailable.isPending}
+                            title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
+                            className={`shrink-0 px-2 py-1 rounded text-xs disabled:opacity-50 ${
+                              v.available ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                            }`}
+                          >
+                            {v.available ? "Visible" : "Hidden"}
+                          </button>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <span>€{Number(v.price).toLocaleString()}</span>
+                          <span className="flex items-center">Stock: {v.stockQuantity}<WaitlistBadge variantId={v.id} /></span>
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <button onClick={() => startEditVariant(v)} className="text-xs border px-3 py-2 rounded hover:bg-gray-100">Edit</button>
+                          <button
+                            onClick={() => handleDeleteVariant(v.id)}
+                            disabled={deleteVariant.isPending}
+                            className={`text-xs px-3 py-2 rounded disabled:opacity-50 ${
+                              confirmDelete === v.id ? "bg-red-600 text-white" : "border text-red-500 hover:bg-red-50"
+                            }`}
+                          >
+                            {confirmDelete === v.id ? "Confirm" : "Delete"}
+                          </button>
+                          {confirmDelete === v.id && (
+                            <button onClick={() => setConfirmDelete(null)} className="text-xs border px-3 py-2 rounded">✕</button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 {/* Add variant form */}
                 {newVariantForm?.productId === p.id ? (
                   <form onSubmit={submitNewVariant} className="flex gap-2 items-end mt-2 flex-wrap">
@@ -949,7 +1057,7 @@ function WaitlistBadge({ variantId }: { variantId: string }) {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute z-20 right-0 mt-1 w-72 bg-white border rounded-lg shadow-lg p-3 text-left">
+          <div className="absolute z-20 left-0 sm:left-auto sm:right-0 mt-1 w-64 sm:w-72 max-w-[calc(100vw-3rem)] bg-white border rounded-lg shadow-lg p-3 text-left">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-gray-700">Waitlist</p>
               <button
