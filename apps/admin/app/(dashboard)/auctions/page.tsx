@@ -68,7 +68,7 @@ export default function AuctionsPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-light">Auctions</h1>
         {!form && (
@@ -140,7 +140,7 @@ export default function AuctionsPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs text-gray-500 mb-1">Min bid (€)</label>
               <input
@@ -212,7 +212,7 @@ export default function AuctionsPage() {
           return (
             <div key={a.id} className="bg-white border rounded-lg overflow-hidden">
               {/* Auction row */}
-              <div className="flex items-center gap-4 px-5 py-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4">
                 {/* Artwork name + status */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -246,7 +246,7 @@ export default function AuctionsPage() {
                 </div>
 
                 {/* Bid info */}
-                <div className="text-right shrink-0">
+                <div className="text-left sm:text-right shrink-0">
                   <p className="text-sm font-medium">
                     {a.currentBid
                       ? `€${Number(a.currentBid).toLocaleString()}`
@@ -258,7 +258,7 @@ export default function AuctionsPage() {
                 </div>
 
                 {/* Deadline */}
-                <div className="text-right shrink-0 w-32">
+                <div className="text-left sm:text-right shrink-0 sm:w-32">
                   <p className="text-xs text-gray-600">
                     {formatDistanceToNow(new Date(a.deadline), { addSuffix: true })}
                   </p>
@@ -268,7 +268,7 @@ export default function AuctionsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
                     onClick={() => setExpandedAuction(isExpanded ? null : a.id)}
                     className="text-xs border px-3 py-1 rounded hover:bg-gray-50"
@@ -341,7 +341,8 @@ export default function AuctionsPage() {
                     {(a.bids?.length ?? 0) === 0 ? (
                       <p className="text-xs text-gray-400">No bids yet.</p>
                     ) : (
-                      <table className="w-full text-xs">
+                      <>
+                      <table className="hidden sm:table w-full text-xs">
                         <thead>
                           <tr className="text-left text-gray-400 border-b">
                             <th className="pb-1 pr-4 font-normal">Bidder</th>
@@ -376,6 +377,25 @@ export default function AuctionsPage() {
                           ))}
                         </tbody>
                       </table>
+                      {/* Mobile bid cards */}
+                      <div className="sm:hidden space-y-2">
+                        {a.bids?.map((b: any, i: number) => (
+                          <div key={b.id} className="border rounded p-2 text-xs bg-white">
+                            <div className="flex justify-between gap-2">
+                              <span className="font-medium">{b.bidderName}</span>
+                              <span className="font-medium">€{Number(b.amount).toLocaleString()}</span>
+                            </div>
+                            <a href={`mailto:${b.bidderEmail}`} className="text-blue-500 hover:underline break-all">
+                              {b.bidderEmail}
+                            </a>
+                            <div className="flex justify-between text-gray-400 mt-1">
+                              <span>{formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}</span>
+                              {i === 0 && <span className="text-green-600 font-medium">leading</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      </>
                     )}
                   </div>
                 </div>
