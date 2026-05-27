@@ -846,7 +846,7 @@ export default function ArtworksPage() {
                             disabled={setVariantAvailable.isPending}
                             title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
                             className={`shrink-0 px-2 py-1 rounded text-xs disabled:opacity-50 ${
-                              v.available ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-600"
+                              v.available ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                             }`}
                           >
                             {v.available ? "Visible" : "Hidden"}
@@ -1057,7 +1057,7 @@ function WaitlistBadge({ variantId }: { variantId: string }) {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute z-20 right-0 mt-1 w-72 bg-white border rounded-lg shadow-lg p-3 text-left">
+          <div className="absolute z-20 left-0 sm:left-auto sm:right-0 mt-1 w-64 sm:w-72 max-w-[calc(100vw-3rem)] bg-white border rounded-lg shadow-lg p-3 text-left">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-gray-700">Waitlist</p>
               <button
