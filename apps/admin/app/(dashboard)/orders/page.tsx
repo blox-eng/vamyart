@@ -25,13 +25,14 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-5xl mx-auto">
       <h1 className="text-2xl font-light mb-8">Sales</h1>
 
       {ordersLoading ? (
         <SkeletonTable rows={5} cols={6} />
       ) : (
-      <div className="bg-white border rounded-lg overflow-hidden">
+      <>
+      <div className="hidden lg:block bg-white border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
@@ -61,11 +62,11 @@ export default function OrdersPage() {
                   >
                     {o.buyerEmail}
                   </a>
-                  {o.shippingAddress && (
+                  {!!o.shippingAddress && (
                     <p className="text-xs text-gray-500 mt-1 whitespace-pre-line">
                       {typeof o.shippingAddress === "string"
                         ? o.shippingAddress
-                        : JSON.stringify(o.shippingAddress, null, 2)}
+                        : JSON.stringify(o.shippingAddress as object, null, 2)}
                     </p>
                   )}
                 </td>
@@ -157,7 +158,139 @@ export default function OrdersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Mobile cards */}
+      <div className="lg:hidden space-y-3">
+        {orderList?.length === 0 && (
+          <p className="text-center text-gray-400 text-sm py-8">No orders yet.</p>
+        )}
+        {orderList?.map((o) => (
+          <div key={o.id} className="bg-white border rounded-lg p-4 space-y-3 text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium">{o.buyerName}</p>
+                <a
+                  href={`mailto:${o.buyerEmail}?subject=Your vamy order`}
+                  className="text-xs text-blue-600 hover:underline break-all"
+                >
+                  {o.buyerEmail}
+                </a>
+              </div>
+              <span
+                className={`shrink-0 px-2 py-1 rounded text-xs font-medium ${
+                  o.status === "shipped"
+                    ? "bg-green-100 text-green-800"
+                    : o.status === "paid"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {o.status}
+              </span>
+            </div>
+            {!!o.shippingAddress && (
+              <p className="text-xs text-gray-500 whitespace-pre-line">
+                {typeof o.shippingAddress === "string"
+                  ? o.shippingAddress
+                  : JSON.stringify(o.shippingAddress as object, null, 2)}
+              </p>
+            )}
+            <div className="flex justify-between text-gray-600">
+              <span>{o.productVariant?.name ?? "—"}</span>
+              <span className="font-medium text-gray-900">€{Number(o.amountPaid).toLocaleString()}</span>
+            </div>
+            {o.productVariant?.product?.name && (
+              <p className="text-xs text-gray-400 -mt-2">{o.productVariant.product.name}</p>
+            )}
+            <p className="text-xs text-gray-400">
+              {formatDistanceToNow(new Date(o.createdAt), { addSuffix: true })}
+            </p>
+            <ShipForm
+              order={o}
+              draft={getDraft(o.id)}
+              onPatch={(patch) => setDraft(o.id, patch)}
+              onSubmit={() => {
+                const d = getDraft(o.id);
+                if (!d.trackingNumber) return;
+                markShipped.mutate({
+                  id: o.id,
+                  carrier: d.carrier,
+                  trackingNumber: d.trackingNumber,
+                  note: d.note || undefined,
+                });
+              }}
+              pending={markShipped.isPending}
+            />
+          </div>
+        ))}
+      </div>
+      </>
       )}
+    </div>
+  );
+}
+
+function ShipForm({
+  order,
+  draft,
+  onPatch,
+  onSubmit,
+  pending,
+}: {
+  order: any;
+  draft: ShipDraft;
+  onPatch: (patch: Partial<ShipDraft>) => void;
+  onSubmit: () => void;
+  pending: boolean;
+}) {
+  if (order.status === "shipped" && order.trackingNumber) {
+    return (
+      <div className="flex flex-col">
+        <p className="text-xs text-gray-500">
+          {order.trackingCarrier ? `${order.trackingCarrier} · ` : ""}
+          {order.trackingNumber}
+        </p>
+        <span className="text-xs text-gray-400 mt-0.5">Tracking sent ✓</span>
+      </div>
+    );
+  }
+  if (order.status !== "paid") return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2 items-center">
+        <select
+          value={draft.carrier}
+          onChange={(e) => onPatch({ carrier: e.target.value as ShipDraft["carrier"] })}
+          className="border px-2 py-1.5 rounded text-xs bg-white"
+        >
+          <option value="DHL">DHL</option>
+          <option value="GLS">GLS</option>
+          <option value="UPS">UPS</option>
+          <option value="Econt">Econt</option>
+          <option value="Other">Other</option>
+        </select>
+        <input
+          type="text"
+          placeholder="Tracking #"
+          value={draft.trackingNumber}
+          onChange={(e) => onPatch({ trackingNumber: e.target.value })}
+          className="border px-2 py-1.5 rounded text-xs flex-1 min-w-0"
+        />
+      </div>
+      <textarea
+        placeholder="Optional note to buyer"
+        value={draft.note}
+        onChange={(e) => onPatch({ note: e.target.value })}
+        rows={2}
+        className="border px-2 py-1.5 rounded text-xs resize-none"
+      />
+      <button
+        onClick={onSubmit}
+        disabled={pending || !draft.trackingNumber}
+        className="text-xs bg-black text-white px-3 py-2 rounded disabled:opacity-50"
+      >
+        {pending ? "Sending…" : "Mark shipped & send tracking"}
+      </button>
     </div>
   );
 }
