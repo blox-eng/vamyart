@@ -1,6 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // Same-origin proxy for triggering website ISR revalidation.
 //
@@ -15,12 +14,7 @@ const SECRET = process.env.REVALIDATION_SECRET ?? "";
 export async function POST(req: Request) {
   // Auth gate: only an authenticated studio user may trigger revalidation.
   // (The auth middleware excludes /api, so we check the session here.)
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
-  );
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -40,6 +34,9 @@ export async function POST(req: Request) {
       `${WEBSITE_URL}/api/revalidate/?paths=${encodeURIComponent(paths.join(","))}`,
       { method: "POST", headers: { "x-revalidate-secret": SECRET } }
     );
+    if (!res.ok) {
+      console.error("Website revalidation failed", res.status, await res.text().catch(() => ""));
+    }
     return NextResponse.json({ ok: res.ok }, { status: res.ok ? 200 : 502 });
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 502 });
