@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../index";
 import { db } from "../../client";
@@ -24,7 +24,7 @@ export const contactsRouter = router({
         .prefault({}),
     )
     .query(async ({ input }) => {
-      const conds = [];
+      const conds: (SQL | undefined)[] = [];
       if (input.search?.trim()) {
         const q = `%${input.search.trim()}%`;
         conds.push(or(ilike(contacts.name, q), ilike(contacts.email, q)));
