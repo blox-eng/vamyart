@@ -5,7 +5,6 @@ import Header from '../components/sections/Header';
 import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
 import { COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
-import { formatPrice } from '../lib/formatPrice';
 import LazyImage from '../components/atoms/LazyImage';
 
 const STEPS = [
@@ -33,7 +32,6 @@ export default function GetAPiece({ site }: { site: any }) {
     const attrs = (variant?.attributes ?? {}) as Record<string, string>;
     const medium = artwork?.medium || attrs.medium || '';
     const dimensions = artwork?.dimensions || attrs.dimensions || '';
-    const price = formatPrice(variant?.price);
 
     const [name, setName] = React.useState('');
     const [email, setEmail] = React.useState('');
@@ -117,9 +115,6 @@ export default function GetAPiece({ site }: { site: any }) {
                                         <h2 className="text-xl font-light mb-1">{artwork.title}</h2>
                                         {medium && <p className="text-sm text-gray-500">{medium}</p>}
                                         {dimensions && <p className="text-sm text-gray-500">{dimensions}</p>}
-                                        <p className="text-sm text-gray-400 mt-1">
-                                            {price ? `Original — ${price}` : 'Original — price on request'}
-                                        </p>
                                     </div>
                                 ) : (
                                     <div className="mb-10">

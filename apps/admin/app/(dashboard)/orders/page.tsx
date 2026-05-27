@@ -8,6 +8,25 @@ import { SkeletonTable } from "@/components/ui/skeleton";
 
 type ShipDraft = { carrier: "DHL" | "GLS" | "UPS" | "Econt" | "Other"; trackingNumber: string; note: string };
 
+// Render a shipping address as readable lines. Returns null for empty/absent
+// addresses (e.g. the `{}` guest checkout default) so nothing is shown.
+function formatAddress(addr: unknown): string | null {
+  if (!addr) return null;
+  if (typeof addr === "string") return addr.trim() || null;
+  if (typeof addr !== "object") return null;
+  const a = addr as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : v != null ? String(v) : "");
+  const lines = [
+    str(a.name),
+    str(a.line1),
+    str(a.line2),
+    [str(a.postalCode ?? a.zip), str(a.city)].filter(Boolean).join(" "),
+    str(a.state),
+    str(a.country),
+  ].filter(Boolean);
+  return lines.length ? lines.join("\n") : null;
+}
+
 export default function OrdersPage() {
   const toast = useToast();
   const { data: orderList, refetch, isLoading: ordersLoading } = trpc.orders.list.useQuery();
@@ -52,7 +71,9 @@ export default function OrdersPage() {
                 </td>
               </tr>
             )}
-            {orderList?.map((o) => (
+            {orderList?.map((o) => {
+              const address = formatAddress(o.shippingAddress);
+              return (
               <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50 align-top">
                 <td className="px-4 py-3">
                   <p className="font-medium">{o.buyerName}</p>
@@ -62,11 +83,9 @@ export default function OrdersPage() {
                   >
                     {o.buyerEmail}
                   </a>
-                  {!!o.shippingAddress && (
+                  {address && (
                     <p className="text-xs text-gray-500 mt-1 whitespace-pre-line">
-                      {typeof o.shippingAddress === "string"
-                        ? o.shippingAddress
-                        : JSON.stringify(o.shippingAddress as object, null, 2)}
+                      {address}
                     </p>
                   )}
                 </td>
@@ -154,7 +173,8 @@ export default function OrdersPage() {
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -164,7 +184,9 @@ export default function OrdersPage() {
         {orderList?.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-8">No orders yet.</p>
         )}
-        {orderList?.map((o) => (
+        {orderList?.map((o) => {
+          const address = formatAddress(o.shippingAddress);
+          return (
           <div key={o.id} className="bg-white border rounded-lg p-4 space-y-3 text-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -188,11 +210,9 @@ export default function OrdersPage() {
                 {o.status}
               </span>
             </div>
-            {!!o.shippingAddress && (
+            {address && (
               <p className="text-xs text-gray-500 whitespace-pre-line">
-                {typeof o.shippingAddress === "string"
-                  ? o.shippingAddress
-                  : JSON.stringify(o.shippingAddress as object, null, 2)}
+                {address}
               </p>
             )}
             <div className="flex justify-between text-gray-600">
@@ -222,7 +242,8 @@ export default function OrdersPage() {
               pending={markShipped.isPending}
             />
           </div>
-        ))}
+          );
+        })}
       </div>
       </>
       )}
