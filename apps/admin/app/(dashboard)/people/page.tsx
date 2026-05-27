@@ -93,7 +93,7 @@ export default function PeoplePage() {
       )}
 
       {selectedId && (
-        <ContactDetail id={selectedId} onClose={() => setSelectedId(null)} onSaved={() => toast("contact saved", "success")} />
+        <ContactDetail key={selectedId} id={selectedId} onClose={() => setSelectedId(null)} onSaved={() => toast("contact saved", "success")} />
       )}
     </div>
   );
