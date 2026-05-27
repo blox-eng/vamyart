@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { detectRestockTransition, notifyWaitlistForVariant } from "../../services/restock-notify";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
@@ -34,7 +34,7 @@ export const productsRouter = router({
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
       const artwork = await db.query.artworks.findFirst({
-        where: eq(artworks.slug, input.slug),
+        where: and(eq(artworks.slug, input.slug), isNull(artworks.deletedAt)),
       });
       if (!artwork) return null;
       const product = await db.query.products.findFirst({
@@ -64,7 +64,7 @@ export const productsRouter = router({
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
       const artwork = await db.query.artworks.findFirst({
-        where: eq(artworks.slug, input.slug),
+        where: and(eq(artworks.slug, input.slug), isNull(artworks.deletedAt)),
       });
       if (!artwork) return [];
 
