@@ -107,6 +107,20 @@ export default function ArtworksPage() {
   const [newProductForm, setNewProductForm] = useState<NewProductForm | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  const [showTrash, setShowTrash] = useState(false);
+  const { data: trashedList, refetch: refetchTrashed } = trpc.artworks.listTrashed.useQuery(undefined, {
+    enabled: showTrash,
+  });
+  const restore = trpc.artworks.restore.useMutation({
+    onSuccess: async () => {
+      await revalidatePaths(["/", "/gallery"]);
+      refetchArtworks();
+      refetchTrashed();
+      toast("Piece restored", "success");
+    },
+    onError: (e) => toast(e.message || "Failed to restore", "error"),
+  });
+
   const artworkEntries = useMemo(() => {
     const map = new Map<string, { artwork: any; products: any[] }>();
     for (const a of artworkList ?? []) {
@@ -1028,6 +1042,37 @@ export default function ArtworksPage() {
           )}
         </div>
       )}
+
+      <div className="mt-10 border-t pt-6">
+        <button
+          onClick={() => setShowTrash((s) => !s)}
+          className="text-sm text-gray-500 hover:text-gray-700"
+        >
+          {showTrash ? "Hide trash" : "Show trash"}
+        </button>
+        {showTrash && (
+          <div className="mt-4 space-y-2">
+            {trashedList && trashedList.length === 0 && (
+              <p className="text-sm text-gray-400">Trash is empty.</p>
+            )}
+            {trashedList?.map((a) => (
+              <div key={a.id} className="flex items-center justify-between border rounded px-3 py-2 bg-gray-50">
+                <div className="text-sm">
+                  <span className="font-medium text-gray-700">{a.title}</span>
+                  <span className="ml-2 text-gray-400">/{a.slug}</span>
+                </div>
+                <button
+                  onClick={() => restore.mutate({ id: a.id })}
+                  disabled={restore.isPending}
+                  className="text-sm px-3 py-1 rounded border text-green-700 hover:bg-green-50 disabled:opacity-50"
+                >
+                  Restore
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

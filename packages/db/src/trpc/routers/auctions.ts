@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { auctions, artworks, bids } from "../../schema";
@@ -9,7 +9,7 @@ export const auctionsRouter = router({
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
       const artwork = await db.query.artworks.findFirst({
-        where: eq(artworks.slug, input.slug),
+        where: and(eq(artworks.slug, input.slug), isNull(artworks.deletedAt)),
       });
       if (!artwork) return null;
 

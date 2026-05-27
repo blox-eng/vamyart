@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { detectRestockTransition, notifyWaitlistForVariant } from "../../services/restock-notify";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
@@ -24,17 +24,20 @@ export function variantDeleteBlockReason(input: {
 
 export const productsRouter = router({
   getFeatured: publicProcedure.query(async () => {
-    return db.query.products.findFirst({
+    const product = await db.query.products.findFirst({
       where: and(eq(products.active, true), eq(products.featured, true)),
       with: { artwork: true, variants: true },
     });
+    // A trashed (soft-deleted) artwork must never surface on the public homepage hero.
+    if (product?.artwork?.deletedAt) return null;
+    return product;
   }),
 
   getByArtworkSlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
       const artwork = await db.query.artworks.findFirst({
-        where: eq(artworks.slug, input.slug),
+        where: and(eq(artworks.slug, input.slug), isNull(artworks.deletedAt)),
       });
       if (!artwork) return null;
       const product = await db.query.products.findFirst({
@@ -64,7 +67,7 @@ export const productsRouter = router({
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
       const artwork = await db.query.artworks.findFirst({
-        where: eq(artworks.slug, input.slug),
+        where: and(eq(artworks.slug, input.slug), isNull(artworks.deletedAt)),
       });
       if (!artwork) return [];
 
