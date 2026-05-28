@@ -89,11 +89,11 @@ Three new call sites for `newsletter.subscribe`. Checkbox copy is identical acro
 - Add the checkbox to the bid form component (path to be confirmed in the plan — likely `apps/website/src/components/bidding/*`).
 - On successful bid placement, if checked, call `newsletter.subscribe` with `{ email: bidderEmail, source: "bid", locale }`. Fire-and-forget.
 
-### 3c. Order-confirmation page (one-click CTA, not a checkbox)
+### 3c. Stripe checkout — native consent collection
 
-- On the success page after Stripe checkout (path to be confirmed in plan), show a small CTA: *"Want to hear when Maeve releases new work? [Subscribe]"*.
-- Clicking the button calls `newsletter.subscribe` with `{ email: order.buyerEmail, source: "checkout", locale }` and swaps the CTA for a confirmation message.
-- Not a checkbox during checkout itself because the checkout is Stripe-hosted and we can't inject UI there.
+- Add `consent_collection: { promotions: 'auto' }` to the `checkout.sessions.create` params in `packages/db/src/trpc/routers/checkout.ts`. Stripe shows a marketing-consent checkbox on its hosted page.
+- In the webhook handler (`apps/website/app/api/webhooks/stripe/route.ts`), after the order is inserted, check `session.consent?.promotions === "opt_in"`. If so, call the Buttondown subscribe helper server-side with `{ email: customer.email, source: "checkout", locale }`. Fire-and-forget; webhook still returns 200 on Buttondown failure.
+- No success-page UI changes. Consent is captured during checkout, recorded by Stripe, and processed server-side from the webhook — no session lookup, no extra PII surface.
 
 ### Privacy note
 
@@ -124,12 +124,13 @@ Next to every checkbox / CTA: *"Unsubscribe anytime. We won't share your email."
 - **Multi-list / segmented sending logic** beyond Buttondown's native tag filtering.
 - **i18n of newsletter content** — Maeve writes broadcasts in whatever language; subscriber `locale` metadata is stored for future use only.
 
-## Open questions
+## Resolved paths
 
-None blocking. The implementation plan will confirm:
-
-- Exact file paths for the inquiry form, bid modal, and order-confirmation page (current repo state requires verification).
-- Whether the locale value is already available client-side at each call site, or needs threading.
+- Inquiry form: `apps/website/src/components/blocks/FormBlock/index.tsx` (dynamic fields; the checkbox is rendered alongside, not added as a content-modeled field).
+- Bid modal: `apps/website/src/components/blocks/BidWidget/BidModal.tsx`.
+- Stripe checkout session: `packages/db/src/trpc/routers/checkout.ts`.
+- Stripe webhook: `apps/website/app/api/webhooks/stripe/route.ts`.
+- Locale: not currently threaded; will read from `useRouter().locale` client-side, default to `"en"` server-side. Stored as metadata only, not used for routing logic.
 
 ## Related
 
