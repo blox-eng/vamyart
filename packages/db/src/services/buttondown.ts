@@ -52,7 +52,7 @@ export async function subscribeToButtondown(input: SubscribeInput): Promise<Subs
     if (res.status === 201 || res.status === 200) return { alreadySubscribed: false };
     if (res.status === 400) {
       const text = await res.text().catch(() => "");
-      if (text.toLowerCase().includes("already") || text.includes("email_already_exists")) {
+      if (text.includes("email_already_exists")) {
         return { alreadySubscribed: true };
       }
       console.error("[buttondown] sync failed", res.status, text);
