@@ -49,4 +49,39 @@ describe("subscribeToButtondown", () => {
       .where(inArray(newsletterSubscribers.email, [email]));
     expect(row).toBeTruthy();
   });
+
+  it("returns alreadySubscribed when Buttondown rejects as duplicate", async () => {
+    const email = `dup-${Date.now()}-${Math.random()}@example.com`;
+    emails.push(email);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response('{"code":"email_already_exists"}', { status: 400 }),
+    );
+
+    const result = await subscribeToButtondown({ email, source: "footer" });
+
+    expect(result).toEqual({ alreadySubscribed: true });
+  });
+
+  it("does not fail when Buttondown is unreachable; still writes local row", async () => {
+    const email = `fail-${Date.now()}-${Math.random()}@example.com`;
+    emails.push(email);
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("network down"));
+
+    const result = await subscribeToButtondown({ email, source: "inquiry" });
+
+    expect(result).toEqual({ alreadySubscribed: false });
+    const [row] = await db
+      .select()
+      .from(newsletterSubscribers)
+      .where(inArray(newsletterSubscribers.email, [email]));
+    expect(row).toBeTruthy();
+  });
+
+  it("returns alreadySubscribed=false when API key is unset", async () => {
+    delete process.env.BUTTONDOWN_API_KEY;
+    const email = `nokey-${Date.now()}-${Math.random()}@example.com`;
+    emails.push(email);
+    const result = await subscribeToButtondown({ email, source: "footer" });
+    expect(result).toEqual({ alreadySubscribed: false });
+  });
 });

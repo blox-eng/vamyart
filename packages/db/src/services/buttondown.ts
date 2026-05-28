@@ -35,31 +35,33 @@ export async function subscribeToButtondown(input: SubscribeInput): Promise<Subs
     return { alreadySubscribed: false };
   }
 
-  const res = await fetch("https://api.buttondown.email/v1/subscribers", {
-    method: "POST",
-    headers: {
-      Authorization: `Token ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email_address: email,
-      tags: [source],
-      metadata: { source, ...(locale ? { locale } : {}) },
-    }),
-  });
+  try {
+    const res = await fetch("https://api.buttondown.email/v1/subscribers", {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email_address: email,
+        tags: [source],
+        metadata: { source, ...(locale ? { locale } : {}) },
+      }),
+    });
 
-  if (res.status === 201 || res.status === 200) {
-    return { alreadySubscribed: false };
-  }
-  if (res.status === 400) {
-    const text = await res.text().catch(() => "");
-    if (text.toLowerCase().includes("already") || text.includes("email_already_exists")) {
-      return { alreadySubscribed: true };
+    if (res.status === 201 || res.status === 200) return { alreadySubscribed: false };
+    if (res.status === 400) {
+      const text = await res.text().catch(() => "");
+      if (text.toLowerCase().includes("already") || text.includes("email_already_exists")) {
+        return { alreadySubscribed: true };
+      }
+      console.error("[buttondown] sync failed", res.status, text);
+      return { alreadySubscribed: false };
     }
-    console.error("[buttondown] sync failed", res.status, text);
+    console.error("[buttondown] sync failed", res.status, await res.text().catch(() => ""));
+    return { alreadySubscribed: false };
+  } catch (err) {
+    console.error("[buttondown] fetch threw", err);
     return { alreadySubscribed: false };
   }
-
-  console.error("[buttondown] sync failed", res.status, await res.text().catch(() => ""));
-  return { alreadySubscribed: false };
 }
