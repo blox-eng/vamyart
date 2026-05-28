@@ -36,11 +36,17 @@ export async function subscribeToButtondown(input: SubscribeInput): Promise<Subs
   }
 
   try {
-    const res = await fetch("https://api.buttondown.email/v1/subscribers", {
+    // X-Buttondown-Collision-Behavior: add → on duplicate email, Buttondown
+    // merges the new tags into the existing subscriber instead of returning 400.
+    // This means re-subscribing via a different surface (footer → inquiry → bid)
+    // accretes tags rather than silently dropping the second signup.
+    const res = await fetch("https://api.buttondown.com/v1/subscribers", {
       method: "POST",
       headers: {
         Authorization: `Token ${apiKey}`,
         "Content-Type": "application/json",
+        "X-API-Version": "2026-04-01",
+        "X-Buttondown-Collision-Behavior": "add",
       },
       body: JSON.stringify({
         email_address: email,
@@ -50,13 +56,14 @@ export async function subscribeToButtondown(input: SubscribeInput): Promise<Subs
     });
 
     if (res.status === 201 || res.status === 200) return { alreadySubscribed: false };
+    // With the collision header set, 400 shouldn't occur for duplicates. If it
+    // ever does (account doesn't support the header, future API change), treat
+    // it defensively as "already subscribed" rather than surface a confusing
+    // error — input email passed zod validation, so duplicate is the most
+    // likely cause of a 400 here.
     if (res.status === 400) {
-      const text = await res.text().catch(() => "");
-      if (text.includes("email_already_exists")) {
-        return { alreadySubscribed: true };
-      }
-      console.error("[buttondown] sync failed", res.status, text);
-      return { alreadySubscribed: false };
+      console.warn("[buttondown] 400 from create, treating as duplicate", await res.text().catch(() => ""));
+      return { alreadySubscribed: true };
     }
     console.error("[buttondown] sync failed", res.status, await res.text().catch(() => ""));
     return { alreadySubscribed: false };

@@ -30,10 +30,14 @@ describe("subscribeToButtondown", () => {
 
     expect(result).toEqual({ alreadySubscribed: false });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.buttondown.email/v1/subscribers",
+      "https://api.buttondown.com/v1/subscribers",
       expect.objectContaining({
         method: "POST",
-        headers: expect.objectContaining({ Authorization: "Token test-key" }),
+        headers: expect.objectContaining({
+          Authorization: "Token test-key",
+          "X-API-Version": "2026-04-01",
+          "X-Buttondown-Collision-Behavior": "add",
+        }),
       }),
     );
     const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
@@ -50,11 +54,11 @@ describe("subscribeToButtondown", () => {
     expect(row).toBeTruthy();
   });
 
-  it("returns alreadySubscribed when Buttondown rejects as duplicate", async () => {
+  it("defensively treats any 400 as already-subscribed (collision header should make this rare)", async () => {
     const email = `dup-${Date.now()}-${Math.random()}@example.com`;
     emails.push(email);
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response('{"code":"email_already_exists"}', { status: 400 }),
+      new Response('{"detail":"already subscribed"}', { status: 400 }),
     );
 
     const result = await subscribeToButtondown({ email, source: "footer" });
