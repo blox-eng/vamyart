@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition, upsertContact } from "@vamy/db";
+import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition, upsertContact, subscribeToButtondown } from "@vamy/db";
 import { eq, sql, and, ne } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -61,6 +61,18 @@ export async function POST(req: NextRequest) {
     });
 
     if (!inserted) return new Response(null, { status: 200 });
+
+    if (session.consent?.promotions === "opt_in" && customer?.email) {
+      try {
+        await subscribeToButtondown({
+          email: customer.email,
+          source: "checkout",
+          locale: session.locale ?? "en",
+        });
+      } catch (err) {
+        console.error("[stripe-webhook] buttondown subscribe failed", { orderId: inserted.id, err });
+      }
+    }
 
     try {
       const variant = await db.query.productVariants.findFirst({
