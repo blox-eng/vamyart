@@ -1,5 +1,6 @@
 import * as React from 'react';
 import classNames from 'classnames';
+import { useRouter } from 'next/router';
 
 import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to-class-names';
 import { Social, Action, Link } from '../../atoms';
@@ -102,6 +103,7 @@ export default function Footer(props) {
 }
 
 function NewsletterSignup() {
+    const router = useRouter();
     const [email, setEmail] = React.useState('');
     const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
     const subscribe = trpc.newsletter.subscribe.useMutation();
@@ -109,7 +111,11 @@ function NewsletterSignup() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
-            await subscribe.mutateAsync({ email });
+            await subscribe.mutateAsync({
+                email,
+                source: 'footer',
+                locale: router.locale ?? 'en',
+            });
             setStatus('success');
             setEmail('');
         } catch {
@@ -122,7 +128,7 @@ function NewsletterSignup() {
             <h2 className="uppercase text-base tracking-wide mb-2">Stay in the loop</h2>
             <p className="text-sm mb-4">New works, exhibitions, and studio updates.</p>
             {status === 'success' ? (
-                <p className="text-sm text-green-600">You&apos;re on the list.</p>
+                <p className="text-sm text-green-600">Check your inbox to confirm.</p>
             ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-2 max-w-sm">
                     <input

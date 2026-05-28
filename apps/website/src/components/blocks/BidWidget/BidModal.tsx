@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { trpc } from '../../../lib/trpc';
 
 export function BidModal({
@@ -23,12 +24,24 @@ export function BidModal({
     const [error, setError] = useState('');
 
     const placeBid = trpc.bids.place.useMutation();
+    const subscribeNewsletter = trpc.newsletter.subscribe.useMutation();
+    const router = useRouter();
+    const [marketingOptIn, setMarketingOptIn] = useState(false);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
         try {
             await placeBid.mutateAsync({ auctionId, bidderName: name, bidderEmail: email, amount });
+            if (marketingOptIn) {
+                void subscribeNewsletter
+                    .mutateAsync({
+                        email,
+                        source: 'bid',
+                        locale: router.locale ?? 'en',
+                    })
+                    .catch((err) => console.error('[bid] newsletter opt-in failed', err));
+            }
             onSuccess();
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -44,6 +57,18 @@ export function BidModal({
                     <input className="w-full border px-3 py-2 text-sm" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} required />
                     <input className="w-full border px-3 py-2 text-sm" type="email" placeholder="Your email" value={email} onChange={e => setEmail(e.target.value)} required />
                     <input className="w-full border px-3 py-2 text-sm" type="number" min={minAmount} step="50" value={amount} onChange={e => setAmount(Number(e.target.value))} required />
+                    <label className="flex items-start gap-3 text-sm cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={marketingOptIn}
+                            onChange={(e) => setMarketingOptIn(e.target.checked)}
+                            className="mt-1 shrink-0"
+                        />
+                        <span>
+                            Email me about new work and studio updates.{' '}
+                            <span className="text-gray-500">Unsubscribe anytime.</span>
+                        </span>
+                    </label>
                     {error && <p className="text-sm text-red-600">{error}</p>}
                     <div className="flex gap-3 pt-2">
                         <button type="button" onClick={onClose} className="flex-1 border px-4 py-2 text-sm">Cancel</button>

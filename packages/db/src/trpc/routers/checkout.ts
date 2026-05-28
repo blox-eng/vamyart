@@ -74,6 +74,7 @@ export const checkoutRouter = router({
           allowed_countries: ["DE", "AT", "CH", "GB", "US", "BG", "FR", "NL", "BE"],
         },
         metadata: { variantId: variant.id },
+        consent_collection: { promotions: "auto" },
         success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order/success?session={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}`,
       };
