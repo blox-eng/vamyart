@@ -13,3 +13,7 @@ export {
 export { upsertContact } from "./services/upsert-contact";
 export { subscribeToButtondown } from "./services/buttondown";
 export type { NewsletterSource, SubscribeInput, SubscribeResult } from "./services/buttondown";
+export { sendOverdueInquirerFollowups } from "./services/inquirer-followup";
+export type { RunFollowupsResult } from "./services/inquirer-followup";
+export { trackEvent } from "./services/umami";
+export type { UmamiEventName } from "./services/umami";

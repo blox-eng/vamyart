@@ -152,6 +152,7 @@ export const inquiries = pgTable("inquiries", {
   message: text("message"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   handledAt: timestamp("handled_at", { withTimezone: true }),
+  followupSentAt: timestamp("followup_sent_at", { withTimezone: true }),
 });
 
 // ─── Newsletter Subscribers ───────────────────────────────────────────────────
