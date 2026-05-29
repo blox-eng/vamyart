@@ -3,6 +3,7 @@ import { eq, and, isNull } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { auctions, artworks, bids } from "../../schema";
+import { notifyLostBidders } from "../../services/lost-bidder-notify";
 
 export const auctionsRouter = router({
   getByArtworkSlug: publicProcedure
@@ -75,6 +76,11 @@ export const auctionsRouter = router({
           updatedAt: new Date(),
         })
         .where(eq(auctions.id, input.id));
+
+      if (input.winnerBidId) {
+        void notifyLostBidders({ auctionId: input.id, winningBidId: input.winnerBidId });
+      }
+
       return { success: true };
     }),
 });
