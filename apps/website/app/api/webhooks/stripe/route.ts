@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition, upsertContact, subscribeToButtondown } from "@vamy/db";
+import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition, upsertContact, subscribeToButtondown, trackEvent } from "@vamy/db";
 import { eq, sql, and, ne } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -61,6 +61,8 @@ export async function POST(req: NextRequest) {
     });
 
     if (!inserted) return new Response(null, { status: 200 });
+
+    void trackEvent("checkout.completed", { amount: session.amount_total, currency: session.currency });
 
     if (session.consent?.promotions === "opt_in" && customer?.email) {
       try {

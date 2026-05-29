@@ -4,6 +4,7 @@ import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { bids, auctions } from "../../schema";
 import { upsertContact } from "../../services/upsert-contact";
+import { trackEvent } from "../../services/umami";
 import { Resend } from "resend";
 import { escapeHtml } from "../../utils/escape-html";
 
@@ -96,6 +97,8 @@ export const bidsRouter = router({
 
         return [auctionRow, inserted] as const;
       });
+
+      void trackEvent("bid.placed", { auctionId: input.auctionId, amount: input.amount });
 
       const resend = new Resend(process.env.RESEND_API_KEY);
 

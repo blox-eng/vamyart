@@ -1,0 +1,1 @@
+ALTER TABLE "inquiries" ADD COLUMN "followup_sent_at" timestamp with time zone;

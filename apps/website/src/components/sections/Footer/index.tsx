@@ -125,8 +125,8 @@ function NewsletterSignup() {
 
     return (
         <div>
-            <h2 className="uppercase text-base tracking-wide mb-2">Stay in the loop</h2>
-            <p className="text-sm mb-4">New works, exhibitions, and studio updates.</p>
+            <h2 className="uppercase text-base tracking-wide mb-2">First dibs</h2>
+            <p className="text-sm mb-4">New work lands here first. 24 hours before anywhere else.</p>
             {status === 'success' ? (
                 <p className="text-sm text-green-600">Check your inbox to confirm.</p>
             ) : (
