@@ -78,7 +78,10 @@ export const auctionsRouter = router({
         .where(eq(auctions.id, input.id));
 
       if (input.winnerBidId) {
-        void notifyLostBidders({ auctionId: input.id, winningBidId: input.winnerBidId });
+        // Await: in serverless runtimes the function instance can be killed once
+        // the response ships, dropping unawaited promises. notifyLostBidders
+        // swallows its own errors, so this can't fail the close request.
+        await notifyLostBidders({ auctionId: input.id, winningBidId: input.winnerBidId });
       }
 
       return { success: true };

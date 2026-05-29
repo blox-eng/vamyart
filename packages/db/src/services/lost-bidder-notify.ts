@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Resend } from "resend";
 import { db } from "../client";
 import { auctions, bids } from "../schema";
@@ -25,7 +25,7 @@ export async function notifyLostBidders(input: NotifyLosersInput): Promise<Notif
   if (!auction || !auction.artwork) return { notified: 0, skipped: 0 };
 
   const winningBid = await db.query.bids.findFirst({
-    where: eq(bids.id, input.winningBidId),
+    where: and(eq(bids.id, input.winningBidId), eq(bids.auctionId, input.auctionId)),
   });
   if (!winningBid) return { notified: 0, skipped: 0 };
 
