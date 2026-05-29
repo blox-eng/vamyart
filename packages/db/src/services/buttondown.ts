@@ -1,6 +1,7 @@
 import { db } from "../client";
 import { newsletterSubscribers } from "../schema";
 import { upsertContact } from "./upsert-contact";
+import { trackEvent } from "./umami";
 
 export type NewsletterSource = "footer" | "inquiry" | "checkout" | "bid";
 
@@ -22,6 +23,8 @@ export async function subscribeToButtondown(input: SubscribeInput): Promise<Subs
     .insert(newsletterSubscribers)
     .values({ email })
     .onConflictDoNothing();
+
+  void trackEvent("newsletter.subscribed", { source: input.source });
 
   try {
     await upsertContact(db, { email });
