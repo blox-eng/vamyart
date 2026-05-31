@@ -41,8 +41,8 @@ export default function Farewell() {
                     </p>
 
                     <div
-                        className="text-sm text-gray-500 opacity-0"
-                        style={{ animation: 'letters-fade-dim 1600ms ease-out 3400ms forwards' }}
+                        className="text-sm text-gray-600 opacity-0"
+                        style={{ animation: 'letters-fade-in 1600ms ease-out 3400ms forwards' }}
                     >
                         <Link href="/" className="hover:text-gray-900 transition-colors">
                             &rarr; back to vamy.art
@@ -54,6 +54,14 @@ export default function Farewell() {
                     @keyframes letters-fade-dim {
                         from { opacity: 0; transform: translateY(8px); }
                         to   { opacity: 0.55; transform: translateY(0); }
+                    }
+                    @keyframes letters-fade-in {
+                        from { opacity: 0; transform: translateY(8px); }
+                        to   { opacity: 1; transform: translateY(0); }
+                    }
+                    @media (prefers-reduced-motion: reduce) {
+                        h1, p { opacity: 0.55 !important; animation: none !important; transform: none !important; }
+                        div { opacity: 1 !important; animation: none !important; transform: none !important; }
                     }
                 `}</style>
             </main>

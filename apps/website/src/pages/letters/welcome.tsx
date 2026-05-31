@@ -59,6 +59,9 @@ export default function Welcome() {
                         from { opacity: 0; transform: translateY(8px); }
                         to   { opacity: 1; transform: translateY(0); }
                     }
+                    @media (prefers-reduced-motion: reduce) {
+                        h1, p, div { opacity: 1 !important; animation: none !important; transform: none !important; }
+                    }
                 `}</style>
             </main>
         </>
