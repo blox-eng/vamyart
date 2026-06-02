@@ -6,10 +6,13 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "slop": "npx slop-scan scan . 2>/dev/null || echo 'slop-scan not available (install with: npm i -g slop-scan)'",
+    "slop:diff": "bun run scripts/slop-diff.ts"
   },
   "devDependencies": {
     "prettier": "^3.8.3",
+    "slop-scan": "^0.3.0",
     "turbo": "^2.9.6",
     "typescript": "^5.9.3"
   },
