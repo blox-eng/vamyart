@@ -125,10 +125,12 @@ function NewsletterSignup() {
 
     return (
         <div>
-            <h2 className="uppercase text-base tracking-wide mb-2">First dibs</h2>
-            <p className="text-sm mb-4">New work lands here first. 24 hours before anywhere else.</p>
+            <h2 className="font-serif text-2xl mb-3">the letter</h2>
+            <p className="text-sm leading-relaxed mb-5 max-w-sm">
+                Sometimes from the studio. About paint, mostly. About what&rsquo;s on the wall, sometimes. About what&rsquo;s gone, occasionally.
+            </p>
             {status === 'success' ? (
-                <p className="text-sm text-green-600">Check your inbox to confirm.</p>
+                <p className="text-sm font-serif italic">Check your inbox.</p>
             ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-2 max-w-sm">
                     <input
