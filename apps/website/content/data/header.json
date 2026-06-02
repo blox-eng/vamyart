@@ -13,18 +13,18 @@
     },
     "primaryLinks": [
         {
-            "label": "ABOUT",
-            "altText": "About",
-            "url": "/about",
+            "label": "on the wall",
+            "altText": "On the wall — the gallery",
+            "url": "/gallery",
             "icon": "arrowRight",
             "iconPosition": "right",
             "style": "secondary",
             "type": "Link"
         },
         {
-            "label": "GALLERY",
-            "altText": "Gallery",
-            "url": "/gallery",
+            "label": "in the studio",
+            "altText": "In the studio — about the artist",
+            "url": "/about",
             "icon": "arrowRight",
             "iconPosition": "right",
             "style": "secondary",
@@ -33,13 +33,13 @@
     ],
     "secondaryLinks": [
         {
-            "label": "GET A PIECE",
+            "label": "write to maeve",
             "url": "/get-a-piece",
             "icon": "arrowRight",
             "iconPosition": "right",
             "style": "primary",
             "type": "Button",
-            "altText": "get-a-piece"
+            "altText": "Write to Maeve"
         }
     ],
     "variant": "logo-left-primary-nav-right",
