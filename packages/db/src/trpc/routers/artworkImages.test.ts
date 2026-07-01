@@ -1,36 +1,28 @@
 import { describe, it, expect } from "vitest";
-import { validateImageInput } from "./artworkImages";
+import { extForContentType } from "./artworkImages";
 
 describe("artworkImages router", () => {
-  describe("validateImageInput", () => {
-    it("rejects files over 10MB", () => {
-      const input = { fileBase64: "data:image/jpeg;base64," + "x".repeat(14_000_000), fileName: "test.jpg", artworkId: "uuid" };
-      expect(() => validateImageInput(input)).toThrow("File too large");
+  describe("extForContentType", () => {
+    it("maps jpeg to jpg", () => {
+      expect(extForContentType("image/jpeg")).toBe("jpg");
     });
 
-    it("rejects invalid MIME types", () => {
-      const input = { fileBase64: "data:image/gif;base64,R0lGOD", fileName: "test.gif", artworkId: "uuid" };
-      expect(() => validateImageInput(input)).toThrow("Invalid file type");
+    it("maps png to png", () => {
+      expect(extForContentType("image/png")).toBe("png");
     });
 
-    it("accepts valid jpeg", () => {
-      const input = { fileBase64: "data:image/jpeg;base64,/9j/4AAQ", fileName: "test.jpg", artworkId: "uuid" };
-      expect(() => validateImageInput(input)).not.toThrow();
+    it("maps webp to webp", () => {
+      expect(extForContentType("image/webp")).toBe("webp");
     });
 
-    it("accepts valid png", () => {
-      const input = { fileBase64: "data:image/png;base64,iVBOR", fileName: "test.png", artworkId: "uuid" };
-      expect(() => validateImageInput(input)).not.toThrow();
-    });
-
-    it("accepts valid webp", () => {
-      const input = { fileBase64: "data:image/webp;base64,UklGR", fileName: "test.webp", artworkId: "uuid" };
-      expect(() => validateImageInput(input)).not.toThrow();
-    });
-
-    it("rejects missing data URI prefix", () => {
-      const input = { fileBase64: "just-some-text", fileName: "test.jpg", artworkId: "uuid" };
-      expect(() => validateImageInput(input)).toThrow("Invalid file format");
+    // The storage key derives the extension from the validated content type,
+    // never an untrusted client filename (which could carry unicode / unsafe
+    // chars that Supabase rejects). Anything outside the allow-list throws.
+    it("rejects disallowed types", () => {
+      expect(() => extForContentType("image/gif")).toThrow("Invalid file type");
+      expect(() => extForContentType("image/svg+xml")).toThrow("Invalid file type");
+      expect(() => extForContentType("application/pdf")).toThrow("Invalid file type");
+      expect(() => extForContentType("")).toThrow("Invalid file type");
     });
   });
 });

@@ -5,6 +5,7 @@ import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import { revalidatePaths } from "@/lib/revalidate";
+import { createClient } from "@/lib/supabase/client";
 import { NewPieceForm } from "./NewPieceForm";
 import { EditPiecePanel } from "./EditPiecePanel";
 
@@ -154,15 +155,17 @@ export default function ArtworksPage() {
     { enabled: !!selectedKey && selectedKey !== "none" }
   );
 
-  const uploadImage = trpc.artworkImages.upload.useMutation({
+  const createUploadUrl = trpc.artworkImages.createUploadUrl.useMutation();
+  const recordImage = trpc.artworkImages.record.useMutation({
     onSuccess: async () => {
       imagesList.refetch();
       const slug = selected?.artwork?.slug;
       await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
       toast("Image uploaded", "success");
     },
-    onError: (e) => toast(e.message, "error"),
+    // Errors surface through handleImageUpload's try/catch (single toast).
   });
+  const [uploading, setUploading] = useState(false);
 
   const deleteImage = trpc.artworkImages.delete.useMutation({
     onSuccess: async () => {
@@ -186,23 +189,31 @@ export default function ArtworksPage() {
 
   async function handleImageUpload(file: File) {
     if (!selectedKey || selectedKey === "none") return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast("File too large (max 10MB)", "error");
-      return;
-    }
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       toast("Invalid file type (jpg/png/webp only)", "error");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      uploadImage.mutate({
-        artworkId: selectedKey,
-        fileBase64: reader.result as string,
-        fileName: file.name,
-      });
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 25 * 1024 * 1024) {
+      toast("File too large (max 25MB)", "error");
+      return;
+    }
+    const contentType = file.type as "image/jpeg" | "image/png" | "image/webp";
+    setUploading(true);
+    try {
+      // 1. Get a signed URL, then upload bytes straight to Storage (no function
+      //    body limit involved). 2. Record the object in the DB.
+      const { path, token } = await createUploadUrl.mutateAsync({ artworkId: selectedKey, contentType });
+      const supabase = createClient();
+      const { error } = await supabase.storage
+        .from("artwork-images")
+        .uploadToSignedUrl(path, token, file, { contentType });
+      if (error) throw error;
+      await recordImage.mutateAsync({ artworkId: selectedKey, storagePath: path });
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Upload failed", "error");
+    } finally {
+      setUploading(false);
+    }
   }
 
   // ── Variant editing ──────────────────────────────────────────────────────────
@@ -394,13 +405,15 @@ export default function ArtworksPage() {
                   type="file"
                   className="hidden"
                   accept="image/jpeg,image/png,image/webp"
+                  disabled={uploading}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleImageUpload(file);
+                    e.target.value = "";
                   }}
                 />
                 <span className="text-sm text-gray-400">
-                  {uploadImage.isPending ? "Uploading..." : "Click to upload image (jpg/png/webp, max 10MB)"}
+                  {uploading ? "Uploading..." : "Click to upload image (jpg/png/webp, max 25MB)"}
                 </span>
               </label>
 
