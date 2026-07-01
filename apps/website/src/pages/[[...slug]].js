@@ -59,28 +59,21 @@ export async function getStaticProps({ params }) {
     const urlPath = '/' + (params.slug || []).join('/');
     const props = await resolveStaticProps(urlPath, data);
 
-    // Homepage: inject featured artwork image + active banner server-side
+    // Homepage: inject featured artwork image + active banner server-side.
+    // The hero features the artwork flagged `featured` in the admin (artworks.getFeatured),
+    // not a print product. When nothing is featured, the markdown default image stands.
     if (urlPath === '/') {
         try {
-            const featured = await serverTrpc.products.getFeatured();
-            if (featured?.artwork) {
+            const featured = await serverTrpc.artworks.getFeatured();
+            if (featured?.primaryImage) {
                 const heroSection = props.page?.sections?.[0];
                 if (heroSection?.media) {
-                    if (featured.artworkId) {
-                        const images = await serverTrpc.artworkImages.list({ artworkId: featured.artworkId });
-                        const primary = images.find(img => img.isPrimary);
-                        if (primary) {
-                            heroSection.media.url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`;
-                            heroSection.media.altText = primary.altText || `${featured.artwork.title} by Maeve Vamy`;
-                        } else if (heroSection.media.url?.includes('placeholder')) {
-                            heroSection.media.url = `/images/${featured.artwork.slug}.jpg`;
-                            heroSection.media.altText = `${featured.artwork.title} by Maeve Vamy`;
-                        }
-                    }
+                    heroSection.media.url = featured.primaryImage.url;
+                    heroSection.media.altText = featured.primaryImage.altText || `${featured.title} by Maeve Vamy`;
                 }
             }
         } catch {
-            // Fallback to placeholder if DB unavailable at build time
+            // Fallback to the markdown default if the DB is unavailable at build time.
         }
 
         try {
