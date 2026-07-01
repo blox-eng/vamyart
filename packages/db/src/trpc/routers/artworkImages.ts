@@ -6,27 +6,31 @@ import { artworkImages, artworks } from "../../schema";
 import { TRPCError } from "@trpc/server";
 import { createClient } from "@supabase/supabase-js";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const BUCKET = "artwork-images";
+
+// Bucket enforces these mime types and a 25MB file size limit server-side.
+const CONTENT_TYPE_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+const imageContentType = z.enum(["image/jpeg", "image/png", "image/webp"]);
+
+// Derives a safe, lowercase storage extension from the (validated) content type.
+// The client filename is never trusted for the storage key — it can carry unicode
+// or unsafe characters that Supabase rejects with an opaque "Invalid key" error.
+export function extForContentType(contentType: string): string {
+  const ext = CONTENT_TYPE_EXT[contentType];
+  if (!ext) throw new Error("Invalid file type");
+  return ext;
+}
 
 function getStorageClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Supabase env vars not set");
   return createClient(url, key);
-}
-
-export function validateImageInput(input: { fileBase64: string; fileName: string; artworkId: string }) {
-  const mimeMatch = input.fileBase64.match(/^data:(image\/\w+);base64,/);
-  if (!mimeMatch) throw new Error("Invalid file format");
-  const mimeType = mimeMatch[1];
-  if (!ALLOWED_TYPES.includes(mimeType)) throw new Error("Invalid file type");
-
-  const base64Data = input.fileBase64.replace(/^data:image\/\w+;base64,/, "");
-  const sizeBytes = Math.ceil(base64Data.length * 0.75);
-  if (sizeBytes > MAX_SIZE_BYTES) throw new Error("File too large");
-
-  return { mimeType, base64Data };
 }
 
 export const artworkImagesRouter = router({
@@ -40,45 +44,62 @@ export const artworkImagesRouter = router({
         .orderBy(asc(artworkImages.sortOrder));
     }),
 
-  upload: protectedProcedure
-    .input(z.object({
-      artworkId: z.string().uuid(),
-      fileBase64: z.string(),
-      fileName: z.string(),
-      altText: z.string().optional(),
-    }))
+  // Step 1 of upload: mint a short-lived signed URL so the browser can PUT the
+  // image bytes straight to Storage. This bypasses the serverless function's
+  // request-body limit (~6MB on Netlify/Lambda) that the old base64-over-tRPC
+  // approach hit — a large photo produced a non-JSON 413 that surfaced on Safari
+  // as "The string did not match the expected pattern."
+  createUploadUrl: protectedProcedure
+    .input(z.object({ artworkId: z.string().uuid(), contentType: imageContentType }))
     .mutation(async ({ input }) => {
-      const { mimeType, base64Data } = validateImageInput(input);
-
       const [artwork] = await db
         .select({ slug: artworks.slug })
         .from(artworks)
         .where(eq(artworks.id, input.artworkId));
       if (!artwork) throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
 
+      const path = `${artwork.slug}/${crypto.randomUUID()}.${extForContentType(input.contentType)}`;
+
+      const supabase = getStorageClient();
+      const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(path);
+      if (error || !data) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error?.message ?? "Could not create upload URL" });
+      }
+      return { path: data.path, token: data.token };
+    }),
+
+  // Step 2 of upload: record the object (already uploaded by the browser) in the DB.
+  record: protectedProcedure
+    .input(z.object({
+      artworkId: z.string().uuid(),
+      storagePath: z.string().min(1),
+      altText: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const [artwork] = await db
+        .select({ slug: artworks.slug })
+        .from(artworks)
+        .where(eq(artworks.id, input.artworkId));
+      if (!artwork) throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
+
+      // The path must live under this artwork's folder — the client only ever
+      // receives such a path from createUploadUrl above.
+      if (!input.storagePath.startsWith(`${artwork.slug}/`)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid storage path" });
+      }
+
       const existing = await db
         .select({ id: artworkImages.id })
         .from(artworkImages)
         .where(eq(artworkImages.artworkId, input.artworkId));
-      const isFirst = existing.length === 0;
-
-      const ext = input.fileName.split(".").pop() || "jpg";
-      const storagePath = `${artwork.slug}/${crypto.randomUUID()}.${ext}`;
-      const buffer = Buffer.from(base64Data, "base64");
-
-      const supabase = getStorageClient();
-      const { error: uploadError } = await supabase.storage
-        .from("artwork-images")
-        .upload(storagePath, buffer, { contentType: mimeType, upsert: false });
-      if (uploadError) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: uploadError.message });
 
       const [row] = await db
         .insert(artworkImages)
         .values({
           artworkId: input.artworkId,
-          storagePath,
+          storagePath: input.storagePath,
           altText: input.altText ?? null,
-          isPrimary: isFirst,
+          isPrimary: existing.length === 0,
           sortOrder: existing.length,
         })
         .returning();
@@ -96,7 +117,7 @@ export const artworkImagesRouter = router({
       if (!image) throw new TRPCError({ code: "NOT_FOUND", message: "Image not found" });
 
       const supabase = getStorageClient();
-      await supabase.storage.from("artwork-images").remove([image.storagePath]);
+      await supabase.storage.from(BUCKET).remove([image.storagePath]);
 
       await db.delete(artworkImages).where(eq(artworkImages.id, input.id));
 
