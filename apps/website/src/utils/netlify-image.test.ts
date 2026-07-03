@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildNetlifyImageUrl, netlifyImage, netlifyImageSrcSet } from "./netlify-image";
+import { buildHeroPreload, buildNetlifyImageUrl, netlifyImage, netlifyImageSrcSet } from "./netlify-image";
 
 describe("buildNetlifyImageUrl", () => {
   it("builds a URL with encoded source, width, and default quality 75", () => {
@@ -75,5 +75,41 @@ describe("runtime gate", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("stackbitPreview", "");
     expect(netlifyImage("/x.svg", { width: 400 })).toBe("/x.svg");
+  });
+});
+
+describe("buildHeroPreload", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("imageSrcSet matches netlifyImageSrcSet exactly (guards double-download)", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("stackbitPreview", "");
+    const src = "https://x.co/a.jpg";
+    const pre = buildHeroPreload(src, { sizes: "100vw" });
+    expect(pre).not.toBeNull();
+    expect(pre!.imageSrcSet).toBe(netlifyImageSrcSet(src));
+    expect(pre!.href).toBe(netlifyImage(src, { width: 1600 }));
+    expect(pre!.imageSizes).toBe("100vw");
+  });
+
+  it("returns null outside production (mirrors the optimization gate)", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    expect(buildHeroPreload("https://x.co/a.jpg", { sizes: "100vw" })).toBeNull();
+  });
+
+  it("returns null for a non-transformable src even in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("stackbitPreview", "");
+    expect(buildHeroPreload("/logo.svg", { sizes: "100vw" })).toBeNull();
+  });
+
+  it("respects custom widths for both srcset and href", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("stackbitPreview", "");
+    const src = "/a.jpg";
+    const pre = buildHeroPreload(src, { sizes: "50vw", widths: [400, 800] });
+    expect(pre!.imageSrcSet).toBe(netlifyImageSrcSet(src, [400, 800]));
+    expect(pre!.href).toBe(netlifyImage(src, { width: 800 }));
+    expect(pre!.imageSizes).toBe("50vw");
   });
 });
