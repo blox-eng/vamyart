@@ -132,10 +132,7 @@ export function seoGenerateOgImage(page, site) {
 }
 
 function seoGenerateOgUrl(page, site) {
-    const domainUrl = site.env?.URL ? site.env.URL : null;
-    const urlPath = page.__metadata?.urlPath;
-    if (!domainUrl || !urlPath) return null;
-    return domainUrl + urlPath;
+    return seoGenerateCanonicalUrl(page, site);
 }
 
 function seoGenerateOgImageAlt(page) {

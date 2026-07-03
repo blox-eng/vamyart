@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { normalizeTrailingSlash, resolveSiteUrl, seoGenerateCanonicalUrl } from './seo-utils';
+import { normalizeTrailingSlash, resolveSiteUrl, seoGenerateCanonicalUrl, seoGenerateMetaTags } from './seo-utils';
 
 // direnv/.env.local export NEXT_PUBLIC_SITE_URL for local dev; stub it out so the
 // "no host available" cases are deterministic regardless of the ambient shell env.
@@ -30,5 +30,27 @@ describe('seoGenerateCanonicalUrl', () => {
   });
   it('returns null without a host', () => {
     expect(seoGenerateCanonicalUrl({ __metadata: { urlPath: '/about' } }, {})).toBe(null);
+  });
+});
+
+describe('seoGenerateMetaTags og:url', () => {
+  function findOgUrl(metaTags) {
+    return metaTags.find((m) => m.property === 'og:url')?.content;
+  }
+
+  it('matches canonical for a gallery-style page', () => {
+    const page = { __metadata: { urlPath: '/gallery/never' }, title: 'Never' };
+    const site = { env: { URL: 'https://a.co' } };
+    const metaTags = seoGenerateMetaTags(page, site);
+    expect(findOgUrl(metaTags)).toBe('https://a.co/gallery/never/');
+    expect(findOgUrl(metaTags)).toBe(seoGenerateCanonicalUrl(page, site));
+  });
+
+  it('matches canonical for root', () => {
+    const page = { __metadata: { urlPath: '/' }, title: 'Home' };
+    const site = { env: { URL: 'https://a.co' } };
+    const metaTags = seoGenerateMetaTags(page, site);
+    expect(findOgUrl(metaTags)).toBe('https://a.co/');
+    expect(findOgUrl(metaTags)).toBe(seoGenerateCanonicalUrl(page, site));
   });
 });

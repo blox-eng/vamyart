@@ -6,6 +6,7 @@ import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
 import { COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
 import LazyImage from '../components/atoms/LazyImage';
+import { resolveSiteUrl } from '../utils/seo-utils';
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
@@ -27,6 +28,7 @@ export default function GetAPiece({ site }: { site: any }) {
         { enabled: !!pieceSlug, staleTime: Infinity, retry: false }
     );
 
+    const base = resolveSiteUrl(site);
     const artwork = product?.artwork ?? null;
     const variant = product?.variants?.[0] ?? null;
     const attrs = (variant?.attributes ?? {}) as Record<string, string>;
@@ -70,9 +72,7 @@ export default function GetAPiece({ site }: { site: any }) {
         <>
             <Head>
                 <title>Inquire about a piece — Maeve Vamy</title>
-                {(site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL) && (
-                  <link rel="canonical" href={`${(site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL).replace(/\/+$/, '')}/get-a-piece/`} />
-                )}
+                {base && <link rel="canonical" href={`${base}/get-a-piece/`} />}
                 <meta name="description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
                 <meta property="og:title" content="Inquire about a piece — Maeve Vamy" />
                 <meta property="og:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />

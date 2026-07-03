@@ -56,7 +56,7 @@ function Page({ page, site }) {
           />
         )}
         {site.favicon && <link rel="icon" href={site.favicon} />}
-        <JsonLd data={artworkLd} />
+        {base && <JsonLd data={artworkLd} />}
         {breadcrumbLd && <JsonLd data={breadcrumbLd} />}
       </Head>
       <PageLayout page={page} site={site} />
