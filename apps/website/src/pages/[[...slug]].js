@@ -4,8 +4,10 @@ import { allContent } from '../utils/local-content';
 import { getComponent } from '../components/components-registry';
 import { resolveStaticProps } from '../utils/static-props-resolvers';
 import { resolveStaticPaths } from '../utils/static-paths-resolvers';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl } from '../utils/seo-utils';
+import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl } from '../utils/seo-utils';
 import { buildHeroPreload } from '../utils/netlify-image';
+import { buildWebsiteJsonLd, buildPersonJsonLd } from '../utils/structured-data';
+import JsonLd from '../components/atoms/JsonLd';
 import { appRouter } from '@vamy/db/trpc';
 
 // Server-side tRPC caller for homepage DB injection (featured image + active banner).
@@ -27,6 +29,11 @@ function Page(props) {
     const metaDescription = seoGenerateMetaDescription(page, site);
     const canonicalUrl = seoGenerateCanonicalUrl(page, site);
     const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes }) : null;
+    const isHome = page.__metadata?.urlPath === '/';
+    const base = resolveSiteUrl(site);
+    const socialLinks = Array.isArray(site.footer?.socialLinks)
+        ? site.footer.socialLinks.map((l) => l.url).filter(Boolean)
+        : [];
     return (
         <>
             <Head>
@@ -52,6 +59,12 @@ function Page(props) {
                     />
                 )}
                 {site.favicon && <link rel="icon" href={site.favicon} />}
+                {isHome && base && (
+                    <>
+                        <JsonLd data={buildWebsiteJsonLd(base)} />
+                        <JsonLd data={buildPersonJsonLd(base, socialLinks)} />
+                    </>
+                )}
             </Head>
             <PageLayout page={page} site={site} />
         </>
