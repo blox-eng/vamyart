@@ -1,30 +1,11 @@
 import * as React from 'react';
 import Script from 'next/script';
-import { Inter, Cormorant_Garamond } from 'next/font/google';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from '../lib/trpc';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
+import { inter, cormorant } from '../lib/fonts';
 import '../css/main.css';
-
-// Self-hosted at build time (same-origin, auto-preloaded, font-display: swap) —
-// replaces the render-blocking Google Fonts @import. Imported in this shared
-// _app so next/font preloads the woff2 on every route. Add 'cyrillic' to both
-// subsets arrays when the BG locale ships.
-const inter = Inter({
-    subsets: ['latin'],
-    weight: ['400', '500', '700'],
-    display: 'swap',
-    variable: '--font-inter'
-});
-
-const cormorant = Cormorant_Garamond({
-    subsets: ['latin'],
-    weight: ['300', '400', '600'],
-    style: ['normal', 'italic'],
-    display: 'swap',
-    variable: '--font-cormorant'
-});
 
 function getBaseUrl() {
     if (typeof window !== 'undefined') return '';
@@ -34,6 +15,10 @@ function getBaseUrl() {
 function AppInner({ Component, pageProps }) {
     const slug = typeof window !== 'undefined' ? window.location.pathname.replace(/^\/|\/$/g, '') || 'home' : 'home';
     const { data: banner } = trpc.banners.getActive.useQuery({ slug }, { staleTime: 60_000 });
+    // The variable classes also live on <Html> in _document (so html/body and
+    // body-portaled content resolve the font vars). Applying them here too is
+    // what makes next/font emit <link rel=preload> on every route — fonts used
+    // only in _document are self-hosted but never preloaded.
     return (
         <div className={`${inter.variable} ${cormorant.variable}`}>
             <AnnouncementBanner banner={banner ?? null} />

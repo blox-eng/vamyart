@@ -47,27 +47,41 @@ all rendered content. CSS custom properties inherit **downward only**.
 
 ## Approach
 
-Three changes.
+Four small pieces. The key subtlety (found in code review) is **where** the
+CSS variables must be defined vs. **where** `next/font` emits its preload links
+— they require different placements, so two files reference the fonts.
 
-### 1. `apps/website/src/pages/_app.tsx`
+### The scoping constraint (why not just a wrapper `<div>`)
 
-Instantiate both fonts and wrap all rendered content in a `<div>` carrying the
-variable class names. A `<div>` (not `<main>`) because pages render their own
-`<main id="main">` — nesting `<main>` in `<main>` is invalid HTML. The wrapper
-contains both `AnnouncementBanner` and `<Component>`, so every `var(--font-*)`
-reference resolves.
+The Tailwind plugin applies `body { font-family: var(--font-inter) }` (and
+headings) to the real `<body>`/`<h*>` elements, and Tailwind preflight applies
+the same to `<html>`. CSS custom properties inherit **downward only**. A
+`var()` with no in-parens fallback that references an undefined property is
+*invalid at computed-value time* — the whole declaration is dropped (the
+`, sans-serif` list item does **not** rescue it), so the element falls back to
+the browser default serif.
 
-```jsx
+Therefore the variables must be defined at the `<html>` root, not on a
+descendant wrapper `<div>`. A wrapper-only approach leaves `<body>` and any
+content React-portals to `document.body` (modals, search autocomplete)
+rendering in serif.
+
+### 1. `apps/website/src/lib/fonts.ts` (new — single source)
+
+Instantiate both fonts once and export them, so `_document` and `_app` share
+one instance (identical generated class names):
+
+```ts
 import { Inter, Cormorant_Garamond } from 'next/font/google';
 
-const inter = Inter({
+export const inter = Inter({
     subsets: ['latin'],
     weight: ['400', '500', '700'],
     display: 'swap',
     variable: '--font-inter'
 });
 
-const cormorant = Cormorant_Garamond({
+export const cormorant = Cormorant_Garamond({
     subsets: ['latin'],
     weight: ['300', '400', '600'],
     style: ['normal', 'italic'],
@@ -76,25 +90,57 @@ const cormorant = Cormorant_Garamond({
 });
 ```
 
-Wrapper (inside `AppInner`'s return, replacing the current fragment):
+`next/font` downloads the woff2 into the build and serves them **same-origin**
+(`/_next/static/media/*.woff2`), bakes `font-display: swap` into the generated
+`@font-face`, and removes any contact with `fonts.googleapis.com` /
+`fonts.gstatic.com` (replaces #23 lever 3 — preconnect is moot with no
+cross-origin request).
+
+### 2. `apps/website/src/pages/_document.tsx` (new — correct scope)
+
+Apply the variable classes to `<Html>` so the `html`/`body` font-family rules
+(and body-portaled content) resolve the variables:
 
 ```jsx
+import { Html, Head, Main, NextScript } from 'next/document';
+import { inter, cormorant } from '../lib/fonts';
+
+export default function Document() {
+    return (
+        <Html className={`${inter.variable} ${cormorant.variable}`}>
+            <Head />
+            <body>
+                <Main />
+                <NextScript />
+            </body>
+        </Html>
+    );
+}
+```
+
+### 3. `apps/website/src/pages/_app.tsx` (preload trigger)
+
+`next/font` does **not** preload fonts that are referenced only in `_document`
+(they are still self-hosted, just not preloaded). Referencing the same shared
+instances in the shared `_app` makes it emit `<link rel="preload" as="font">`
+on **every** route (replaces #23 lever 1). The wrapper is a `<div>` (not
+`<main>` — pages render their own `<main id="main">`, and nested `<main>` is
+invalid HTML):
+
+```jsx
+import { inter, cormorant } from '../lib/fonts';
+// ...
 <div className={`${inter.variable} ${cormorant.variable}`}>
     <AnnouncementBanner banner={banner ?? null} />
     <Component {...pageProps} />
 </div>
 ```
 
-Because the fonts are imported in the shared `_app`, `next/font`:
-- downloads the woff2 into the build and serves them **same-origin**
-  (`/_next/static/media/*.woff2`),
-- auto-emits `<link rel="preload" as="font">` on **every** route
-  (replaces #23 lever 1),
-- removes any contact with `fonts.googleapis.com` / `fonts.gstatic.com`
-  (replaces #23 lever 3 — preconnect is moot when there's no cross-origin),
-- bakes `font-display: swap` into the generated `@font-face`.
+Note: FCP itself is fixed purely by removing the render-blocking `@import`
+(CSS `@import` is render-blocking; the font download never blocked FCP under
+`display: swap`). Preload is polish that shortens the fallback-swap window.
 
-### 2. `apps/website/tailwind.config.js`
+### 4. `apps/website/tailwind.config.js`
 
 Point the families at the CSS variables (keep generic fallbacks):
 
@@ -108,7 +154,7 @@ fontFamily: {
 No change to the `addBase` plugin — it references `theme('fontFamily.sans'|'serif')`
 which now resolve to the variables.
 
-### 3. `apps/website/src/css/main.css`
+### 5. `apps/website/src/css/main.css`
 
 Delete line 1 (the `@import`). Nothing else in the file references Google Fonts.
 
