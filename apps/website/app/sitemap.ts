@@ -1,12 +1,15 @@
 import type { MetadataRoute } from 'next';
 import { appRouter } from '@vamy/db/trpc';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://vamy.art').replace(/\/+$/, '');
+// Same precedence as the canonical/og:url builder (seo-utils resolveSiteUrl,
+// where site.env.URL is process.env.URL): Netlify deploy URL first, then the
+// explicit fallback. Keeps every sitemap URL host-identical to the page canonical.
+const SITE_URL = (process.env.URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://vamy.art').replace(/\/+$/, '');
 const serverTrpc = appRouter.createCaller({ userId: null });
 
 export const revalidate = 3600;
 
-const STATIC_ROUTES = ['/', '/about/', '/gallery/', '/get-a-piece/'];
+const STATIC_ROUTES = ['/', '/about/', '/gallery/', '/get-a-piece/', '/terms/', '/privacy/'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const staticEntries = STATIC_ROUTES.map((path) => ({
