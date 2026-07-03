@@ -153,6 +153,7 @@ function PostFeedThreeColGrid(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={index === 0}
                 />
             ))}
         </div>
@@ -193,6 +194,7 @@ function PostFeedTwoColGrid(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={index === 0}
                 />
             ))}
         </div>
@@ -233,6 +235,7 @@ function PostFeedSmallList(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={index === 0}
                 />
             ))}
         </div>
@@ -274,6 +277,7 @@ function PostFeedBigList(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={index === 0}
                 />
             ))}
         </div>
