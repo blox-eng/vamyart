@@ -5,6 +5,7 @@ import { getComponent } from '../components/components-registry';
 import { resolveStaticProps } from '../utils/static-props-resolvers';
 import { resolveStaticPaths } from '../utils/static-paths-resolvers';
 import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../utils/seo-utils';
+import { buildHeroPreload } from '../utils/netlify-image';
 import { appRouter } from '@vamy/db/trpc';
 
 // Server-side tRPC caller for homepage DB injection (featured image + active banner).
@@ -24,6 +25,7 @@ function Page(props) {
     const title = seoGenerateTitle(page, site);
     const metaTags = seoGenerateMetaTags(page, site);
     const metaDescription = seoGenerateMetaDescription(page, site);
+    const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes }) : null;
     return (
         <>
             <Head>
@@ -37,6 +39,16 @@ function Page(props) {
                     return <meta key={metaTag.property} name={metaTag.property} content={metaTag.content} />;
                 })}
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
+                {heroPreload && (
+                    <link
+                        rel="preload"
+                        as="image"
+                        href={heroPreload.href}
+                        imageSrcSet={heroPreload.imageSrcSet}
+                        imageSizes={heroPreload.imageSizes}
+                        fetchPriority="high"
+                    />
+                )}
                 {site.favicon && <link rel="icon" href={site.favicon} />}
             </Head>
             <PageLayout page={page} site={site} />
@@ -70,6 +82,8 @@ export async function getStaticProps({ params }) {
                 if (heroSection?.media) {
                     heroSection.media.url = featured.primaryImage.url;
                     heroSection.media.altText = featured.primaryImage.altText || `${featured.title} by Maeve Vamy`;
+                    heroSection.media.priority = true;
+                    props.page.heroPreload = { url: featured.primaryImage.url, sizes: heroSection.media.sizes ?? '100vw' };
                 }
             }
         } catch {
