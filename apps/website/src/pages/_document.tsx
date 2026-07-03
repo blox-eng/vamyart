@@ -5,7 +5,7 @@ import { inter, cormorant } from '../lib/fonts';
 // font-family rules resolve them (see src/lib/fonts.ts).
 export default function Document() {
     return (
-        <Html className={`${inter.variable} ${cormorant.variable}`}>
+        <Html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
             <Head />
             <body>
                 <Main />

@@ -2,8 +2,10 @@ import React from 'react';
 import Head from 'next/head';
 import { allContent } from '../../utils/local-content';
 import { getComponent } from '../../components/components-registry';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../../utils/seo-utils';
+import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl } from '../../utils/seo-utils';
 import { buildHeroPreload } from '../../utils/netlify-image';
+import { buildArtworkJsonLd, buildBreadcrumbJsonLd } from '../../utils/structured-data';
+import JsonLd from '../../components/atoms/JsonLd';
 import { appRouter } from '@vamy/db/trpc';
 
 const serverTrpc = appRouter.createCaller({ userId: null });
@@ -17,13 +19,23 @@ function Page({ page, site }) {
   const title = seoGenerateTitle(page, site);
   const metaTags = seoGenerateMetaTags(page, site);
   const metaDescription = seoGenerateMetaDescription(page, site);
+  const canonicalUrl = seoGenerateCanonicalUrl(page, site);
   const heroPreload = page.featuredImage?.url
     ? buildHeroPreload(page.featuredImage.url, { sizes: '(min-width: 1024px) 50vw, 100vw' })
+    : null;
+  const base = resolveSiteUrl(site);
+  const artworkLd = buildArtworkJsonLd({
+    title: page.title, description: page.excerpt, year: page.year, medium: page.medium,
+    image: page.featuredImage?.url, url: canonicalUrl,
+  });
+  const breadcrumbLd = base
+    ? buildBreadcrumbJsonLd(base, [{ name: 'Gallery', path: '/gallery/' }, { name: page.title, path: canonicalUrl?.replace(base, '') || '/' }])
     : null;
   return (
     <>
       <Head>
         <title>{title}</title>
+        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
         {metaDescription && <meta name="description" content={metaDescription} />}
         {metaTags.map((m) =>
           m.format === 'property' ? (
@@ -44,6 +56,8 @@ function Page({ page, site }) {
           />
         )}
         {site.favicon && <link rel="icon" href={site.favicon} />}
+        {base && <JsonLd data={artworkLd} />}
+        {breadcrumbLd && <JsonLd data={breadcrumbLd} />}
       </Head>
       <PageLayout page={page} site={site} />
     </>
@@ -93,6 +107,7 @@ export async function getStaticProps({ params }) {
     markdown_content: artwork.description ?? '',
     medium: artwork.medium ?? null,
     dimensions: artwork.dimensions ?? null,
+    year: artwork.year ?? null,
     featuredImage: artwork.primaryImage
       ? { url: artwork.primaryImage.url, altText: artwork.primaryImage.altText, type: 'ImageBlock' }
       : null,

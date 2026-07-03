@@ -2,6 +2,23 @@ import { pickOgImage } from '../lib/ogRotation';
 
 const SITE_NAME = 'Maeve Vamy';
 
+export function resolveSiteUrl(site) {
+    const raw = site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL || null;
+    return raw ? raw.replace(/\/+$/, '') : null;
+}
+
+export function normalizeTrailingSlash(path) {
+    if (!path || path === '/') return '/';
+    return '/' + path.replace(/^\/+/, '').replace(/\/+$/, '') + '/';
+}
+
+export function seoGenerateCanonicalUrl(page, site) {
+    const base = resolveSiteUrl(site);
+    const urlPath = page?.__metadata?.urlPath;
+    if (!base || !urlPath) return null;
+    return base + normalizeTrailingSlash(urlPath);
+}
+
 export function seoGenerateMetaTags(page, site) {
     let pageMetaTags = {};
 
@@ -115,10 +132,7 @@ export function seoGenerateOgImage(page, site) {
 }
 
 function seoGenerateOgUrl(page, site) {
-    const domainUrl = site.env?.URL ? site.env.URL : null;
-    const urlPath = page.__metadata?.urlPath;
-    if (!domainUrl || !urlPath) return null;
-    return domainUrl + urlPath;
+    return seoGenerateCanonicalUrl(page, site);
 }
 
 function seoGenerateOgImageAlt(page) {
