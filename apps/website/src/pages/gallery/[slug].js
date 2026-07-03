@@ -2,7 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import { allContent } from '../../utils/local-content';
 import { getComponent } from '../../components/components-registry';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../../utils/seo-utils';
+import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl } from '../../utils/seo-utils';
 import { buildHeroPreload } from '../../utils/netlify-image';
 import { appRouter } from '@vamy/db/trpc';
 
@@ -17,6 +17,7 @@ function Page({ page, site }) {
   const title = seoGenerateTitle(page, site);
   const metaTags = seoGenerateMetaTags(page, site);
   const metaDescription = seoGenerateMetaDescription(page, site);
+  const canonicalUrl = seoGenerateCanonicalUrl(page, site);
   const heroPreload = page.featuredImage?.url
     ? buildHeroPreload(page.featuredImage.url, { sizes: '(min-width: 1024px) 50vw, 100vw' })
     : null;
@@ -24,6 +25,7 @@ function Page({ page, site }) {
     <>
       <Head>
         <title>{title}</title>
+        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
         {metaDescription && <meta name="description" content={metaDescription} />}
         {metaTags.map((m) =>
           m.format === 'property' ? (

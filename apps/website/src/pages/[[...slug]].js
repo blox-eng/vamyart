@@ -4,7 +4,7 @@ import { allContent } from '../utils/local-content';
 import { getComponent } from '../components/components-registry';
 import { resolveStaticProps } from '../utils/static-props-resolvers';
 import { resolveStaticPaths } from '../utils/static-paths-resolvers';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../utils/seo-utils';
+import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl } from '../utils/seo-utils';
 import { buildHeroPreload } from '../utils/netlify-image';
 import { appRouter } from '@vamy/db/trpc';
 
@@ -25,11 +25,13 @@ function Page(props) {
     const title = seoGenerateTitle(page, site);
     const metaTags = seoGenerateMetaTags(page, site);
     const metaDescription = seoGenerateMetaDescription(page, site);
+    const canonicalUrl = seoGenerateCanonicalUrl(page, site);
     const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes }) : null;
     return (
         <>
             <Head>
                 <title>{title}</title>
+                {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
                 {metaDescription && <meta name="description" content={metaDescription} />}
                 {metaTags.map((metaTag) => {
                     if (metaTag.format === 'property') {

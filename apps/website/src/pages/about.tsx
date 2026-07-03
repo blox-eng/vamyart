@@ -7,6 +7,9 @@ export default function About({ site }: { site: any }) {
         <>
             <Head>
                 <title>About — Maeve Vamy</title>
+                {(site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL) && (
+                  <link rel="canonical" href={`${(site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL).replace(/\/+$/, '')}/about/`} />
+                )}
                 <meta name="description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />
                 <meta property="og:title" content="About — Maeve Vamy" />
                 <meta property="og:description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />

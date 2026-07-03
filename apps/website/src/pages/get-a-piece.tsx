@@ -70,6 +70,9 @@ export default function GetAPiece({ site }: { site: any }) {
         <>
             <Head>
                 <title>Inquire about a piece — Maeve Vamy</title>
+                {(site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL) && (
+                  <link rel="canonical" href={`${(site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL).replace(/\/+$/, '')}/get-a-piece/`} />
+                )}
                 <meta name="description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
                 <meta property="og:title" content="Inquire about a piece — Maeve Vamy" />
                 <meta property="og:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
