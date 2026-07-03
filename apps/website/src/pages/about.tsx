@@ -33,36 +33,51 @@ export default function About({ site }: { site: any }) {
                     {site?.header && <Header {...site.header} />}
 
                     <main className="min-h-screen bg-white">
-                        <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
-                            {/* Bio */}
-                            <section className="mb-16">
-                                <h1 className="text-3xl font-light mb-8">Maeve Vamy</h1>
+                        <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
+                            <div className="grid gap-10 sm:gap-14 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-start">
+                                {/* Portrait — Maeve at work in the studio */}
+                                <img
+                                    src="/images/maeve-studio.jpg"
+                                    alt="Maeve Vamy painting at her easel in her studio"
+                                    width={1920}
+                                    height={2560}
+                                    className="w-full max-w-sm mx-auto md:max-w-none rounded-sm object-cover"
+                                    loading="eager"
+                                />
 
-                                <div className="space-y-5 text-gray-600 leading-relaxed">
-                                    <p>
-                                        Maeve Vamy is a Bulgarian fine artist. She works between realism and
-                                        abstraction, painting from direct observation in her studio in Stara
-                                        Zagora.
-                                    </p>
-                                    <p>
-                                        Each piece is finished slowly — built up in layers of oil on linen,
-                                        then varnished and signed only when it's truly done.
-                                    </p>
+                                {/* Text */}
+                                <div>
+                                    {/* Bio */}
+                                    <section className="mb-14">
+                                        <h1 className="text-3xl font-light mb-8">Maeve Vamy</h1>
+
+                                        <div className="space-y-5 text-gray-600 leading-relaxed">
+                                            <p>
+                                                Maeve Vamy is a Bulgarian fine artist. She works between realism and
+                                                abstraction, painting from direct observation in her studio in Stara
+                                                Zagora.
+                                            </p>
+                                            <p>
+                                                Each piece is finished slowly — built up in layers of oil on linen,
+                                                then varnished and signed only when it's truly done.
+                                            </p>
+                                        </div>
+                                    </section>
+
+                                    {/* Artist statement */}
+                                    <section>
+                                        <h2 className="text-xs uppercase tracking-widest text-gray-400 mb-6">Artist statement</h2>
+                                        <blockquote className="border-l-2 border-gray-300 pl-6">
+                                            <p className="italic text-gray-600 leading-relaxed">
+                                                "I paint because looking isn't enough. A painting captures what a
+                                                moment felt like — the mess, the slowness, the refusal to be rushed.
+                                                That's the point."
+                                            </p>
+                                            <footer className="mt-4 text-sm text-gray-400">— Maeve Vamy</footer>
+                                        </blockquote>
+                                    </section>
                                 </div>
-                            </section>
-
-                            {/* Artist statement */}
-                            <section>
-                                <h2 className="text-xs uppercase tracking-widest text-gray-400 mb-6">Artist statement</h2>
-                                <blockquote className="border-l-2 border-gray-300 pl-6">
-                                    <p className="italic text-gray-600 leading-relaxed">
-                                        "I paint because looking isn't enough. A painting captures what a
-                                        moment felt like — the mess, the slowness, the refusal to be rushed.
-                                        That's the point."
-                                    </p>
-                                    <footer className="mt-4 text-sm text-gray-400">— Maeve Vamy</footer>
-                                </blockquote>
-                            </section>
+                            </div>
                         </div>
                     </main>
 

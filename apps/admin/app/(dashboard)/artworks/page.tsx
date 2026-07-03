@@ -8,6 +8,7 @@ import { revalidatePaths } from "@/lib/revalidate";
 import { createClient } from "@/lib/supabase/client";
 import { NewPieceForm } from "./NewPieceForm";
 import { EditPiecePanel } from "./EditPiecePanel";
+import { resizeImageForUpload } from "@/lib/image/resize";
 
 type VariantDraft = {
   name: string;
@@ -197,9 +198,18 @@ export default function ArtworksPage() {
       toast("File too large (max 25MB)", "error");
       return;
     }
-    const contentType = file.type as "image/jpeg" | "image/png" | "image/webp";
     setUploading(true);
     try {
+      // Downscale oversized exports in the browser before upload (fail open to
+      // the original if the resize can't run). Format is preserved, so the
+      // content type stays within the jpeg|png|webp allowlist.
+      let uploadBlob: Blob = file;
+      try {
+        uploadBlob = await resizeImageForUpload(file);
+      } catch {
+        uploadBlob = file;
+      }
+      const contentType = uploadBlob.type as "image/jpeg" | "image/png" | "image/webp";
       // 1. Get a signed URL, then upload bytes straight to Storage (no function
       //    body limit involved). 2. Record the object in the DB.
       const { path, token } = await createUploadUrl.mutateAsync({ artworkId: selectedKey, contentType });
@@ -209,7 +219,7 @@ export default function ArtworksPage() {
         // One-year cache: the Netlify Image CDN inherits this, so cold transforms
         // of the source stop recurring hourly. Safe because storage keys are
         // content-addressed UUIDs (createUploadUrl mints a fresh one; upsert:false).
-        .uploadToSignedUrl(path, token, file, { contentType, cacheControl: "31536000" });
+        .uploadToSignedUrl(path, token, uploadBlob, { contentType, cacheControl: "31536000" });
       if (error) throw error;
       await recordImage.mutateAsync({ artworkId: selectedKey, storagePath: path });
     } catch (e) {
