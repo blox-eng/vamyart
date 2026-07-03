@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from '../lib/trpc';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
+import { inter, cormorant } from '../lib/fonts';
 import '../css/main.css';
 
 function getBaseUrl() {
@@ -14,11 +15,15 @@ function getBaseUrl() {
 function AppInner({ Component, pageProps }) {
     const slug = typeof window !== 'undefined' ? window.location.pathname.replace(/^\/|\/$/g, '') || 'home' : 'home';
     const { data: banner } = trpc.banners.getActive.useQuery({ slug }, { staleTime: 60_000 });
+    // The variable classes also live on <Html> in _document (so html/body and
+    // body-portaled content resolve the font vars). Applying them here too is
+    // what makes next/font emit <link rel=preload> on every route — fonts used
+    // only in _document are self-hosted but never preloaded.
     return (
-        <>
+        <div className={`${inter.variable} ${cormorant.variable}`}>
             <AnnouncementBanner banner={banner ?? null} />
             <Component {...pageProps} />
-        </>
+        </div>
     );
 }
 

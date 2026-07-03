@@ -23,8 +23,8 @@ module.exports = {
                 primary: themeStyle.primary
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                serif: ['Cormorant Garamond', 'serif']
+                sans: ['var(--font-inter)', 'sans-serif'],
+                serif: ['var(--font-cormorant)', 'serif']
             },
             gridTemplateColumns: {
                 16: 'repeat(16, minmax(0, 1fr))'
