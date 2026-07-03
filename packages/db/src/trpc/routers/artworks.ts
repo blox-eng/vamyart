@@ -268,6 +268,7 @@ export const artworksRouter = router({
         dimensions: a.dimensions,
         featured: a.featured,
         sortOrder: a.sortOrder,
+        updatedAt: a.updatedAt,
         primaryImage: primary
           ? {
               url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
