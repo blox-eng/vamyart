@@ -206,7 +206,10 @@ export default function ArtworksPage() {
       const supabase = createClient();
       const { error } = await supabase.storage
         .from("artwork-images")
-        .uploadToSignedUrl(path, token, file, { contentType });
+        // One-year cache: the Netlify Image CDN inherits this, so cold transforms
+        // of the source stop recurring hourly. Safe because storage keys are
+        // content-addressed UUIDs (createUploadUrl mints a fresh one; upsert:false).
+        .uploadToSignedUrl(path, token, file, { contentType, cacheControl: "31536000" });
       if (error) throw error;
       await recordImage.mutateAsync({ artworkId: selectedKey, storagePath: path });
     } catch (e) {
