@@ -5,7 +5,7 @@ import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to
 import { netlifyImage, netlifyImageSrcSet, DEFAULT_WIDTHS } from '../../../utils/netlify-image';
 
 export default function ImageBlock(props) {
-    const { elementId, className, imageClassName, url, altText = '', sizes = '100vw', loading, styles = {} } = props;
+    const { elementId, className, imageClassName, url, altText = '', sizes = '100vw', loading, priority = false, styles = {} } = props;
     if (!url) {
         return null;
     }
@@ -48,7 +48,8 @@ export default function ImageBlock(props) {
                 srcSet={srcSet}
                 sizes={srcSet ? sizes : undefined}
                 alt={altText}
-                loading={loading}
+                loading={priority ? 'eager' : loading}
+                fetchPriority={priority ? 'high' : undefined}
             />
         </div>
     );

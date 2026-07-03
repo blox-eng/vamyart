@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { allContent } from '../../utils/local-content';
 import { getComponent } from '../../components/components-registry';
 import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../../utils/seo-utils';
+import { buildHeroPreload } from '../../utils/netlify-image';
 import { appRouter } from '@vamy/db/trpc';
 
 const serverTrpc = appRouter.createCaller({ userId: null });
@@ -16,6 +17,9 @@ function Page({ page, site }) {
   const title = seoGenerateTitle(page, site);
   const metaTags = seoGenerateMetaTags(page, site);
   const metaDescription = seoGenerateMetaDescription(page, site);
+  const heroPreload = page.featuredImage?.url
+    ? buildHeroPreload(page.featuredImage.url, { sizes: '(min-width: 1024px) 50vw, 100vw' })
+    : null;
   return (
     <>
       <Head>
@@ -29,6 +33,16 @@ function Page({ page, site }) {
           )
         )}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {heroPreload && (
+          <link
+            rel="preload"
+            as="image"
+            href={heroPreload.href}
+            imageSrcSet={heroPreload.imageSrcSet}
+            imageSizes={heroPreload.imageSizes}
+            fetchPriority="high"
+          />
+        )}
         {site.favicon && <link rel="icon" href={site.favicon} />}
       </Head>
       <PageLayout page={page} site={site} />

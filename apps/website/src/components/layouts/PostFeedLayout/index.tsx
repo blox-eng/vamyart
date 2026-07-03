@@ -25,12 +25,15 @@ export default function PostFeedLayout(props) {
                     </h1>
                 )}
                 {renderSections(topSections, 'topSections', enableAnnotations)}
+                {/* This feed is the page's main above-the-fold content (the gallery grid),
+                    so its first thumbnail is the LCP — prioritizeFirstItem eager-loads it. */}
                 <PostFeedSection
                     {...postFeed}
                     posts={items}
                     pageLinks={pageLinks}
                     searchBox={searchBox}
                     enableAnnotations={enableAnnotations}
+                    prioritizeFirstItem
                     {...(enableAnnotations && { 'data-sb-field-path': 'postFeed' })}
                 />
                 {renderSections(bottomSections, 'bottomSections', enableAnnotations)}

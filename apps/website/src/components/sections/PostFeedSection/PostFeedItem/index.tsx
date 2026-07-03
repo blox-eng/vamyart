@@ -18,7 +18,10 @@ export default function PostFeedItem(props) {
         hasBigThumbnail,
         hoverEffect = 'move-up',
         sectionColors,
-        hasAnnotations
+        hasAnnotations,
+        // When true, this item's thumbnail eager-loads with fetchpriority=high (for the
+        // LCP). Set by PostFeedSection only when its caller opts in via prioritizeFirstItem.
+        priority = false
     } = props;
     const TitleTag = hasSectionTitle ? 'h3' : 'h2';
     const flexDirection = post.styles?.self?.flexDirection ?? 'col';
@@ -53,6 +56,8 @@ export default function PostFeedItem(props) {
                         src={post.featuredImage.url}
                         alt={post.featuredImage.altText || post.title || ''}
                         sizes="(min-width: 640px) 33vw, 100vw"
+                        loading={priority ? 'eager' : 'lazy'}
+                        fetchPriority={priority ? 'high' : undefined}
                         className={classNames({
                             'xs:w-[50%] xs:shrink-0': hasBigThumbnail && (flexDirection === 'row' || flexDirection === 'row-reversed'),
                             'xs:w-[28.4%] xs:shrink-0': !hasBigThumbnail && (flexDirection === 'row' || flexDirection === 'row-reversed'),

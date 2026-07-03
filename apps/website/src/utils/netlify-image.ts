@@ -50,3 +50,28 @@ export function netlifyImageSrcSet(
     if (!optimizationEnabled() || !isTransformable(src)) return '';
     return widths.map((w) => `${buildNetlifyImageUrl(src, { ...opts, width: w })} ${w}w`).join(', ');
 }
+
+export type HeroPreload = {
+    href: string;
+    imageSrcSet: string;
+    imageSizes: string;
+};
+
+// Builds the <link rel="preload" as="image"> attributes for an above-the-fold
+// image. imageSrcSet/imageSizes MUST match the rendered <img>'s srcSet/sizes for
+// the same URL, or the browser fetches a second candidate. Returns null when
+// there is nothing cacheable to preload (dev/preview, or a non-transformable
+// src) — mirroring the production gate in netlifyImage/netlifyImageSrcSet.
+export function buildHeroPreload(
+    src: string,
+    opts: { sizes: string; widths?: number[] }
+): HeroPreload | null {
+    const widths = opts.widths ?? DEFAULT_WIDTHS;
+    const imageSrcSet = netlifyImageSrcSet(src, widths);
+    if (!imageSrcSet) return null;
+    return {
+        href: netlifyImage(src, { width: widths[widths.length - 1] }),
+        imageSrcSet,
+        imageSizes: opts.sizes,
+    };
+}

@@ -28,7 +28,12 @@ export default function PostFeedSection(props) {
         hoverEffect,
         styles = {},
         annotatePosts,
-        enableAnnotations
+        enableAnnotations,
+        // Eager-load + high fetch-priority for the first post's thumbnail (the LCP).
+        // Only the caller knows whether this feed is above the fold, so it's opt-in:
+        // the gallery grid (PostFeedLayout) sets it; the reusable FeaturedPostsSection /
+        // RecentPostsSection sections leave it false so they never fight a page's real LCP.
+        prioritizeFirstItem = false
     } = props;
 
     return (
@@ -79,6 +84,7 @@ export default function PostFeedSection(props) {
                     hasSectionTitle={!!title?.text}
                     hasAnnotations={enableAnnotations}
                     annotatePosts={annotatePosts}
+                    prioritizeFirstItem={prioritizeFirstItem}
                 />
                 {actions.length > 0 && (
                     <div
@@ -129,7 +135,8 @@ function PostFeedThreeColGrid(props) {
         hoverEffect,
         colors,
         hasAnnotations,
-        annotatePosts
+        annotatePosts,
+        prioritizeFirstItem
     } = props;
     if (posts.length === 0) {
         return null;
@@ -153,6 +160,7 @@ function PostFeedThreeColGrid(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={prioritizeFirstItem && index === 0}
                 />
             ))}
         </div>
@@ -171,7 +179,8 @@ function PostFeedTwoColGrid(props) {
         hoverEffect,
         colors,
         hasAnnotations,
-        annotatePosts
+        annotatePosts,
+        prioritizeFirstItem
     } = props;
     if (posts.length === 0) {
         return null;
@@ -193,6 +202,7 @@ function PostFeedTwoColGrid(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={prioritizeFirstItem && index === 0}
                 />
             ))}
         </div>
@@ -211,7 +221,8 @@ function PostFeedSmallList(props) {
         hoverEffect,
         colors,
         hasAnnotations,
-        annotatePosts
+        annotatePosts,
+        prioritizeFirstItem
     } = props;
     if (posts.length === 0) {
         return null;
@@ -233,6 +244,7 @@ function PostFeedSmallList(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={prioritizeFirstItem && index === 0}
                 />
             ))}
         </div>
@@ -251,7 +263,8 @@ function PostFeedBigList(props) {
         hoverEffect,
         colors,
         hasAnnotations,
-        annotatePosts
+        annotatePosts,
+        prioritizeFirstItem
     } = props;
     if (posts.length === 0) {
         return null;
@@ -274,6 +287,7 @@ function PostFeedBigList(props) {
                     hoverEffect={hoverEffect}
                     sectionColors={colors}
                     hasAnnotations={hasAnnotations}
+                    priority={prioritizeFirstItem && index === 0}
                 />
             ))}
         </div>
