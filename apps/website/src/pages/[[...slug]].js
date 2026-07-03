@@ -32,7 +32,7 @@ function Page(props) {
     const isHome = page.__metadata?.urlPath === '/';
     const base = resolveSiteUrl(site);
     const socialLinks = Array.isArray(site.footer?.socialLinks)
-        ? site.footer.socialLinks.map((l) => l.url).filter(Boolean)
+        ? site.footer.socialLinks.map((l) => l.url).filter((u) => /^https?:\/\//.test(u))
         : [];
     return (
         <>

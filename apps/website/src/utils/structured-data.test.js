@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildPersonJsonLd, buildWebsiteJsonLd,
+  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd,
 } from './structured-data';
 
 const ARTIST = 'Maeve Vamy';
@@ -50,5 +50,19 @@ describe('buildWebsiteJsonLd / buildPersonJsonLd', () => {
   });
   it('Person omits sameAs when empty', () => {
     expect(buildPersonJsonLd('https://a.co', [])).not.toHaveProperty('sameAs');
+  });
+});
+
+describe('escapeJsonLd', () => {
+  it('escapes < so a stray </script> cannot break out of the script tag', () => {
+    const json = JSON.stringify({ description: '</script><script>alert(1)</script>' });
+    const out = escapeJsonLd(json);
+    expect(out).not.toContain('</script>');
+    expect(out).not.toContain('<');
+    expect(out).toContain('\\u003c/script>');
+  });
+  it('leaves ordinary JSON untouched', () => {
+    const json = JSON.stringify({ name: 'Never', year: 2024 });
+    expect(escapeJsonLd(json)).toBe(json);
   });
 });

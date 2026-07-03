@@ -1,5 +1,12 @@
 const ARTIST_NAME = 'Maeve Vamy';
 
+// Escape `<` in serialized JSON-LD so a stray `</script>` in DB-sourced
+// content (e.g. an artwork title/description) can't break out of the
+// surrounding <script type="application/ld+json"> tag.
+export function escapeJsonLd(json) {
+    return json.replace(/</g, '\\u003c');
+}
+
 export function buildArtworkJsonLd({ title, description, year, medium, image, url }) {
     return {
         '@context': 'https://schema.org',
