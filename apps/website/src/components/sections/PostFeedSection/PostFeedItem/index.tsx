@@ -19,10 +19,8 @@ export default function PostFeedItem(props) {
         hoverEffect = 'move-up',
         sectionColors,
         hasAnnotations,
-        // Eager-load + fetchpriority=high for the LCP thumbnail. Callers set this on
-        // the first item, which assumes the feed is above the fold (it is — PostFeedSection
-        // is only used by the gallery grid). If a feed is ever placed below the fold, don't
-        // set priority on its first item, or it competes with the page's real LCP preload.
+        // When true, this item's thumbnail eager-loads with fetchpriority=high (for the
+        // LCP). Set by PostFeedSection only when its caller opts in via prioritizeFirstItem.
         priority = false
     } = props;
     const TitleTag = hasSectionTitle ? 'h3' : 'h2';
