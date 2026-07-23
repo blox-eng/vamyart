@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../index";
 import { db } from "../../client";
