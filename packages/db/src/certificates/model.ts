@@ -41,7 +41,7 @@ export const DEFAULT_CERTIFICATE_SETTINGS: CertificateSettings = {
   headerText: "Certificate of Authenticity",
   studioName: "VAMY",
   statementTemplate:
-    'I certify that "{title}" is an authentic original work created by my hand. This certificate accompanies the artwork as a record of its provenance.',
+    'I certify that “{title}” is an authentic original work created by my hand. This certificate accompanies the artwork as a record of its provenance.',
   copyrightLine: "© Maeve — all reproduction rights reserved.",
   careLine: "Keep away from direct sunlight and humidity. Handle by the edges.",
   signatureLabel: "Signed by hand",
