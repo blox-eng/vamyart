@@ -14,11 +14,14 @@ export default function CertificatesPage() {
 
   async function reDownload(row: NonNullable<typeof data>[number]) {
     try {
-      await downloadCertificatePdf(
+      const delivery = await downloadCertificatePdf(
         row.fieldsSnapshot as CertificateSnapshot,
         certificateImageUrl(row.imagePath),
         `${row.certNumber}.pdf`,
       );
+      if (delivery === "opened") {
+        toast(`${row.certNumber} opened in a new tab — tap Share to save it`, "success");
+      }
     } catch (e) {
       toast((e as Error).message || "Could not rebuild PDF", "error");
     }
@@ -36,37 +39,69 @@ export default function CertificatesPage() {
       {!data?.length ? (
         <p className="text-sm text-gray-500">No certificates issued yet. Issue one from a piece on the Pieces page.</p>
       ) : (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-gray-500 border-b">
-              <th className="py-2">Number</th>
-              <th>Piece</th>
-              <th>Kind</th>
-              <th>Edition</th>
-              <th>Collector</th>
-              <th>Issued</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
+        <>
+          {/* Desktop: table */}
+          <div className="hidden overflow-x-auto lg:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b">
+                  <th className="py-2">Number</th>
+                  <th>Piece</th>
+                  <th>Kind</th>
+                  <th>Edition</th>
+                  <th>Collector</th>
+                  <th>Issued</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row) => {
+                  const snap = row.fieldsSnapshot as CertificateSnapshot;
+                  return (
+                    <tr key={row.id} className="border-b">
+                      <td className="py-2 font-medium">{row.certNumber}</td>
+                      <td>{snap.title}</td>
+                      <td>{row.kind}</td>
+                      <td>{snap.editionLabel ?? "—"}</td>
+                      <td>{row.buyerName ?? "—"}</td>
+                      <td>{snap.issuedDateText}</td>
+                      <td className="text-right">
+                        <button className="underline" onClick={() => reDownload(row)}>Re-download</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: cards */}
+          <div className="space-y-3 lg:hidden">
             {data.map((row) => {
               const snap = row.fieldsSnapshot as CertificateSnapshot;
               return (
-                <tr key={row.id} className="border-b">
-                  <td className="py-2 font-medium">{row.certNumber}</td>
-                  <td>{snap.title}</td>
-                  <td>{row.kind}</td>
-                  <td>{snap.editionLabel ?? "—"}</td>
-                  <td>{row.buyerName ?? "—"}</td>
-                  <td>{snap.issuedDateText}</td>
-                  <td className="text-right">
-                    <button className="underline" onClick={() => reDownload(row)}>Re-download</button>
-                  </td>
-                </tr>
+                <div key={row.id} className="rounded-lg border p-4">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-medium">{row.certNumber}</span>
+                    <span className="text-xs text-gray-500">{snap.issuedDateText}</span>
+                  </div>
+                  <p className="mt-1 text-sm">{snap.title}</p>
+                  <p className="mt-0.5 text-xs text-gray-500">
+                    {row.kind}
+                    {snap.editionLabel ? ` · ${snap.editionLabel}` : ""}
+                    {row.buyerName ? ` · ${row.buyerName}` : ""}
+                  </p>
+                  <button
+                    className="mt-3 w-full rounded border py-3 text-sm"
+                    onClick={() => reDownload(row)}
+                  >
+                    Re-download
+                  </button>
+                </div>
               );
             })}
-          </tbody>
-        </table>
+          </div>
+        </>
       )}
     </div>
   );

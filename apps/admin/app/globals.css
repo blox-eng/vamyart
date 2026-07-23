@@ -8,4 +8,14 @@
   h1 {
     font-family: 'Cormorant Garamond', serif;
   }
+
+  /* iOS Safari auto-zooms the page when a focused control's font is < 16px.
+     Force 16px on form controls at phone/tablet widths to stop the zoom-on-focus. */
+  @media (max-width: 1023px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
 }

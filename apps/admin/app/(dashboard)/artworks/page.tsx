@@ -435,7 +435,7 @@ export default function ArtworksPage() {
                     images: imagesList.data ?? [],
                   })
                 }
-                className="text-xs border px-3 py-1 rounded hover:bg-gray-100"
+                className="text-xs border px-3 py-2 rounded hover:bg-gray-100"
               >
                 Issue certificate
               </button>

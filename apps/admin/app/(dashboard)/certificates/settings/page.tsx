@@ -70,13 +70,15 @@ export default function CertificateSettingsPage() {
         <input className="mt-1 w-full border rounded px-2 py-1" {...field("signatureLabel")} />
       </label>
 
-      <button
-        className="px-4 py-2 text-sm bg-black text-white rounded disabled:opacity-50"
-        disabled={update.isPending}
-        onClick={() => update.mutate(form)}
-      >
-        {update.isPending ? "Saving…" : "Save template"}
-      </button>
+      <div className="sticky bottom-0 -mx-6 border-t bg-white px-6 py-3">
+        <button
+          className="w-full rounded bg-black px-5 py-3 text-sm text-white disabled:opacity-50 sm:w-auto"
+          disabled={update.isPending}
+          onClick={() => update.mutate(form)}
+        >
+          {update.isPending ? "Saving…" : "Save template"}
+        </button>
+      </div>
     </div>
   );
 }

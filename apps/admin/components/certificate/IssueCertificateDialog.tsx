@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { trpc } from "../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { downloadCertificatePdf, certificateImageUrl } from "../../lib/certificate/render";
@@ -42,6 +42,13 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
 
   const issue = trpc.certificates.issue.useMutation();
 
+  // Lock the page behind the modal so touch-scrolling doesn't bleed to the list underneath (iOS).
+  useEffect(() => {
+    if (!open) return;
+    document.body.classList.add("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [open]);
+
   async function handleGenerate() {
     try {
       const row = await issue.mutateAsync({
@@ -59,12 +66,17 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
         statementOverride: statementOverride.trim() || undefined,
       });
       const snapshot = row.fieldsSnapshot as CertificateSnapshot;
-      await downloadCertificatePdf(
+      const delivery = await downloadCertificatePdf(
         snapshot,
         certificateImageUrl(row.imagePath),
         `${row.certNumber}.pdf`,
       );
-      toast(`Certificate ${row.certNumber} issued`, "success");
+      toast(
+        delivery === "opened"
+          ? `Certificate ${row.certNumber} issued — opened in a new tab, tap Share to save it`
+          : `Certificate ${row.certNumber} issued`,
+        "success",
+      );
       onClose();
     } catch (e) {
       toast((e as Error).message || "Could not issue certificate", "error");
@@ -74,8 +86,15 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white p-6 space-y-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-white sm:max-w-lg sm:rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex-1 space-y-4 overflow-y-auto p-6">
         <h2 className="text-lg font-light tracking-wide">
           {isPrint ? "Issue edition certificate" : "Issue certificate"}
         </h2>
@@ -134,11 +153,12 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
         <label className="block text-sm">Statement override (optional)
           <textarea className="mt-1 w-full border rounded px-2 py-1" rows={3} value={statementOverride} onChange={(e) => setStatementOverride(e.target.value)} placeholder="Leave blank to use your saved wording." />
         </label>
+        </div>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <button className="px-4 py-2 text-sm" onClick={onClose} disabled={issue.isPending}>Cancel</button>
+        <div className="flex justify-end gap-2 border-t bg-white px-6 py-4">
+          <button className="rounded px-4 py-3 text-sm" onClick={onClose} disabled={issue.isPending}>Cancel</button>
           <button
-            className="px-4 py-2 text-sm bg-black text-white rounded disabled:opacity-50"
+            className="rounded bg-black px-5 py-3 text-sm text-white disabled:opacity-50"
             onClick={handleGenerate}
             disabled={issue.isPending || !title.trim() || (isPrint && (!editionNumber || !editionSize))}
           >
