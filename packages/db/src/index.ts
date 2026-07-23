@@ -17,3 +17,14 @@ export { sendOverdueInquirerFollowups } from "./services/inquirer-followup";
 export type { RunFollowupsResult } from "./services/inquirer-followup";
 export { trackEvent } from "./services/umami";
 export type { UmamiEventName } from "./services/umami";
+export {
+  formatCertNumber,
+  editionLabel,
+  assertEditionAvailable,
+  interpolateStatement,
+  buildCertificateSnapshot,
+  DEFAULT_CERTIFICATE_SETTINGS,
+  type CertificateSettings,
+  type CertificateSnapshot,
+  type SnapshotInput,
+} from "./certificates/model";
