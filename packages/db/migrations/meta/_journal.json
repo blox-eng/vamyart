@@ -78,6 +78,13 @@
       "when": 1780046620438,
       "tag": "0010_nosy_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784825103608,
+      "tag": "0011_certificates",
+      "breakpoints": true
     }
   ]
 }
