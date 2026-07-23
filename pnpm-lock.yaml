@@ -27,12 +27,6 @@ importers:
 
   apps/admin:
     dependencies:
-      '@fontsource/cormorant':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/inter':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@react-pdf/renderer':
         specifier: ^4.5.1
         version: 4.5.1(react@19.2.5)
@@ -795,12 +789,6 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
-
-  '@fontsource/cormorant@5.3.0':
-    resolution: {integrity: sha512-r2xrO2/35L+miyYFaERPRn3TGA8G83fKAR4wGG3s4WC5pLRZ7Cw3brDjr8tRwESCHXgB3r7jZqjfK2kLPv3zrQ==}
-
-  '@fontsource/inter@5.3.0':
-    resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
 
   '@formatjs/fast-memoize@3.1.2':
     resolution: {integrity: sha512-vPnriihkfK0lzoQGaXq+qXH23VsYyansRTkTgo2aTG0k1NjLFyZimFVdfj4C9JkSE5dm7CEngcQ5TTc1yAyBfQ==}
@@ -3154,10 +3142,6 @@ snapshots:
 
   '@esbuild/win32-x64@0.21.5':
     optional: true
-
-  '@fontsource/cormorant@5.3.0': {}
-
-  '@fontsource/inter@5.3.0': {}
 
   '@formatjs/fast-memoize@3.1.2': {}
 
