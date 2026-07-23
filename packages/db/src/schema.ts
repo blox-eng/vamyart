@@ -10,6 +10,7 @@ import {
   jsonb,
   inet,
   unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -273,6 +274,14 @@ export const certificates = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
+  (t) => ({
+    // The DB itself makes "3 of 25" un-issuable twice (kept in sync with 0011 SQL).
+    variantEditionUnique: uniqueIndex("certificates_variant_edition_unique")
+      .on(t.productVariantId, t.editionNumber)
+      .where(
+        sql`"product_variant_id" IS NOT NULL AND "edition_number" IS NOT NULL AND "deleted_at" IS NULL`,
+      ),
+  }),
 );
 
 export const certificateSettings = pgTable("certificate_settings", {

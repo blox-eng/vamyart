@@ -92,7 +92,10 @@ export const certificatesRouter = router({
         });
       }
       const takenRows = await db
-        .select({ editionNumber: certificates.editionNumber })
+        .select({
+          editionNumber: certificates.editionNumber,
+          editionSize: certificates.editionSize,
+        })
         .from(certificates)
         .where(
           and(
@@ -100,6 +103,15 @@ export const certificatesRouter = router({
             isNull(certificates.deletedAt),
           ),
         );
+      // Every certificate in a limited edition must agree on the run size —
+      // otherwise the same edition could hold both a "3 of 25" and a "4 of 30".
+      const priorSize = takenRows.map((r) => r.editionSize).find((s) => s != null);
+      if (priorSize != null && priorSize !== input.editionSize) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: `This edition was created with a size of ${priorSize}. Use ${priorSize}, not ${input.editionSize}.`,
+        });
+      }
       const taken = takenRows
         .map((r) => r.editionNumber)
         .filter((n): n is number => n != null);
