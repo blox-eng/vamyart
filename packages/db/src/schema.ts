@@ -10,6 +10,7 @@ import {
   jsonb,
   inet,
   unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -251,4 +252,54 @@ export const auctionsRelations = relations(auctions, ({ one, many }) => ({
 
 export const bidsRelations = relations(bids, ({ one }) => ({
   auction: one(auctions, { fields: [bids.auctionId], references: [auctions.id] }),
+}));
+
+// ─── Certificates ─────────────────────────────────────────────────────────────
+export const certificates = pgTable(
+  "certificates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    certNumber: text("cert_number").notNull().unique(),
+    kind: text("kind").notNull(), // original | print
+    artworkId: uuid("artwork_id")
+      .notNull()
+      .references(() => artworks.id),
+    productVariantId: uuid("product_variant_id").references(() => productVariants.id),
+    editionNumber: integer("edition_number"),
+    editionSize: integer("edition_size"),
+    buyerName: text("buyer_name"),
+    imagePath: text("image_path"),
+    fieldsSnapshot: jsonb("fields_snapshot").notNull(),
+    issuedAt: timestamp("issued_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => ({
+    // The DB itself makes "3 of 25" un-issuable twice (kept in sync with 0011 SQL).
+    variantEditionUnique: uniqueIndex("certificates_variant_edition_unique")
+      .on(t.productVariantId, t.editionNumber)
+      .where(
+        sql`"product_variant_id" IS NOT NULL AND "edition_number" IS NOT NULL AND "deleted_at" IS NULL`,
+      ),
+  }),
+);
+
+export const certificateSettings = pgTable("certificate_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  headerText: text("header_text").notNull(),
+  studioName: text("studio_name").notNull(),
+  statementTemplate: text("statement_template").notNull(),
+  copyrightLine: text("copyright_line").notNull(),
+  careLine: text("care_line").notNull(),
+  signatureLabel: text("signature_label").notNull(),
+  logoPath: text("logo_path"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const certificatesRelations = relations(certificates, ({ one }) => ({
+  artwork: one(artworks, { fields: [certificates.artworkId], references: [artworks.id] }),
+  productVariant: one(productVariants, {
+    fields: [certificates.productVariantId],
+    references: [productVariants.id],
+  }),
 }));

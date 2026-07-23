@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.103.3",
     "@tanstack/react-query": "^5.99.0",

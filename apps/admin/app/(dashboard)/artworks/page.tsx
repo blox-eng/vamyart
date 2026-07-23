@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { NewPieceForm } from "./NewPieceForm";
 import { EditPiecePanel } from "./EditPiecePanel";
 import { resizeImageForUpload } from "@/lib/image/resize";
+import { IssueCertificateDialog } from "@/components/certificate/IssueCertificateDialog";
 
 type VariantDraft = {
   name: string;
@@ -108,6 +109,14 @@ export default function ArtworksPage() {
   const [newVariantForm, setNewVariantForm] = useState<NewVariantForm | null>(null);
   const [newProductForm, setNewProductForm] = useState<NewProductForm | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [certFor, setCertFor] = useState<
+    | {
+        artwork: { id: string; title: string; year: number | null; medium: string | null; dimensions: string | null };
+        images: Array<{ storagePath: string; isPrimary: boolean }>;
+        print?: { productVariantId: string; defaultEditionSize?: number };
+      }
+    | null
+  >(null);
 
   const [showTrash, setShowTrash] = useState(false);
   const { data: trashedList, refetch: refetchTrashed } = trpc.artworks.listTrashed.useQuery(undefined, {
@@ -403,13 +412,35 @@ export default function ArtworksPage() {
       {/* Image Gallery */}
       {selectedKey && selectedKey !== "none" && (
         <div className="mb-8">
-          <button
-            onClick={() => setExpandedImages(!expandedImages)}
-            className="text-xs text-gray-600 hover:text-black mb-3 flex items-center gap-1"
-          >
-            <span className="transform transition-transform" style={{ display: 'inline-block', transform: expandedImages ? 'rotate(90deg)' : 'none' }}>▶</span>
-            Images ({imagesList.data?.length ?? 0})
-          </button>
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={() => setExpandedImages(!expandedImages)}
+              className="text-xs text-gray-600 hover:text-black flex items-center gap-1"
+            >
+              <span className="transform transition-transform" style={{ display: 'inline-block', transform: expandedImages ? 'rotate(90deg)' : 'none' }}>▶</span>
+              Images ({imagesList.data?.length ?? 0})
+            </button>
+            {selected?.artwork && (
+              <button
+                type="button"
+                onClick={() =>
+                  setCertFor({
+                    artwork: {
+                      id: selected.artwork.id,
+                      title: selected.artwork.title,
+                      year: selected.artwork.year,
+                      medium: selected.artwork.medium,
+                      dimensions: selected.artwork.dimensions,
+                    },
+                    images: imagesList.data ?? [],
+                  })
+                }
+                className="text-xs border px-3 py-2 rounded hover:bg-gray-100"
+              >
+                Issue certificate
+              </button>
+            )}
+          </div>
           {expandedImages && (
             <div className="bg-white border rounded-lg p-4 space-y-4">
               {/* Upload zone */}
@@ -775,6 +806,27 @@ export default function ArtworksPage() {
                           </td>
                           <td className="py-2">
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {p.productType === "print" && selected?.artwork && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setCertFor({
+                                      artwork: {
+                                        id: selected.artwork.id,
+                                        title: selected.artwork.title,
+                                        year: selected.artwork.year,
+                                        medium: selected.artwork.medium,
+                                        dimensions: selected.artwork.dimensions,
+                                      },
+                                      images: imagesList.data ?? [],
+                                      print: { productVariantId: v.id },
+                                    })
+                                  }
+                                  className="text-xs border px-2 py-1 rounded hover:bg-gray-100"
+                                >
+                                  Issue edition certificate
+                                </button>
+                              )}
                               <button
                                 onClick={() => startEditVariant(v)}
                                 className="text-xs border px-2 py-1 rounded hover:bg-gray-100"
@@ -896,7 +948,28 @@ export default function ArtworksPage() {
                           <span>€{Number(v.price).toLocaleString()}</span>
                           <span className="flex items-center">Stock: {v.stockQuantity}<WaitlistBadge variantId={v.id} /></span>
                         </div>
-                        <div className="flex gap-2 pt-1">
+                        <div className="flex gap-2 pt-1 flex-wrap">
+                          {p.productType === "print" && selected?.artwork && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCertFor({
+                                  artwork: {
+                                    id: selected.artwork.id,
+                                    title: selected.artwork.title,
+                                    year: selected.artwork.year,
+                                    medium: selected.artwork.medium,
+                                    dimensions: selected.artwork.dimensions,
+                                  },
+                                  images: imagesList.data ?? [],
+                                  print: { productVariantId: v.id },
+                                })
+                              }
+                              className="text-xs border px-3 py-2 rounded hover:bg-gray-100"
+                            >
+                              Issue edition certificate
+                            </button>
+                          )}
                           <button onClick={() => startEditVariant(v)} className="text-xs border px-3 py-2 rounded hover:bg-gray-100">Edit</button>
                           <button
                             onClick={() => handleDeleteVariant(v.id)}
@@ -917,7 +990,7 @@ export default function ArtworksPage() {
                 </div>
 
                 {/* Add variant form */}
-                {newVariantForm?.productId === p.id ? (
+                {newVariantForm && newVariantForm.productId === p.id ? (
                   <form onSubmit={submitNewVariant} className="flex gap-2 items-end mt-2 flex-wrap">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Name</label>
@@ -925,7 +998,7 @@ export default function ArtworksPage() {
                         className="border px-2 py-1 rounded text-xs"
                         placeholder='e.g. "A3 print"'
                         value={newVariantForm.name}
-                        onChange={(e) => setNewVariantForm({ ...newVariantForm, name: e.target.value })}
+                        onChange={(e) => setNewVariantForm((prev) => (prev ? { ...prev, name: e.target.value } : prev))}
                         required
                       />
                     </div>
@@ -937,7 +1010,7 @@ export default function ArtworksPage() {
                         step="0.01"
                         className="border px-2 py-1 rounded text-xs w-24"
                         value={newVariantForm.price}
-                        onChange={(e) => setNewVariantForm({ ...newVariantForm, price: e.target.value })}
+                        onChange={(e) => setNewVariantForm((prev) => (prev ? { ...prev, price: e.target.value } : prev))}
                         required
                       />
                     </div>
@@ -948,7 +1021,7 @@ export default function ArtworksPage() {
                         min="0"
                         className="border px-2 py-1 rounded text-xs w-16"
                         value={newVariantForm.stock}
-                        onChange={(e) => setNewVariantForm({ ...newVariantForm, stock: e.target.value })}
+                        onChange={(e) => setNewVariantForm((prev) => (prev ? { ...prev, stock: e.target.value } : prev))}
                         required
                       />
                     </div>
@@ -1099,6 +1172,16 @@ export default function ArtworksPage() {
           </div>
         )}
       </div>
+
+      {certFor && (
+        <IssueCertificateDialog
+          open
+          onClose={() => setCertFor(null)}
+          artwork={certFor.artwork}
+          images={certFor.images}
+          print={certFor.print}
+        />
+      )}
     </div>
   );
 }

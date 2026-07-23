@@ -20,7 +20,21 @@ describe("variantDeleteBlockReason", () => {
     );
   });
 
+  it("blocks deletion when the variant has issued certificates", () => {
+    expect(
+      variantDeleteBlockReason({ orderCount: 0, auctionCount: 0, certificateCount: 1 })
+    ).toBe("This variant has issued certificates and cannot be deleted.");
+  });
+
+  it("prioritizes the order message over certificates", () => {
+    expect(
+      variantDeleteBlockReason({ orderCount: 1, auctionCount: 0, certificateCount: 3 })
+    ).toBe("This variant has orders and cannot be deleted. Mark it unavailable instead.");
+  });
+
   it("allows deletion when nothing references the variant", () => {
-    expect(variantDeleteBlockReason({ orderCount: 0, auctionCount: 0 })).toBeNull();
+    expect(
+      variantDeleteBlockReason({ orderCount: 0, auctionCount: 0, certificateCount: 0 })
+    ).toBeNull();
   });
 });

@@ -4,7 +4,7 @@ import { eq, and, isNull } from "drizzle-orm";
 import { detectRestockTransition, notifyWaitlistForVariant } from "../../services/restock-notify";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { products, productVariants, artworks, orders, auctions } from "../../schema";
+import { products, productVariants, artworks, orders, auctions, certificates } from "../../schema";
 
 // Orders and auctions reference a variant with RESTRICT — deleting a variant they
 // point at would orphan financial/auction history, so block it (deactivate instead).
@@ -12,12 +12,16 @@ import { products, productVariants, artworks, orders, auctions } from "../../sch
 export function variantDeleteBlockReason(input: {
   orderCount: number;
   auctionCount: number;
+  certificateCount?: number;
 }): string | null {
   if (input.orderCount > 0) {
     return "This variant has orders and cannot be deleted. Mark it unavailable instead.";
   }
   if (input.auctionCount > 0) {
     return "This variant is linked to an auction and cannot be deleted.";
+  }
+  if ((input.certificateCount ?? 0) > 0) {
+    return "This variant has issued certificates and cannot be deleted.";
   }
   return null;
 }
@@ -203,10 +207,15 @@ export const productsRouter = router({
         .select({ id: auctions.id })
         .from(auctions)
         .where(eq(auctions.productVariantId, input.id));
+      const certificateRows = await db
+        .select({ id: certificates.id })
+        .from(certificates)
+        .where(eq(certificates.productVariantId, input.id));
 
       const blockReason = variantDeleteBlockReason({
         orderCount: orderRows.length,
         auctionCount: auctionRows.length,
+        certificateCount: certificateRows.length,
       });
       if (blockReason) {
         throw new TRPCError({ code: "CONFLICT", message: blockReason });
