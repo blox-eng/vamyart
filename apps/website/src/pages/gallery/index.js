@@ -63,11 +63,32 @@ const BOTTOM_SECTIONS = [
   },
 ];
 
-function Page({ page, site }) {
+function Page({ page, site, collections }) {
   const PageLayout = getComponent('PostFeedLayout');
   const title = seoGenerateTitle(page, site);
   const metaTags = seoGenerateMetaTags(page, site);
   const metaDescription = seoGenerateMetaDescription(page, site);
+
+  // Client-side collection filter: selecting a chip narrows `page.items` to
+  // pieces whose collectionSlugs include the selected slug. No route change,
+  // no refetch — PostFeedLayout itself is untouched.
+  const [selectedSlug, setSelectedSlug] = React.useState(null);
+  const filteredItems = selectedSlug
+    ? page.items.filter((item) => (item.collectionSlugs || []).includes(selectedSlug))
+    : page.items;
+  const topSections =
+    collections.length > 0
+      ? [
+          {
+            __metadata: { modelName: 'CollectionFilterChips' },
+            collections,
+            selectedSlug,
+            onSelect: setSelectedSlug,
+          },
+        ]
+      : [];
+  const filteredPage = { ...page, items: filteredItems, topSections };
+
   return (
     <>
       <Head>
@@ -83,7 +104,7 @@ function Page({ page, site }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {site.favicon && <link rel="icon" href={site.favicon} />}
       </Head>
-      <PageLayout page={page} site={site} />
+      <PageLayout page={filteredPage} site={site} />
     </>
   );
 }
@@ -98,6 +119,13 @@ export async function getStaticProps() {
     // DB unavailable at build — render an empty gallery; ISR will refill.
   }
 
+  let collections = [];
+  try {
+    collections = (await serverTrpc.collections.listPublic()).map((c) => ({ slug: c.slug, title: c.title }));
+  } catch {
+    // DB unavailable at build — render the grid with no filter chips; ISR will refill.
+  }
+
   const items = artworks.map((a) => ({
     title: a.title,
     // Bare slug: getPageUrl() (page-utils) prepends "/gallery" for PostLayout items.
@@ -108,6 +136,8 @@ export async function getStaticProps() {
       : null,
     colors: 'bg-light-fg-dark',
     styles: { self: { flexDirection: 'row' } },
+    // Read client-side by the collection filter chips to decide membership.
+    collectionSlugs: a.collectionSlugs ?? [],
     __metadata: { modelName: 'PostLayout', urlPath: `/gallery/${a.slug}`, id: a.id },
   }));
 
@@ -144,7 +174,7 @@ export async function getStaticProps() {
     },
   };
 
-  return { props: { page, site: toJson(site) }, revalidate: 3600 };
+  return { props: { page, site: toJson(site), collections: toJson(collections) }, revalidate: 3600 };
 }
 
 export default Page;
