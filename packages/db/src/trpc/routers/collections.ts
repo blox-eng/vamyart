@@ -12,6 +12,17 @@ const BUCKET = "artwork-images";
 
 const imageContentType = z.enum(["image/jpeg", "image/png", "image/webp"]);
 
+// Throws CONFLICT if slug is taken by a different collection.
+async function assertSlugFree(slug: string, exceptId?: string) {
+  const existing = await db
+    .select({ id: collections.id })
+    .from(collections)
+    .where(exceptId ? and(eq(collections.slug, slug), ne(collections.id, exceptId)) : eq(collections.slug, slug));
+  if (existing.length > 0) {
+    throw new TRPCError({ code: "CONFLICT", message: `Slug "${slug}" is already in use.` });
+  }
+}
+
 function getStorageClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -40,9 +51,14 @@ export const collectionsRouter = router({
   create: protectedProcedure
     .input(z.object({ title: z.string().min(1), description: z.string().optional() }))
     .mutation(async ({ input }) => {
+      const slug = slugify(input.title);
+      if (!slug) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Could not derive a slug from the title." });
+      }
+      await assertSlugFree(slug);
       const [c] = await db
         .insert(collections)
-        .values({ title: input.title, slug: slugify(input.title), description: input.description })
+        .values({ title: input.title, slug, description: input.description })
         .returning();
       return c;
     }),
@@ -61,10 +77,18 @@ export const collectionsRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { id, ...rest } = input;
+      const { id, slug, ...rest } = input;
+      let normalizedSlug: string | undefined;
+      if (slug !== undefined) {
+        normalizedSlug = slugify(slug);
+        if (!normalizedSlug) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Slug cannot be empty." });
+        }
+        await assertSlugFree(normalizedSlug, id);
+      }
       const [c] = await db
         .update(collections)
-        .set({ ...rest, updatedAt: new Date() })
+        .set({ ...rest, ...(normalizedSlug !== undefined ? { slug: normalizedSlug } : {}), updatedAt: new Date() })
         .where(eq(collections.id, id))
         .returning();
       if (!c) throw new TRPCError({ code: "NOT_FOUND", message: "Collection not found" });
@@ -174,14 +198,17 @@ export const collectionsRouter = router({
       },
     });
     return rows.map((c) => {
-      const first = c.pieces[0]?.artwork;
+      const visiblePieces = c.pieces
+        .map((p) => p.artwork)
+        .filter((a) => a.published && !a.deletedAt);
+      const first = visiblePieces[0];
       const firstImg = first ? first.images.find((i) => i.isPrimary) ?? first.images[0] ?? null : null;
       return {
         id: c.id,
         slug: c.slug,
         title: c.title,
         description: c.description,
-        pieceCount: c.pieces.length,
+        pieceCount: visiblePieces.length,
         coverUrl: collectionCoverUrl(c.coverImagePath, firstImg?.storagePath ?? null),
       };
     });
