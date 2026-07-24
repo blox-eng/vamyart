@@ -113,6 +113,31 @@ export async function getStaticProps({ params }) {
         } catch {
             // No banner — component handles null gracefully
         }
+
+        try {
+            const featuredCollection = await serverTrpc.collections.getFeatured();
+            const sections = props.page?.sections ?? [];
+            const idx = sections.findIndex((s) => s?.elementId === 'featured-collection');
+            if (idx !== -1) {
+                if (featuredCollection) {
+                    const section = sections[idx];
+                    if (section.title) section.title.text = featuredCollection.title;
+                    section.text = featuredCollection.description ?? '';
+                    if (section.media) {
+                        section.media.url = featuredCollection.coverUrl ?? section.media.url;
+                        section.media.altText = `${featuredCollection.title} — collection by Maeve Vamy`;
+                    }
+                    if (section.actions?.[0]) {
+                        section.actions[0].url = `/gallery/collections/${featuredCollection.slug}`;
+                    }
+                } else {
+                    // No featured collection — remove the placeholder section entirely.
+                    sections.splice(idx, 1);
+                }
+            }
+        } catch {
+            // DB unavailable at build time — leave the markdown placeholder as-is.
+        }
     }
 
     return { props, revalidate: 3600 };
