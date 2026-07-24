@@ -98,7 +98,14 @@ export const collectionsRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {
-      await db.delete(collections).where(eq(collections.id, input.id));
+      // Soft-delete: the read paths already filter isNull(deletedAt), so this
+      // hides the collection everywhere while keeping its piece assignments
+      // recoverable (the ON DELETE CASCADE on artwork_collections only fires on
+      // a hard delete).
+      await db
+        .update(collections)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(collections.id, input.id));
       return { id: input.id };
     }),
 
