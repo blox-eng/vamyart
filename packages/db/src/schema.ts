@@ -11,6 +11,7 @@ import {
   inet,
   unique,
   uniqueIndex,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -52,6 +53,37 @@ export const artworkImages = pgTable("artwork_images", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+// ─── Collections ─────────────────────────────────────────────────────────────
+export const collections = pgTable("collections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description"),
+  coverImagePath: text("cover_image_path"),
+  featured: boolean("featured").notNull().default(false),
+  published: boolean("published").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
+export const artworkCollections = pgTable(
+  "artwork_collections",
+  {
+    collectionId: uuid("collection_id")
+      .notNull()
+      .references(() => collections.id, { onDelete: "cascade" }),
+    artworkId: uuid("artwork_id")
+      .notNull()
+      .references(() => artworks.id, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (t) => ({ pk: primaryKey({ columns: [t.collectionId, t.artworkId] }) })
+);
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 export const products = pgTable("products", {
@@ -207,6 +239,7 @@ export const artworksRelations = relations(artworks, ({ one, many }) => ({
   product: many(products),
   auction: one(auctions, { fields: [artworks.id], references: [auctions.artworkId] }),
   images: many(artworkImages),
+  collections: many(artworkCollections),
 }));
 
 export const artworkImagesRelations = relations(artworkImages, ({ one }) => ({
@@ -214,6 +247,15 @@ export const artworkImagesRelations = relations(artworkImages, ({ one }) => ({
     fields: [artworkImages.artworkId],
     references: [artworks.id],
   }),
+}));
+
+export const collectionsRelations = relations(collections, ({ many }) => ({
+  pieces: many(artworkCollections),
+}));
+
+export const artworkCollectionsRelations = relations(artworkCollections, ({ one }) => ({
+  collection: one(collections, { fields: [artworkCollections.collectionId], references: [collections.id] }),
+  artwork: one(artworks, { fields: [artworkCollections.artworkId], references: [artworks.id] }),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
