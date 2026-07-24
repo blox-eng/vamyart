@@ -1,12 +1,23 @@
 import { z } from "zod";
 import { eq, and, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { createClient } from "@supabase/supabase-js";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { collections, artworkCollections } from "../../schema";
 import { slugify } from "./artworks";
+import { extForContentType } from "./artworkImages";
 
 const BUCKET = "artwork-images";
+
+const imageContentType = z.enum(["image/jpeg", "image/png", "image/webp"]);
+
+function getStorageClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase env vars not set");
+  return createClient(url, key);
+}
 
 export function collectionCoverUrl(
   coverImagePath: string | null,
@@ -124,6 +135,30 @@ export const collectionsRouter = router({
         orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
       });
       return rows.map((r) => r.artworkId);
+    }),
+
+  // Step 1 of the cover-image upload: mint a short-lived signed URL so the
+  // browser can PUT the image bytes straight to Storage, mirroring
+  // artworkImages.createUploadUrl (bypasses the serverless function's
+  // request-body limit). The collection's own row doesn't need to exist yet
+  // in Storage — we just namespace by collection id to avoid collisions.
+  createCoverUploadUrl: protectedProcedure
+    .input(z.object({ collectionId: z.string().uuid(), contentType: imageContentType }))
+    .mutation(async ({ input }) => {
+      const [collection] = await db
+        .select({ id: collections.id })
+        .from(collections)
+        .where(eq(collections.id, input.collectionId));
+      if (!collection) throw new TRPCError({ code: "NOT_FOUND", message: "Collection not found" });
+
+      const path = `collections/${input.collectionId}/${crypto.randomUUID()}.${extForContentType(input.contentType)}`;
+
+      const supabase = getStorageClient();
+      const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(path);
+      if (error || !data) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error?.message ?? "Could not create upload URL" });
+      }
+      return { path: data.path, token: data.token };
     }),
 
   // ── Public reads ─────────────────────────────────────────────────────────────
