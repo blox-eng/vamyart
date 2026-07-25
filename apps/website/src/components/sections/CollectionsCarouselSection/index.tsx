@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
+import { Autoplay, Pagination, Keyboard, A11y } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
@@ -11,6 +11,17 @@ import TitleBlock from '../../blocks/TitleBlock';
 
 export default function CollectionsCarouselSection(props) {
     const { elementId, colors, backgroundImage, badge, title, subtitle, collections = [], styles = {} } = props;
+
+    // Respect the viewer's reduced-motion setting: no auto-advance for users who
+    // asked the OS to minimize motion (WCAG 2.2.2 / vestibular safety).
+    const [reduceMotion, setReduceMotion] = React.useState(false);
+    React.useEffect(() => {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        setReduceMotion(mq.matches);
+        const onChange = (e) => setReduceMotion(e.matches);
+        mq.addEventListener('change', onChange);
+        return () => mq.removeEventListener('change', onChange);
+    }, []);
 
     // Injected empty (or spliced out) when there are no published collections;
     // guard anyway so the component is safe to render in isolation.
@@ -31,11 +42,12 @@ export default function CollectionsCarouselSection(props) {
 
                 <div className="w-full mt-12">
                     <Swiper
-                        modules={[Autoplay, Pagination]}
+                        modules={[Autoplay, Pagination, Keyboard, A11y]}
                         slidesPerView={1}
                         spaceBetween={24}
                         loop={collections.length > 1}
-                        autoplay={{ delay: 4500, disableOnInteraction: false }}
+                        keyboard={{ enabled: true }}
+                        autoplay={reduceMotion ? false : { delay: 4500, disableOnInteraction: false }}
                         pagination={{ clickable: true }}
                         breakpoints={{
                             768: { slidesPerView: collections.length > 1 ? 2 : 1 },

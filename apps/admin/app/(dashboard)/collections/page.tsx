@@ -8,8 +8,15 @@ import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { CoverCropModal } from "./CoverCropModal";
+import { revalidatePaths } from "@/lib/revalidate";
 
 type CollectionRow = inferRouterOutputs<AppRouter>["collections"]["list"][number];
+
+// Public ISR pages that reflect collection changes: homepage (featured band +
+// carousel), gallery filter chips, and the collections index. Per-collection
+// landing pages are added per-mutation when the slug is known. Mirrors the
+// revalidation the artworks studio already does on every public-facing write.
+const PUBLIC_COLLECTION_PATHS = ["/", "/gallery", "/gallery/collections"];
 
 export default function CollectionsPage() {
   const toast = useToast();
@@ -19,19 +26,35 @@ export default function CollectionsPage() {
     onError: () => toast("failed to create collection", "error"),
   });
   const update = trpc.collections.update.useMutation({
-    onSuccess: () => { refetch(); toast("collection updated", "success"); },
+    onSuccess: async (data) => {
+      await revalidatePaths([...PUBLIC_COLLECTION_PATHS, `/gallery/collections/${data.slug}`]);
+      refetch();
+      toast("collection updated", "success");
+    },
     onError: () => toast("failed to update collection", "error"),
   });
   const setFeatured = trpc.collections.setFeatured.useMutation({
-    onSuccess: () => { refetch(); toast("collection featured", "success"); },
+    onSuccess: async (data) => {
+      await revalidatePaths([...PUBLIC_COLLECTION_PATHS, `/gallery/collections/${data.slug}`]);
+      refetch();
+      toast("collection featured", "success");
+    },
     onError: () => toast("failed to feature collection", "error"),
   });
   const del = trpc.collections.delete.useMutation({
-    onSuccess: () => { refetch(); toast("collection deleted", "success"); },
+    onSuccess: async () => {
+      await revalidatePaths(PUBLIC_COLLECTION_PATHS);
+      refetch();
+      toast("collection deleted", "success");
+    },
     onError: () => toast("failed to delete collection", "error"),
   });
   const reorder = trpc.collections.reorder.useMutation({
-    onSuccess: () => { refetch(); toast("order saved", "success"); },
+    onSuccess: async () => {
+      await revalidatePaths(PUBLIC_COLLECTION_PATHS);
+      refetch();
+      toast("order saved", "success");
+    },
     onError: () => toast("failed to save order", "error"),
   });
 
@@ -240,7 +263,11 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const createCoverUploadUrl = trpc.collections.createCoverUploadUrl.useMutation();
   const updateCover = trpc.collections.update.useMutation({
-    onSuccess: () => { onUpdated(); toast("cover image updated", "success"); },
+    onSuccess: async (data) => {
+      await revalidatePaths([...PUBLIC_COLLECTION_PATHS, `/gallery/collections/${data.slug}`]);
+      onUpdated();
+      toast("cover image updated", "success");
+    },
     onError: () => toast("failed to update cover image", "error"),
   });
 
@@ -337,7 +364,11 @@ function CollectionPieces({ collectionId }: { collectionId: string }) {
   const { data: artworkList, isLoading: artworksLoading } = trpc.artworks.list.useQuery();
   const { data: pieceIds, refetch: refetchPieceIds, isLoading: pieceIdsLoading } = trpc.collections.getPieceIds.useQuery({ collectionId });
   const setPieces = trpc.collections.setPieces.useMutation({
-    onSuccess: () => { refetchPieceIds(); toast("pieces updated", "success"); },
+    onSuccess: async () => {
+      await revalidatePaths(PUBLIC_COLLECTION_PATHS);
+      refetchPieceIds();
+      toast("pieces updated", "success");
+    },
     onError: () => toast("failed to update pieces", "error"),
   });
 

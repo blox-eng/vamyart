@@ -32,6 +32,11 @@ export async function getCroppedBlob(file: File, crop: PixelCrop): Promise<Blob>
     canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas 2D context unavailable");
+    // JPEG has no alpha channel; without a backing fill, transparent regions of
+    // a PNG/WebP source flatten onto black. Paint white first so transparency
+    // becomes white, matching how the cover reads over the site background.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
     ctx.drawImage(bitmap, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/jpeg", DEFAULT_QUALITY)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedBlob } from "@/lib/image/crop";
 
@@ -20,14 +20,30 @@ export function CoverCropModal({
   const [zoom, setZoom] = useState(1);
   const [areaPixels, setAreaPixels] = useState<Area | null>(null);
   const [busy, setBusy] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => () => URL.revokeObjectURL(imageUrl), [imageUrl]);
-
-  const onCropComplete = useCallback((_area: Area, pixels: Area) => setAreaPixels(pixels), []);
 
   function close() {
     URL.revokeObjectURL(imageUrl);
   }
+
+  // Move focus into the dialog on open and close on Escape, so keyboard users
+  // are placed in the modal and can dismiss it without a mouse.
+  useEffect(() => {
+    dialogRef.current?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        close();
+        onCancel();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onCropComplete = useCallback((_area: Area, pixels: Area) => setAreaPixels(pixels), []);
 
   async function handleSave() {
     if (!areaPixels || busy) return;
@@ -43,8 +59,15 @@ export function CoverCropModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white rounded-lg w-full max-w-lg p-4 space-y-4">
-        <p className="text-sm font-medium">Crop cover (3:2)</p>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="crop-cover-title"
+        tabIndex={-1}
+        className="bg-white rounded-lg w-full max-w-lg p-4 space-y-4 outline-none"
+      >
+        <p id="crop-cover-title" className="text-sm font-medium">Crop cover (3:2)</p>
         <div className="relative w-full h-72 bg-neutral-100 rounded overflow-hidden">
           <Cropper
             image={imageUrl}
