@@ -145,6 +145,9 @@ export const collectionsRouter = router({
   setPieces: protectedProcedure
     .input(z.object({ collectionId: z.string().uuid(), artworkIds: z.array(z.string().uuid()) }))
     .mutation(async ({ input }) => {
+      if (new Set(input.artworkIds).size !== input.artworkIds.length) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Duplicate artwork ids in collection." });
+      }
       await db.transaction(async (tx) => {
         await tx.delete(artworkCollections).where(eq(artworkCollections.collectionId, input.collectionId));
         if (input.artworkIds.length) {
