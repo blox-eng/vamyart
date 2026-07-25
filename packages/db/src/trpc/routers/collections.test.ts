@@ -13,4 +13,13 @@ describe("collectionCoverUrl", () => {
   it("returns null when neither is available", () => {
     expect(collectionCoverUrl(null, null)).toBeNull();
   });
+  it("returns null when NEXT_PUBLIC_SUPABASE_URL is unset", () => {
+    const saved = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    try {
+      expect(collectionCoverUrl("covers/a.jpg", null)).toBeNull();
+    } finally {
+      if (saved !== undefined) process.env.NEXT_PUBLIC_SUPABASE_URL = saved;
+    }
+  });
 });

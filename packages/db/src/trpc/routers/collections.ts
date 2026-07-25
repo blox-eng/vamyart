@@ -36,7 +36,9 @@ export function collectionCoverUrl(
 ): string | null {
   const path = coverImagePath ?? fallbackStoragePath;
   if (!path) return null;
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base) return null;
+  return `${base}/storage/v1/object/public/${BUCKET}/${path}`;
 }
 
 export const collectionsRouter = router({
