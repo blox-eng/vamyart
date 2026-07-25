@@ -138,6 +138,25 @@ export async function getStaticProps({ params }) {
         } catch {
             // DB unavailable at build time — leave the markdown placeholder as-is.
         }
+
+        try {
+            const publishedCollections = await serverTrpc.collections.listPublic();
+            const sections = props.page?.sections ?? [];
+            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
+            if (carouselIdx !== -1) {
+                if (publishedCollections.length) {
+                    sections[carouselIdx].collections = publishedCollections;
+                } else {
+                    // No published collections — drop the placeholder rather than render empty.
+                    sections.splice(carouselIdx, 1);
+                }
+            }
+        } catch {
+            // DB unavailable at build — remove the carousel section so nothing empty renders.
+            const sections = props.page?.sections ?? [];
+            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
+            if (carouselIdx !== -1) sections.splice(carouselIdx, 1);
+        }
     }
 
     return { props, revalidate: 3600 };
