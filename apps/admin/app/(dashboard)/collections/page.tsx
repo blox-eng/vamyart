@@ -30,6 +30,28 @@ export default function CollectionsPage() {
     onSuccess: () => { refetch(); toast("collection deleted", "success"); },
     onError: () => toast("failed to delete collection", "error"),
   });
+  const reorder = trpc.collections.reorder.useMutation({
+    onSuccess: () => { refetch(); toast("order saved", "success"); },
+    onError: () => toast("failed to save order", "error"),
+  });
+
+  const [order, setOrder] = useState<string[]>([]);
+  useEffect(() => {
+    if (collectionList) setOrder(collectionList.map((c) => c.id));
+  }, [collectionList]);
+
+  const orderDirty =
+    !!collectionList && JSON.stringify(order) !== JSON.stringify(collectionList.map((c) => c.id));
+
+  function moveCollection(index: number, direction: -1 | 1) {
+    setOrder((prev) => {
+      const next = [...prev];
+      const j = index + direction;
+      if (j < 0 || j >= next.length) return prev;
+      [next[index], next[j]] = [next[j], next[index]];
+      return next;
+    });
+  }
 
   const [editId, setEditId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -99,6 +121,8 @@ export default function CollectionsPage() {
     setNewTitle("");
   }
 
+  const byId = new Map((collectionList ?? []).map((c) => [c.id, c]));
+
   return (
     <div className="p-4 sm:p-8 max-w-3xl">
       <h1 className="text-2xl font-light mb-8">Collections</h1>
@@ -106,9 +130,24 @@ export default function CollectionsPage() {
       {collectionsLoading ? (
         <SkeletonTable rows={4} cols={4} />
       ) : (
-        <div className="space-y-3 mb-10">
-          {(collectionList ?? []).map((c) =>
-            editId === c.id ? (
+        <div className="mb-10">
+          {orderDirty && (
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => reorder.mutate({ ids: order })}
+                disabled={reorder.isPending}
+                className="text-xs bg-black text-white px-3 py-1.5 rounded disabled:opacity-50"
+              >
+                {reorder.isPending ? "Saving…" : "Save order"}
+              </button>
+            </div>
+          )}
+          <div className="space-y-3">
+          {order.map((id, index) => {
+            const c = byId.get(id);
+            if (!c) return null;
+            return editId === c.id ? (
               <div key={c.id} className="border rounded-lg p-4 space-y-3">
                 <input className="w-full border px-3 py-2 rounded text-sm" placeholder="Title" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
                 <input className="w-full border px-3 py-2 rounded text-sm" placeholder="Slug" value={editSlug} onChange={e => setEditSlug(e.target.value)} />
@@ -116,7 +155,7 @@ export default function CollectionsPage() {
                 <input className="w-full border px-3 py-2 rounded text-sm" placeholder="SEO title" value={editSeoTitle} onChange={e => setEditSeoTitle(e.target.value)} />
                 <textarea className="w-full border px-3 py-2 rounded text-sm" rows={2} placeholder="SEO description" value={editSeoDescription} onChange={e => setEditSeoDescription(e.target.value)} />
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} className="bg-black text-white px-4 py-2 rounded text-sm">Save</button>
+                  <button onClick={saveEdit} disabled={update.isPending} className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">Save</button>
                   <button onClick={() => setEditId(null)} className="border px-4 py-2 rounded text-sm">Cancel</button>
                 </div>
 
@@ -131,29 +170,51 @@ export default function CollectionsPage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
+                    type="button"
+                    onClick={() => moveCollection(index, -1)}
+                    disabled={index === 0}
+                    className="border px-2 py-2 rounded text-xs disabled:opacity-30"
+                    title="Move up"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveCollection(index, 1)}
+                    disabled={index === order.length - 1}
+                    className="border px-2 py-2 rounded text-xs disabled:opacity-30"
+                    title="Move down"
+                  >
+                    ↓
+                  </button>
+                  <button
                     onClick={() => toggleFeatured(c)}
-                    className={`px-3 py-2 rounded text-xs font-medium ${c.featured ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}
+                    disabled={setFeatured.isPending}
+                    className={`px-3 py-2 rounded text-xs font-medium disabled:opacity-50 ${c.featured ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}
                   >
                     {c.featured ? "★ Featured" : "☆ Feature"}
                   </button>
                   <button
                     onClick={() => togglePublished(c)}
-                    className={`px-3 py-2 rounded text-xs font-medium ${c.published ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                    disabled={update.isPending}
+                    className={`px-3 py-2 rounded text-xs font-medium disabled:opacity-50 ${c.published ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
                   >
                     {c.published ? "Published" : "Draft"}
                   </button>
                   <button onClick={() => startEdit(c)} className="border px-3 py-2 rounded text-xs">Edit</button>
                   <button
                     onClick={() => handleDelete(c.id)}
-                    className={`px-3 py-2 rounded text-xs ${confirmDelete === c.id ? "bg-red-600 text-white" : "border text-red-600"}`}
+                    disabled={del.isPending}
+                    className={`px-3 py-2 rounded text-xs disabled:opacity-50 ${confirmDelete === c.id ? "bg-red-600 text-white" : "border text-red-600"}`}
                   >
                     {confirmDelete === c.id ? "Confirm" : "Delete"}
                   </button>
                 </div>
               </div>
-            )
-          )}
-          {(collectionList ?? []).length === 0 && <p className="text-sm text-gray-400">No collections yet.</p>}
+            );
+          })}
+          {order.length === 0 && <p className="text-sm text-gray-400">No collections yet.</p>}
+          </div>
         </div>
       )}
 
