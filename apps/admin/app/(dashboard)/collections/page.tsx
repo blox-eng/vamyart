@@ -160,12 +160,12 @@ export default function CollectionsPage() {
       ) : (
         <div className="mb-10">
           {orderDirty && (
-            <div className="mb-3 flex justify-end">
+            <div className="mb-3 flex justify-end sticky top-0 z-10 bg-white py-2">
               <button
                 type="button"
                 onClick={() => reorder.mutate({ ids: order })}
                 disabled={reorder.isPending}
-                className="text-xs bg-black text-white px-3 py-1.5 rounded disabled:opacity-50"
+                className="text-xs bg-black text-white px-4 min-h-11 inline-flex items-center rounded disabled:opacity-50"
               >
                 {reorder.isPending ? "Saving…" : "Save order"}
               </button>
@@ -201,7 +201,7 @@ export default function CollectionsPage() {
                     type="button"
                     onClick={() => moveCollection(index, -1)}
                     disabled={index === 0}
-                    className="border px-2 py-2 rounded text-xs disabled:opacity-30"
+                    className="border rounded text-xs disabled:opacity-30 min-h-11 min-w-11 inline-flex items-center justify-center"
                     title="Move up"
                   >
                     ↑
@@ -210,7 +210,7 @@ export default function CollectionsPage() {
                     type="button"
                     onClick={() => moveCollection(index, 1)}
                     disabled={index === order.length - 1}
-                    className="border px-2 py-2 rounded text-xs disabled:opacity-30"
+                    className="border rounded text-xs disabled:opacity-30 min-h-11 min-w-11 inline-flex items-center justify-center"
                     title="Move down"
                   >
                     ↓
@@ -218,22 +218,22 @@ export default function CollectionsPage() {
                   <button
                     onClick={() => toggleFeatured(c)}
                     disabled={setFeatured.isPending}
-                    className={`px-3 py-2 rounded text-xs font-medium disabled:opacity-50 ${c.featured ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}
+                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.featured ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}
                   >
                     {c.featured ? "★ Featured" : "☆ Feature"}
                   </button>
                   <button
                     onClick={() => togglePublished(c)}
                     disabled={update.isPending}
-                    className={`px-3 py-2 rounded text-xs font-medium disabled:opacity-50 ${c.published ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.published ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
                   >
                     {c.published ? "Published" : "Draft"}
                   </button>
-                  <button onClick={() => startEdit(c)} className="border px-3 py-2 rounded text-xs">Edit</button>
+                  <button onClick={() => startEdit(c)} className="border px-3 min-h-11 inline-flex items-center rounded text-xs">Edit</button>
                   <button
                     onClick={() => handleDelete(c.id)}
                     disabled={del.isPending}
-                    className={`px-3 py-2 rounded text-xs disabled:opacity-50 ${confirmDelete === c.id ? "bg-red-600 text-white" : "border text-red-600"}`}
+                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs disabled:opacity-50 ${confirmDelete === c.id ? "bg-red-600 text-white" : "border text-red-600"}`}
                   >
                     {confirmDelete === c.id ? "Confirm" : "Delete"}
                   </button>
@@ -431,10 +431,10 @@ function CollectionPieces({ collectionId }: { collectionId: string }) {
             return (
               <li key={id} className="flex items-center justify-between gap-2 text-sm border rounded px-2 py-1.5 bg-gray-50">
                 <span className="truncate">{a?.title ?? id.slice(0, 8)}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button type="button" onClick={() => move(i, -1)} className="text-xs border px-2 py-1 rounded" title="Move earlier">↑</button>
-                  <button type="button" onClick={() => move(i, 1)} className="text-xs border px-2 py-1 rounded" title="Move later">↓</button>
-                  <button type="button" onClick={() => toggle(id)} className="text-xs text-red-600 hover:underline px-1">Remove</button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button type="button" onClick={() => move(i, -1)} className="text-xs border rounded min-h-11 min-w-11 inline-flex items-center justify-center" title="Move earlier">↑</button>
+                  <button type="button" onClick={() => move(i, 1)} className="text-xs border rounded min-h-11 min-w-11 inline-flex items-center justify-center" title="Move later">↓</button>
+                  <button type="button" onClick={() => toggle(id)} className="text-xs text-red-600 min-h-11 inline-flex items-center px-3 ml-1" title="Remove from collection">Remove</button>
                 </div>
               </li>
             );

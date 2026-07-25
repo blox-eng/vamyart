@@ -32,6 +32,9 @@ export function CoverCropModal({
   // are placed in the modal and can dismiss it without a mouse.
   useEffect(() => {
     dialogRef.current?.focus();
+    // Lock background scroll while the overlay is open (mirrors the dashboard
+    // nav drawer) so the page can't scroll behind it on mobile.
+    document.body.classList.add("overflow-hidden");
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         close();
@@ -39,7 +42,10 @@ export function CoverCropModal({
       }
     }
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.classList.remove("overflow-hidden");
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -65,7 +71,7 @@ export function CoverCropModal({
         aria-modal="true"
         aria-labelledby="crop-cover-title"
         tabIndex={-1}
-        className="bg-white rounded-lg w-full max-w-lg p-4 space-y-4 outline-none"
+        className="bg-white rounded-lg w-full max-w-lg p-4 space-y-4 outline-none max-h-[90vh] overflow-y-auto"
       >
         <p id="crop-cover-title" className="text-sm font-medium">Crop cover (3:2)</p>
         <div className="relative w-full h-72 bg-neutral-100 rounded overflow-hidden">

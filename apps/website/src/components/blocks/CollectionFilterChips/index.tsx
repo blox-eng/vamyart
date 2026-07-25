@@ -39,7 +39,9 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
             aria-pressed={active}
             className={classNames(
                 'sb-component-button sb-component-button-secondary',
-                'px-5 py-2 text-sm rounded-full transition-colors duration-200',
+                // min-h-[44px] + inline-flex centering keeps the tap target at
+                // Apple's 44px minimum on touch without changing the pill look.
+                'px-5 py-2.5 min-h-[44px] inline-flex items-center text-sm rounded-full transition-colors duration-200',
                 { 'bg-dark text-light border-dark': active }
             )}
         >

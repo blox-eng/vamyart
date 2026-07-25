@@ -40,7 +40,16 @@ export default function CollectionsCarouselSection(props) {
                 {title?.text && <TitleBlock {...title} className="w-full max-w-sectionBody mt-4" />}
                 {subtitle && <p className="w-full max-w-sectionBody text-lg sm:text-2xl mt-4">{subtitle}</p>}
 
-                <div className="w-full mt-12">
+                <div
+                    className="w-full mt-12"
+                    // Enlarge Swiper's pagination bullets + spacing from the 8px
+                    // default so they're tappable on a phone (swipe stays primary).
+                    style={{
+                        ['--swiper-pagination-bullet-width' as string]: '12px',
+                        ['--swiper-pagination-bullet-height' as string]: '12px',
+                        ['--swiper-pagination-bullet-horizontal-gap' as string]: '8px'
+                    } as React.CSSProperties}
+                >
                     <Swiper
                         modules={[Autoplay, Pagination, Keyboard, A11y]}
                         slidesPerView={1}
