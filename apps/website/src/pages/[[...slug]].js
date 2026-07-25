@@ -113,6 +113,50 @@ export async function getStaticProps({ params }) {
         } catch {
             // No banner — component handles null gracefully
         }
+
+        try {
+            const featuredCollection = await serverTrpc.collections.getFeatured();
+            const sections = props.page?.sections ?? [];
+            const idx = sections.findIndex((s) => s?.elementId === 'featured-collection');
+            if (idx !== -1) {
+                if (featuredCollection) {
+                    const section = sections[idx];
+                    if (section.title) section.title.text = featuredCollection.title;
+                    section.text = featuredCollection.description ?? '';
+                    if (section.media) {
+                        section.media.url = featuredCollection.coverUrl ?? section.media.url;
+                        section.media.altText = `${featuredCollection.title} — collection by Maeve Vamy`;
+                    }
+                    if (section.actions?.[0]) {
+                        section.actions[0].url = `/gallery/collections/${featuredCollection.slug}`;
+                    }
+                } else {
+                    // No featured collection — remove the placeholder section entirely.
+                    sections.splice(idx, 1);
+                }
+            }
+        } catch {
+            // DB unavailable at build time — leave the markdown placeholder as-is.
+        }
+
+        try {
+            const publishedCollections = await serverTrpc.collections.listPublic();
+            const sections = props.page?.sections ?? [];
+            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
+            if (carouselIdx !== -1) {
+                if (publishedCollections.length) {
+                    sections[carouselIdx].collections = publishedCollections;
+                } else {
+                    // No published collections — drop the placeholder rather than render empty.
+                    sections.splice(carouselIdx, 1);
+                }
+            }
+        } catch {
+            // DB unavailable at build — remove the carousel section so nothing empty renders.
+            const sections = props.page?.sections ?? [];
+            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
+            if (carouselIdx !== -1) sections.splice(carouselIdx, 1);
+        }
     }
 
     return { props, revalidate: 3600 };

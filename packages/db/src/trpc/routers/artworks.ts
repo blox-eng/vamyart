@@ -255,6 +255,7 @@ export const artworksRouter = router({
         images: {
           orderBy: (img, { asc }) => [asc(img.sortOrder)],
         },
+        collections: { with: { collection: true } },
       },
     });
     return rows.map((a) => {
@@ -269,6 +270,10 @@ export const artworksRouter = router({
         featured: a.featured,
         sortOrder: a.sortOrder,
         updatedAt: a.updatedAt,
+        collectionSlugs: a.collections
+          .map((ac) => ac.collection)
+          .filter((c) => c && c.published && !c.deletedAt)
+          .map((c) => c.slug),
         primaryImage: primary
           ? {
               url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,

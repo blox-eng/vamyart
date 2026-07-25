@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd,
+  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd,
 } from './structured-data';
 
 const ARTIST = 'Maeve Vamy';
@@ -23,6 +23,32 @@ describe('buildArtworkJsonLd', () => {
     expect(out).not.toHaveProperty('artMedium');
     expect(out).not.toHaveProperty('dateCreated');
     expect(out).not.toHaveProperty('image');
+  });
+});
+
+describe('buildCollectionJsonLd', () => {
+  it('maps collection fields to CollectionPage with hasPart VisualArtwork stubs', () => {
+    const out = buildCollectionJsonLd({
+      name: 'Seascapes', description: 'A curated set.', url: 'https://a.co/gallery/collections/seascapes/',
+      pieces: [
+        { name: 'Never', url: 'https://a.co/gallery/never/' },
+        { name: 'Tide', url: 'https://a.co/gallery/tide/' },
+      ],
+    });
+    expect(out['@context']).toBe('https://schema.org');
+    expect(out['@type']).toBe('CollectionPage');
+    expect(out.name).toBe('Seascapes');
+    expect(out.description).toBe('A curated set.');
+    expect(out.url).toBe('https://a.co/gallery/collections/seascapes/');
+    expect(out.hasPart).toEqual([
+      { '@type': 'VisualArtwork', name: 'Never', url: 'https://a.co/gallery/never/' },
+      { '@type': 'VisualArtwork', name: 'Tide', url: 'https://a.co/gallery/tide/' },
+    ]);
+  });
+  it('omits description when absent and handles an empty piece list', () => {
+    const out = buildCollectionJsonLd({ name: 'Empty', url: 'https://a.co/gallery/collections/empty/', pieces: [] });
+    expect(out).not.toHaveProperty('description');
+    expect(out.hasPart).toEqual([]);
   });
 });
 

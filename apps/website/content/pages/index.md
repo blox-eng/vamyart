@@ -189,6 +189,66 @@ sections:
         justifyContent: center
       subtitle:
         textAlign: center
+  - type: GenericSection
+    title:
+      text: Featured Collection
+      color: text-dark
+      type: TitleBlock
+    subtitle: ''
+    text: ''
+    actions:
+      - label: View the collection
+        altText: View the collection
+        url: /gallery/collections/
+        showIcon: false
+        icon: arrowRight
+        iconPosition: right
+        style: secondary
+        elementId: ''
+        type: Button
+    media:
+      url: /images/whispers.jpg
+      altText: A curated collection by Maeve Vamy
+      elementId: ''
+      type: ImageBlock
+    badge:
+      label: Featured collection
+      color: text-primary
+      type: Badge
+    elementId: featured-collection
+    colors: bg-light-fg-dark
+    styles:
+      self:
+        alignItems: center
+        flexDirection: row
+        padding:
+          - pt-16
+          - pl-16
+          - pb-16
+          - pr-16
+  - type: CollectionsCarouselSection
+    title:
+      text: Explore the collections
+      color: text-dark
+      styles:
+        self:
+          textAlign: center
+      type: TitleBlock
+    subtitle: ''
+    badge:
+      label: Curated series
+      color: text-primary
+      type: Badge
+    elementId: collections-carousel
+    colors: bg-neutral-fg-dark
+    styles:
+      self:
+        padding:
+          - pt-16
+          - pl-16
+          - pb-16
+          - pr-16
+        justifyContent: center
   - title:
       text: Reach out
       color: text-dark

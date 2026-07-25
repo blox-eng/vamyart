@@ -150,7 +150,7 @@ function PostFeedThreeColGrid(props) {
         >
             {posts.map((post, index) => (
                 <PostFeedItem
-                    key={index}
+                    key={post.slug ?? post.__metadata?.id ?? index}
                     post={post}
                     showThumbnail={showThumbnail}
                     showExcerpt={showExcerpt}
@@ -192,7 +192,7 @@ function PostFeedTwoColGrid(props) {
         >
             {posts.map((post, index) => (
                 <PostFeedItem
-                    key={index}
+                    key={post.slug ?? post.__metadata?.id ?? index}
                     post={post}
                     showThumbnail={showThumbnail}
                     showExcerpt={showExcerpt}
@@ -234,7 +234,7 @@ function PostFeedSmallList(props) {
         >
             {posts.map((post, index) => (
                 <PostFeedItem
-                    key={index}
+                    key={post.slug ?? post.__metadata?.id ?? index}
                     post={post}
                     showThumbnail={showThumbnail}
                     showExcerpt={showExcerpt}
@@ -276,7 +276,7 @@ function PostFeedBigList(props) {
         >
             {posts.map((post, index) => (
                 <PostFeedItem
-                    key={index}
+                    key={post.slug ?? post.__metadata?.id ?? index}
                     post={post}
                     showThumbnail={showThumbnail}
                     showExcerpt={showExcerpt}

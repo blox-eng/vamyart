@@ -21,6 +21,17 @@ export function buildArtworkJsonLd({ title, description, year, medium, image, ur
     };
 }
 
+export function buildCollectionJsonLd({ name, description, url, pieces = [] }) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name,
+        url,
+        ...(description ? { description } : {}),
+        hasPart: pieces.map((p) => ({ '@type': 'VisualArtwork', name: p.name, url: p.url })),
+    };
+}
+
 export function buildBreadcrumbJsonLd(base, crumbs) {
     const items = [{ name: 'Home', path: '/' }, ...crumbs];
     return {
