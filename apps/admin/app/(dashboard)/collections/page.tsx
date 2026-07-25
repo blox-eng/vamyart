@@ -7,7 +7,7 @@ import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
-import { resizeImageForUpload } from "@/lib/image/resize";
+import { CoverCropModal } from "./CoverCropModal";
 
 type CollectionRow = inferRouterOutputs<AppRouter>["collections"]["list"][number];
 
@@ -171,13 +171,14 @@ export default function CollectionsPage() {
 function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow; onUpdated: () => void }) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const createCoverUploadUrl = trpc.collections.createCoverUploadUrl.useMutation();
   const updateCover = trpc.collections.update.useMutation({
     onSuccess: () => { onUpdated(); toast("cover image updated", "success"); },
     onError: () => toast("failed to update cover image", "error"),
   });
 
-  async function handleUpload(file: File) {
+  function pickFile(file: File) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       toast("Invalid file type (jpg/png/webp only)", "error");
       return;
@@ -186,25 +187,22 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
       toast("File too large (max 25MB)", "error");
       return;
     }
+    setPendingFile(file); // opens the crop modal
+  }
+
+  async function uploadCropped(blob: Blob) {
+    setPendingFile(null);
     setUploading(true);
     try {
-      // Downscale oversized exports in the browser before upload (fail open to
-      // the original if the resize can't run). Format is preserved, so the
-      // content type stays within the jpeg|png|webp allowlist.
-      let uploadBlob: Blob = file;
-      try {
-        uploadBlob = await resizeImageForUpload(file);
-      } catch {
-        uploadBlob = file;
-      }
-      const contentType = uploadBlob.type as "image/jpeg" | "image/png" | "image/webp";
-      // 1. Get a signed URL, then upload bytes straight to Storage (no function
-      //    body limit involved). 2. Record the storage path on the collection.
-      const { path, token } = await createCoverUploadUrl.mutateAsync({ collectionId: collection.id, contentType });
+      // Cropped output is always image/jpeg (see lib/image/crop.ts).
+      const { path, token } = await createCoverUploadUrl.mutateAsync({
+        collectionId: collection.id,
+        contentType: "image/jpeg",
+      });
       const supabase = createClient();
       const { error } = await supabase.storage
         .from("artwork-images")
-        .uploadToSignedUrl(path, token, uploadBlob, { contentType, cacheControl: "31536000" });
+        .uploadToSignedUrl(path, token, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
       if (error) throw error;
       await updateCover.mutateAsync({ id: collection.id, coverImagePath: path });
     } catch (e) {
@@ -216,16 +214,16 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
 
   return (
     <div className="border-t pt-3">
-      <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">Cover image</label>
+      <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">Cover image (3:2)</label>
       <div className="flex items-center gap-3">
         {collection.coverImagePath ? (
           <img
             src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${collection.coverImagePath}`}
             alt="Collection cover"
-            className="w-20 h-20 object-cover rounded border"
+            className="w-24 h-16 object-cover rounded border"
           />
         ) : (
-          <div className="w-20 h-20 rounded border border-dashed flex items-center justify-center text-xs text-gray-400">
+          <div className="w-24 h-16 rounded border border-dashed flex items-center justify-center text-xs text-gray-400">
             None
           </div>
         )}
@@ -238,7 +236,7 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
               disabled={uploading}
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) handleUpload(file);
+                if (file) pickFile(file);
                 e.target.value = "";
               }}
             />
@@ -256,6 +254,14 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
           )}
         </div>
       </div>
+
+      {pendingFile && (
+        <CoverCropModal
+          file={pendingFile}
+          onCancel={() => setPendingFile(null)}
+          onCropped={uploadCropped}
+        />
+      )}
     </div>
   );
 }
