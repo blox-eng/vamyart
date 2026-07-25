@@ -37,7 +37,12 @@ export default function CollectionsPage() {
 
   const [order, setOrder] = useState<string[]>([]);
   useEffect(() => {
-    if (collectionList) setOrder(collectionList.map((c) => c.id));
+    if (!collectionList) return;
+    const serverIds = collectionList.map((c) => c.id);
+    setOrder((prev) => {
+      const sameSet = prev.length === serverIds.length && serverIds.every((id) => prev.includes(id));
+      return sameSet ? prev : serverIds;
+    });
   }, [collectionList]);
 
   const orderDirty =

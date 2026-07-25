@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedBlob } from "@/lib/image/crop";
 
@@ -20,6 +20,8 @@ export function CoverCropModal({
   const [zoom, setZoom] = useState(1);
   const [areaPixels, setAreaPixels] = useState<Area | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => () => URL.revokeObjectURL(imageUrl), [imageUrl]);
 
   const onCropComplete = useCallback((_area: Area, pixels: Area) => setAreaPixels(pixels), []);
 
