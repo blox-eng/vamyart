@@ -16,6 +16,7 @@ type VariantDraft = {
   price: string;
   stock: string;
   available: boolean;
+  isOriginal: boolean;
   medium: string;
   dimensions: string;
 };
@@ -76,6 +77,18 @@ export default function ArtworksPage() {
   const setVariantAvailable = trpc.products.setVariantAvailable.useMutation({
     onSuccess: (v) => { refetch(); toast(v.available ? "Shown in store" : "Hidden from store", "success"); },
     onError: (e) => toast(e.message || "failed to update visibility", "error"),
+  });
+  const setVariantSold = trpc.products.setVariantSold.useMutation({
+    onSuccess: async (v) => {
+      const editedProduct = (productList ?? []).find((p) =>
+        p.variants.some((vv: any) => vv.id === v.id)
+      );
+      const slug = editedProduct?.artwork?.slug;
+      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      refetch();
+      toast(v.soldAt ? "Marked sold" : "Marked available", "success");
+    },
+    onError: (e) => toast(e.message || "failed to update sold state", "error"),
   });
   const createVariant = trpc.products.createVariant.useMutation({
     onSuccess: () => { refetch(); toast("variant added", "success"); },
@@ -249,6 +262,7 @@ export default function ArtworksPage() {
         price: String(Number(v.price)),
         stock: String(v.stockQuantity),
         available: v.available,
+        isOriginal: v.isOriginal,
         medium: attrs.medium ?? "",
         dimensions: attrs.dimensions ?? "",
       },
@@ -270,7 +284,7 @@ export default function ArtworksPage() {
     if (d.medium) attributes.medium = d.medium;
     if (d.dimensions) attributes.dimensions = d.dimensions;
     updateVariant.mutate(
-      { id, name: d.name, price: Number(d.price), stockQuantity: Number(d.stock), available: d.available, attributes },
+      { id, name: d.name, price: Number(d.price), stockQuantity: Number(d.stock), available: d.available, isOriginal: d.isOriginal, attributes },
       {
         onSuccess: (result) => {
           cancelEditVariant(id);
@@ -660,7 +674,7 @@ export default function ArtworksPage() {
                       <th className="pb-2 pr-3">Variant</th>
                       <th className="pb-2 pr-3">Price</th>
                       <th className="pb-2 pr-3">Stock</th>
-                      <th className="pb-2 pr-3" title="Hidden variants don't appear on the customer's piece page at all (unlike out-of-stock, which is still shown)">Shown in store</th>
+                      <th className="pb-2 pr-3" title="Hidden variants don't appear on the piece page at all. Out-of-stock is still shown with a Notify-me. Sold hides the price and shows 'Sold' (used for one-of-a-kind originals).">Shown in store</th>
                       <th className="pb-2"></th>
                     </tr>
                   </thead>
@@ -716,17 +730,32 @@ export default function ArtworksPage() {
                               />
                             </td>
                             <td className="py-2 pr-3">
-                              <input
-                                type="checkbox"
-                                checked={ve.available}
-                                onChange={(e) =>
-                                  setEditingVariant((prev) => ({
-                                    ...prev,
-                                    [v.id]: { ...ve, available: e.target.checked },
-                                  }))
-                                }
-                                className="cursor-pointer"
-                              />
+                              <div className="flex flex-col gap-1">
+                                <input
+                                  type="checkbox"
+                                  checked={ve.available}
+                                  onChange={(e) =>
+                                    setEditingVariant((prev) => ({
+                                      ...prev,
+                                      [v.id]: { ...ve, available: e.target.checked },
+                                    }))
+                                  }
+                                  className="cursor-pointer"
+                                />
+                                <label className="flex items-center gap-1 text-xs">
+                                  <input
+                                    type="checkbox"
+                                    checked={ve.isOriginal}
+                                    onChange={(e) =>
+                                      setEditingVariant((prev) => ({
+                                        ...prev,
+                                        [v.id]: { ...ve, isOriginal: e.target.checked },
+                                      }))
+                                    }
+                                  />
+                                  One-of-a-kind original
+                                </label>
+                              </div>
                             </td>
                             <td className="py-2">
                               <div className="flex gap-1">
@@ -788,21 +817,40 @@ export default function ArtworksPage() {
                         <tr key={v.id} className="border-b last:border-0 hover:bg-gray-50 group">
                           <td className="py-2 pr-3">{v.name}</td>
                           <td className="py-2 pr-3">€{Number(v.price).toLocaleString()}</td>
-                          <td className="py-2 pr-3">{v.stockQuantity}<WaitlistBadge variantId={v.id} /></td>
                           <td className="py-2 pr-3">
-                            <button
-                              type="button"
-                              onClick={() => setVariantAvailable.mutate({ id: v.id, available: !v.available })}
-                              disabled={setVariantAvailable.isPending}
-                              title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
-                              className={`px-2 py-0.5 rounded text-xs disabled:opacity-50 ${
-                                v.available
-                                  ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                              }`}
-                            >
-                              {v.available ? "Visible" : "Hidden"}
-                            </button>
+                            {v.stockQuantity}
+                            {v.soldAt || (v.isOriginal && v.stockQuantity <= 0) ? (
+                              <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-800">Sold</span>
+                            ) : (
+                              <WaitlistBadge variantId={v.id} />
+                            )}
+                          </td>
+                          <td className="py-2 pr-3">
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setVariantAvailable.mutate({ id: v.id, available: !v.available })}
+                                disabled={setVariantAvailable.isPending}
+                                title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
+                                className={`px-2 py-0.5 rounded text-xs disabled:opacity-50 ${
+                                  v.available
+                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                }`}
+                              >
+                                {v.available ? "Visible" : "Hidden"}
+                              </button>
+                              <button
+                                onClick={() => setVariantSold.mutate({ id: v.id, sold: !v.soldAt })}
+                                disabled={setVariantSold.isPending}
+                                title={v.soldAt ? "Marked sold — click to relist" : "Mark as sold"}
+                                className={`text-xs px-2 py-1 rounded ${
+                                  v.soldAt ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                }`}
+                              >
+                                {v.soldAt ? "Sold" : "Mark sold"}
+                              </button>
+                            </div>
                           </td>
                           <td className="py-2">
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -903,6 +951,19 @@ export default function ArtworksPage() {
                             />
                             Shown in store
                           </label>
+                          <label className="flex items-center gap-1 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={ve.isOriginal}
+                              onChange={(e) =>
+                                setEditingVariant((prev) => ({
+                                  ...prev,
+                                  [v.id]: { ...ve, isOriginal: e.target.checked },
+                                }))
+                              }
+                            />
+                            One-of-a-kind original
+                          </label>
                           <div>
                             <label className="block text-xs text-gray-500 mb-0.5">Medium</label>
                             <input
@@ -932,21 +993,40 @@ export default function ArtworksPage() {
                       <div key={v.id} className="border rounded-lg p-3 space-y-2">
                         <div className="flex items-start justify-between gap-2">
                           <p className="font-medium text-sm">{v.name}</p>
-                          <button
-                            type="button"
-                            onClick={() => setVariantAvailable.mutate({ id: v.id, available: !v.available })}
-                            disabled={setVariantAvailable.isPending}
-                            title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
-                            className={`shrink-0 px-2 py-1 rounded text-xs disabled:opacity-50 ${
-                              v.available ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                            }`}
-                          >
-                            {v.available ? "Visible" : "Hidden"}
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setVariantAvailable.mutate({ id: v.id, available: !v.available })}
+                              disabled={setVariantAvailable.isPending}
+                              title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
+                              className={`px-2 py-1 rounded text-xs disabled:opacity-50 ${
+                                v.available ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                              }`}
+                            >
+                              {v.available ? "Visible" : "Hidden"}
+                            </button>
+                            <button
+                              onClick={() => setVariantSold.mutate({ id: v.id, sold: !v.soldAt })}
+                              disabled={setVariantSold.isPending}
+                              title={v.soldAt ? "Marked sold — click to relist" : "Mark as sold"}
+                              className={`text-xs px-2 py-1 rounded ${
+                                v.soldAt ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                              }`}
+                            >
+                              {v.soldAt ? "Sold" : "Mark sold"}
+                            </button>
+                          </div>
                         </div>
                         <div className="flex justify-between text-sm text-gray-600">
                           <span>€{Number(v.price).toLocaleString()}</span>
-                          <span className="flex items-center">Stock: {v.stockQuantity}<WaitlistBadge variantId={v.id} /></span>
+                          <span className="flex items-center">
+                            Stock: {v.stockQuantity}
+                            {v.soldAt || (v.isOriginal && v.stockQuantity <= 0) ? (
+                              <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-800">Sold</span>
+                            ) : (
+                              <WaitlistBadge variantId={v.id} />
+                            )}
+                          </span>
                         </div>
                         <div className="flex gap-2 pt-1 flex-wrap">
                           {p.productType === "print" && selected?.artwork && (
