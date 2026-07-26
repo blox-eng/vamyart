@@ -27,7 +27,7 @@ type ProductDraft = {
   active: boolean;
 };
 
-type NewVariantForm = { productId: string; name: string; price: string; stock: string };
+type NewVariantForm = { productId: string; name: string; price: string; stock: string; isOriginal: boolean };
 type NewProductForm = { artworkId: string; productType: string; name: string; description: string };
 
 export default function ArtworksPage() {
@@ -360,6 +360,7 @@ export default function ArtworksPage() {
         name: newVariantForm.name,
         price: Number(newVariantForm.price),
         stockQuantity: Number(newVariantForm.stock),
+        isOriginal: newVariantForm.isOriginal,
       },
       { onSuccess: () => setNewVariantForm(null) }
     );
@@ -1105,6 +1106,14 @@ export default function ArtworksPage() {
                         required
                       />
                     </div>
+                    <label className="flex items-center gap-1 text-xs text-gray-600 pb-1">
+                      <input
+                        type="checkbox"
+                        checked={newVariantForm.isOriginal}
+                        onChange={(e) => setNewVariantForm((prev) => (prev ? { ...prev, isOriginal: e.target.checked } : prev))}
+                      />
+                      One-of-a-kind original
+                    </label>
                     <button
                       type="submit"
                       disabled={createVariant.isPending}
@@ -1123,7 +1132,7 @@ export default function ArtworksPage() {
                 ) : (
                   <button
                     onClick={() =>
-                      setNewVariantForm({ productId: p.id, name: "", price: "150", stock: "1" })
+                      setNewVariantForm({ productId: p.id, name: "", price: "150", stock: "1", isOriginal: false })
                     }
                     className="text-xs text-gray-600 hover:underline"
                   >

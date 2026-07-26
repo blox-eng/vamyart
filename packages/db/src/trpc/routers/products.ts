@@ -137,11 +137,16 @@ export const productsRouter = router({
       });
       if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
 
+      // Bumping stock from 0 back to positive relists the piece — clear the sold flag so an
+      // auto-sold original doesn't stay stuck showing "Sold" after the artist restocks it.
+      const restocking = before.stockQuantity <= 0 && input.stockQuantity > 0;
+
       await db
         .update(productVariants)
         .set({
           stockQuantity: input.stockQuantity,
           ...(input.available !== undefined && { available: input.available }),
+          ...(restocking && { soldAt: null }),
           updatedAt: new Date(),
         })
         .where(eq(productVariants.id, input.id));
@@ -177,6 +182,10 @@ export const productsRouter = router({
       });
       if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
 
+      // Bumping stock from 0 back to positive relists the piece — clear the sold flag so an
+      // auto-sold original doesn't stay stuck showing "Sold" after the artist restocks it.
+      const restocking = before.stockQuantity <= 0 && input.stockQuantity > 0;
+
       const [v] = await db
         .update(productVariants)
         .set({
@@ -185,6 +194,7 @@ export const productsRouter = router({
           stockQuantity: input.stockQuantity,
           available: input.available,
           isOriginal: input.isOriginal,
+          ...(restocking && { soldAt: null }),
           ...(input.attributes !== undefined && { attributes: input.attributes }),
           updatedAt: new Date(),
         })

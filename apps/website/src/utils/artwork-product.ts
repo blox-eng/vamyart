@@ -1,3 +1,5 @@
+import { isVariantSold } from './variant-sold';
+
 export interface ArtworkDisplayData {
     medium: string;
     dimensions: string;
@@ -16,15 +18,8 @@ export function deriveArtworkDisplayData(products: any[]): ArtworkDisplayData {
         ((p.variants ?? []) as any[]).map((v: any) => ({ ...v, productType: p.productType }))
     );
 
-    // Same "sold" rule as isVariantSold / ProductSelector: a variant is gone when it's
-    // been flagged (soldAt) or it's a one-of-a-kind original with no stock. Sold variants
-    // must not advertise a price or an "Available" dot on the card.
-    // Keep this expression textually identical to isVariantSold (packages/db) and the
-    // ProductSelector inline copy — the duplication is deliberate (client bundle can't
-    // import @vamy/db), so matching text keeps future edits easy to mirror.
-    const isSold = (v: any) =>
-        v.soldAt != null || (v.isOriginal && v.stockQuantity <= 0);
-    const sellable = tagged.filter((v) => !isSold(v));
+    // Sold variants must not advertise a price or an "Available" dot on the card.
+    const sellable = tagged.filter((v) => !isVariantSold(v));
 
     const prints = sellable.filter((v) => v.productType !== "original");
     const originals = sellable.filter((v) => v.productType === "original");

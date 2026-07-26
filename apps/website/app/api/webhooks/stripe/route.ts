@@ -146,6 +146,13 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "charge.refunded") {
     const charge = event.data.object as Stripe.Charge;
+
+    // Stripe fires charge.refunded on PARTIAL refunds too (e.g. a goodwill shipping
+    // credit). `charge.refunded` is true only when fully refunded. Restocking / un-selling
+    // a piece the buyer still owns would wrongly relist it — so only run this branch on a
+    // full refund.
+    if (!charge.refunded) return new Response(null, { status: 200 });
+
     const paymentIntentId = typeof charge.payment_intent === "string"
       ? charge.payment_intent
       : charge.payment_intent?.id;
@@ -171,12 +178,19 @@ export async function POST(req: NextRequest) {
 
     const variantBefore = await db.query.productVariants.findFirst({
       where: eq(productVariants.id, variantId),
-      columns: { available: true, stockQuantity: true },
+      columns: { available: true, stockQuantity: true, isOriginal: true },
     });
 
     const [variantAfter] = await db
       .update(productVariants)
-      .set({ stockQuantity: sql`stock_quantity + 1`, soldAt: null, updatedAt: new Date() })
+      // Only auto-clear soldAt for originals (the auto-sold-on-purchase case). A manually
+      // flagged sold variant — e.g. a print the artist sold off-platform — must stay sold;
+      // refunding some other order for it should not silently relist it.
+      .set({
+        stockQuantity: sql`stock_quantity + 1`,
+        ...(variantBefore?.isOriginal ? { soldAt: null } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(productVariants.id, variantId))
       .returning({ available: productVariants.available, stockQuantity: productVariants.stockQuantity });
 

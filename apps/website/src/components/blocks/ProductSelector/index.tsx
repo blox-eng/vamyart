@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { trpc } from '../../../lib/trpc';
+import { isVariantSold } from '../../../utils/variant-sold';
 
 export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
@@ -72,12 +73,8 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     );
     if (variants.length === 0) return null;
 
-    // Inlined here (not imported from @vamy/db) to keep the DB client out of the browser bundle.
-    const isSold = (v: { isOriginal: boolean; soldAt: string | Date | null; stockQuantity: number }) =>
-        v.soldAt != null || (v.isOriginal && v.stockQuantity <= 0);
-
     // Every buyable variant is gone → show a graceful sold state instead of an empty picker.
-    if (variants.every(isSold)) {
+    if (variants.every(isVariantSold)) {
         return (
             <div className="border border-black p-6 mt-4">
                 <h3 className="text-xs uppercase tracking-widest mb-2">This piece has sold</h3>
@@ -136,7 +133,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             <h3 className="text-xs uppercase tracking-widest mb-4">Available pieces</h3>
             <div className="space-y-2 mb-6">
                 {variants.map(v => {
-                    const sold = isSold(v);
+                    const sold = isVariantSold(v);
                     const isOut = !sold && (!v.available || v.stockQuantity <= 0);
                     const disabled = sold || isOut;
                     const showNotify = isOut && notifyForVariantId === v.id;
