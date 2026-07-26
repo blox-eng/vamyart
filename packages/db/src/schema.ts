@@ -107,6 +107,8 @@ export const productVariants = pgTable("product_variants", {
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   stockQuantity: integer("stock_quantity").notNull().default(0),
   available: boolean("available").notNull().default(true),
+  isOriginal: boolean("is_original").notNull().default(false),
+  soldAt: timestamp("sold_at", { withTimezone: true }),
   attributes: jsonb("attributes"), // { size, paper } | { colour, material } etc.
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

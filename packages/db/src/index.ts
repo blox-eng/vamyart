@@ -10,6 +10,11 @@ export {
   type VariantStockState,
   type RestockNotifyResult,
 } from "./services/restock-notify";
+export {
+  isVariantSold,
+  shouldAutoMarkSold,
+  type VariantSoldState,
+} from "./services/variant-sold";
 export { upsertContact } from "./services/upsert-contact";
 export { subscribeToButtondown } from "./services/buttondown";
 export type { NewsletterSource, SubscribeInput, SubscribeResult } from "./services/buttondown";

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition, upsertContact, subscribeToButtondown, trackEvent } from "@vamy/db";
+import { db, orders, productVariants, escapeHtml, renderOrderReceiptHtml, notifyWaitlistForVariant, detectRestockTransition, shouldAutoMarkSold, upsertContact, subscribeToButtondown, trackEvent } from "@vamy/db";
 import { eq, sql, and, ne } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -50,10 +50,24 @@ export async function POST(req: NextRequest) {
 
       if (rows.length === 0) return rows;
 
-      await tx
+      const [afterDecrement] = await tx
         .update(productVariants)
         .set({ stockQuantity: sql`GREATEST(stock_quantity - 1, 0)`, updatedAt: new Date() })
-        .where(eq(productVariants.id, variantId));
+        .where(eq(productVariants.id, variantId))
+        .returning({
+          isOriginal: productVariants.isOriginal,
+          stockQuantity: productVariants.stockQuantity,
+          soldAt: productVariants.soldAt,
+        });
+
+      // A one-of-a-kind original that just sold out is gone for good — record the sale
+      // timestamp so it renders as "Sold" (not restockable "Out of stock").
+      if (afterDecrement && shouldAutoMarkSold(afterDecrement)) {
+        await tx
+          .update(productVariants)
+          .set({ soldAt: new Date() })
+          .where(eq(productVariants.id, variantId));
+      }
 
       await upsertContact(tx, { email: customer?.email ?? "", name: customer?.name ?? null });
 
@@ -132,6 +146,13 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "charge.refunded") {
     const charge = event.data.object as Stripe.Charge;
+
+    // Stripe fires charge.refunded on PARTIAL refunds too (e.g. a goodwill shipping
+    // credit). `charge.refunded` is true only when fully refunded. Restocking / un-selling
+    // a piece the buyer still owns would wrongly relist it — so only run this branch on a
+    // full refund.
+    if (!charge.refunded) return new Response(null, { status: 200 });
+
     const paymentIntentId = typeof charge.payment_intent === "string"
       ? charge.payment_intent
       : charge.payment_intent?.id;
@@ -157,12 +178,19 @@ export async function POST(req: NextRequest) {
 
     const variantBefore = await db.query.productVariants.findFirst({
       where: eq(productVariants.id, variantId),
-      columns: { available: true, stockQuantity: true },
+      columns: { available: true, stockQuantity: true, isOriginal: true },
     });
 
     const [variantAfter] = await db
       .update(productVariants)
-      .set({ stockQuantity: sql`stock_quantity + 1`, updatedAt: new Date() })
+      // Only auto-clear soldAt for originals (the auto-sold-on-purchase case). A manually
+      // flagged sold variant — e.g. a print the artist sold off-platform — must stay sold;
+      // refunding some other order for it should not silently relist it.
+      .set({
+        stockQuantity: sql`stock_quantity + 1`,
+        ...(variantBefore?.isOriginal ? { soldAt: null } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(productVariants.id, variantId))
       .returning({ available: productVariants.available, stockQuantity: productVariants.stockQuantity });
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { trpc } from '../../../lib/trpc';
+import { isVariantSold } from '../../../utils/variant-sold';
 
 export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
@@ -72,6 +73,21 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     );
     if (variants.length === 0) return null;
 
+    // Every buyable variant is gone → show a graceful sold state instead of an empty picker.
+    if (variants.every(isVariantSold)) {
+        return (
+            <div className="border border-black p-6 mt-4">
+                <h3 className="text-xs uppercase tracking-widest mb-2">This piece has sold</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                    This original has found its home. Maeve can create something in the same spirit for you.
+                </p>
+                <a href="/get-a-piece" className="text-sm underline underline-offset-2 hover:no-underline">
+                    Inquire about a commission or a similar piece
+                </a>
+            </div>
+        );
+    }
+
     const selectedVariant = variants.find(v => v.id === selectedVariantId) ?? null;
     const priceLabel = selectedVariant ? `€${Number(selectedVariant.price).toLocaleString()}` : '';
 
@@ -117,14 +133,16 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
             <h3 className="text-xs uppercase tracking-widest mb-4">Available pieces</h3>
             <div className="space-y-2 mb-6">
                 {variants.map(v => {
-                    const isOut = !v.available || v.stockQuantity <= 0;
+                    const sold = isVariantSold(v);
+                    const isOut = !sold && (!v.available || v.stockQuantity <= 0);
+                    const disabled = sold || isOut;
                     const showNotify = isOut && notifyForVariantId === v.id;
                     const submitted = notifySubmitted === v.id;
                     return (
                         <div key={v.id}>
                             <label
                                 className={`flex items-center justify-between p-3 border transition-colors ${
-                                    isOut
+                                    disabled
                                         ? 'border-neutral opacity-70 cursor-default'
                                         : selectedVariantId === v.id
                                             ? 'border-black bg-gray-50 cursor-pointer'
@@ -136,7 +154,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                                         type="radio"
                                         name="variant"
                                         value={v.id}
-                                        disabled={isOut}
+                                        disabled={disabled}
                                         checked={selectedVariantId === v.id}
                                         onChange={() => { setSelectedVariantId(v.id); setCheckoutError(null); }}
                                         className="sr-only"
@@ -146,12 +164,18 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                                     </div>
                                 </div>
                                 <div className="text-right flex items-center gap-3">
-                                    <div>
-                                        <p className="text-sm">€{Number(v.price).toLocaleString()}</p>
-                                        <p className={`text-xs ${v.stockQuantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                            {v.stockQuantity > 0 ? 'In stock' : 'Out of stock'}
-                                        </p>
-                                    </div>
+                                    {sold ? (
+                                        <div>
+                                            <p className="text-sm text-gray-500">Sold</p>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <p className="text-sm">€{Number(v.price).toLocaleString()}</p>
+                                            <p className={`text-xs ${v.stockQuantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                                {v.stockQuantity > 0 ? 'In stock' : 'Out of stock'}
+                                            </p>
+                                        </div>
+                                    )}
                                     {isOut && !showNotify && !submitted && (
                                         <button
                                             type="button"

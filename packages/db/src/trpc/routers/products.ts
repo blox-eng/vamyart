@@ -103,6 +103,7 @@ export const productsRouter = router({
         name: z.string().min(1),
         price: z.number().positive(),
         stockQuantity: z.number().int().min(0),
+        isOriginal: z.boolean().optional(),
         attributes: z.record(z.string(), z.unknown()).optional(),
       })
     )
@@ -114,6 +115,7 @@ export const productsRouter = router({
           name: input.name,
           price: String(input.price),
           stockQuantity: input.stockQuantity,
+          isOriginal: input.isOriginal ?? false,
           attributes: input.attributes,
         })
         .returning();
@@ -135,11 +137,16 @@ export const productsRouter = router({
       });
       if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
 
+      // Bumping stock from 0 back to positive relists the piece — clear the sold flag so an
+      // auto-sold original doesn't stay stuck showing "Sold" after the artist restocks it.
+      const restocking = before.stockQuantity <= 0 && input.stockQuantity > 0;
+
       await db
         .update(productVariants)
         .set({
           stockQuantity: input.stockQuantity,
           ...(input.available !== undefined && { available: input.available }),
+          ...(restocking && { soldAt: null }),
           updatedAt: new Date(),
         })
         .where(eq(productVariants.id, input.id));
@@ -164,6 +171,7 @@ export const productsRouter = router({
         price: z.number().positive(),
         stockQuantity: z.number().int().min(0),
         available: z.boolean(),
+        isOriginal: z.boolean(),
         attributes: z.record(z.string(), z.unknown()).optional(),
       })
     )
@@ -174,6 +182,10 @@ export const productsRouter = router({
       });
       if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
 
+      // Bumping stock from 0 back to positive relists the piece — clear the sold flag so an
+      // auto-sold original doesn't stay stuck showing "Sold" after the artist restocks it.
+      const restocking = before.stockQuantity <= 0 && input.stockQuantity > 0;
+
       const [v] = await db
         .update(productVariants)
         .set({
@@ -181,6 +193,8 @@ export const productsRouter = router({
           price: String(input.price),
           stockQuantity: input.stockQuantity,
           available: input.available,
+          isOriginal: input.isOriginal,
+          ...(restocking && { soldAt: null }),
           ...(input.attributes !== undefined && { attributes: input.attributes }),
           updatedAt: new Date(),
         })
@@ -234,6 +248,20 @@ export const productsRouter = router({
       const [v] = await db
         .update(productVariants)
         .set({ available: input.available, updatedAt: new Date() })
+        .where(eq(productVariants.id, input.id))
+        .returning();
+      if (!v) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
+      return v;
+    }),
+
+  // Pure sold flag — like setVariantAvailable, deliberately does NOT trip
+  // detectRestockTransition (a sold original has no waitlist to notify).
+  setVariantSold: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), sold: z.boolean() }))
+    .mutation(async ({ input }) => {
+      const [v] = await db
+        .update(productVariants)
+        .set({ soldAt: input.sold ? new Date() : null, updatedAt: new Date() })
         .where(eq(productVariants.id, input.id))
         .returning();
       if (!v) throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
