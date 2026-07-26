@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { productVariants, shippingMethods } from "../../schema";
+import { isVariantSold } from "../../services/variant-sold";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -29,7 +30,7 @@ export const checkoutRouter = router({
       if (variant.product.artwork?.deletedAt) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Variant not found" });
       }
-      if (!variant.available || variant.stockQuantity <= 0) {
+      if (!variant.available || variant.stockQuantity <= 0 || isVariantSold(variant)) {
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: "OUT_OF_STOCK" });
       }
 
