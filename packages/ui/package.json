@@ -5,15 +5,14 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./tokens.css": "./src/styles/tokens.css"
+    "./tokens.css": "./src/styles/tokens.css",
+    "./tailwind-preset": "./tailwind-preset.js"
   },
   "scripts": {
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.454.0",
     "tailwind-merge": "^2.6.1"
   },
   "peerDependencies": {

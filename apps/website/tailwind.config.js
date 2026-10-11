@@ -1,7 +1,12 @@
 const plugin = require('tailwindcss/plugin');
 const themeStyle = require('./content/data/style.json');
+const preset = require('@vamy/ui/tailwind-preset');
+
+// Legacy Stackbit colour names (used by content/ and the bg-*-fg-* schemes) alias the design tokens.
+const token = (name) => `color-mix(in srgb, var(${name}) calc(<alpha-value> * 100%), transparent)`;
 
 module.exports = {
+    presets: [preset],
     content: ['./src/**/*.{js,ts,jsx,tsx}', './content/**/*', './.sourcebit-nextjs-cache.json'],
     safelist: [
         'text-neutral',
@@ -16,15 +21,11 @@ module.exports = {
                 header: '0px 2px 8px rgba(27, 32, 50, .08)'
             },
             colors: {
-                light: themeStyle.light,
-                dark: themeStyle.dark,
-                neutral: themeStyle.neutral,
-                neutralAlt: themeStyle.neutralAlt,
-                primary: themeStyle.primary
-            },
-            fontFamily: {
-                sans: ['var(--font-inter)', 'sans-serif'],
-                serif: ['var(--font-cormorant)', 'serif']
+                light: token('--bg'),
+                dark: token('--text'),
+                neutral: token('--wall'),
+                neutralAlt: token('--wall'),
+                primary: token('--text')
             },
             gridTemplateColumns: {
                 16: 'repeat(16, minmax(0, 1fr))'

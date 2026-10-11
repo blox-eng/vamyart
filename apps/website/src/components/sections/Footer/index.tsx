@@ -95,7 +95,7 @@ export default function Footer(props) {
                             ))}
                         </ul>
                     )}
-                    {legalNotice && <p className="text-xs text-gray-400">{legalNotice}</p>}
+                    {legalNotice && <p className="text-xs text-faint">{legalNotice}</p>}
                 </div>
             </div>
         </footer>
@@ -150,7 +150,7 @@ function NewsletterSignup() {
                     </button>
                 </form>
             )}
-            {status === 'error' && <p className="text-sm text-red-600 mt-2">Something went wrong.</p>}
+            {status === 'error' && <p className="text-sm text-neg mt-2">Something went wrong.</p>}
         </div>
     );
 }

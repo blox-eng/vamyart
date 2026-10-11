@@ -8,14 +8,14 @@ export default function OrderSuccess() {
                 <title>Order confirmed — vamy</title>
                 <meta name="robots" content="noindex" />
             </Head>
-            <main className="min-h-screen flex items-center justify-center px-4 bg-white">
+            <main className="min-h-screen flex items-center justify-center px-4 bg-paper">
                 <div className="max-w-md text-center">
                     <p className="text-4xl mb-6">✓</p>
                     <h1 className="text-2xl font-light mb-4 tracking-wide">Order confirmed</h1>
-                    <p className="text-gray-600 mb-2">
+                    <p className="text-muted mb-2">
                         Thank you for your purchase. You&apos;ll receive a confirmation email shortly.
                     </p>
-                    <p className="text-gray-500 text-sm mb-10">
+                    <p className="text-muted text-sm mb-10">
                         Once your print is prepared and shipped, you&apos;ll get a tracking number by email.
                     </p>
                     <Link

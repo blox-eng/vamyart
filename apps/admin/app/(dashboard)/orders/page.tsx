@@ -51,10 +51,10 @@ export default function OrdersPage() {
         <SkeletonTable rows={5} cols={6} />
       ) : (
       <>
-      <div className="hidden lg:block bg-white border rounded-lg overflow-hidden">
+      <div className="hidden lg:block bg-field border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+            <tr className="border-b bg-paper text-left text-xs uppercase tracking-wide text-muted">
               <th className="px-4 py-3">Buyer</th>
               <th className="px-4 py-3">Item</th>
               <th className="px-4 py-3">Amount</th>
@@ -66,7 +66,7 @@ export default function OrdersPage() {
           <tbody>
             {orderList?.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400 text-sm">
+                <td colSpan={6} className="px-4 py-8 text-center text-faint text-sm">
                   No orders yet.
                 </td>
               </tr>
@@ -74,41 +74,41 @@ export default function OrdersPage() {
             {orderList?.map((o) => {
               const address = formatAddress(o.shippingAddress);
               return (
-              <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50 align-top">
+              <tr key={o.id} className="border-b last:border-0 hover:bg-hover align-top">
                 <td className="px-4 py-3">
                   <p className="font-medium">{o.buyerName}</p>
                   <a
                     href={`mailto:${o.buyerEmail}?subject=Your vamy order`}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs text-accent hover:underline"
                   >
                     {o.buyerEmail}
                   </a>
                   {address && (
-                    <p className="text-xs text-gray-500 mt-1 whitespace-pre-line">
+                    <p className="text-xs text-muted mt-1 whitespace-pre-line">
                       {address}
                     </p>
                   )}
                 </td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3 text-muted">
                   <p>{o.productVariant?.name ?? "—"}</p>
                   {o.productVariant?.product?.name && (
-                    <p className="text-xs text-gray-400">{o.productVariant.product.name}</p>
+                    <p className="text-xs text-faint">{o.productVariant.product.name}</p>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   €{Number(o.amountPaid).toLocaleString()}
                 </td>
-                <td className="px-4 py-3 text-gray-500 text-xs">
+                <td className="px-4 py-3 text-muted text-xs">
                   {formatDistanceToNow(new Date(o.createdAt), { addSuffix: true })}
                 </td>
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${
                       o.status === "shipped"
-                        ? "bg-green-100 text-green-800"
+                        ? "bg-accent-wash text-accent"
                         : o.status === "paid"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-accent-wash text-accent"
+                        : "bg-wall text-muted"
                     }`}
                   >
                     {o.status}
@@ -121,7 +121,7 @@ export default function OrdersPage() {
                         <select
                           value={getDraft(o.id).carrier}
                           onChange={(e) => setDraft(o.id, { carrier: e.target.value as ShipDraft["carrier"] })}
-                          className="border px-2 py-1 rounded text-xs bg-white"
+                          className="border px-2 py-1 rounded text-xs bg-field"
                         >
                           <option value="DHL">DHL</option>
                           <option value="GLS">GLS</option>
@@ -156,7 +156,7 @@ export default function OrdersPage() {
                           });
                         }}
                         disabled={markShipped.isPending || !getDraft(o.id).trackingNumber}
-                        className="text-xs bg-black text-white px-3 py-1.5 rounded disabled:opacity-50"
+                        className="text-xs bg-ink text-paper px-3 py-1.5 rounded disabled:opacity-50"
                       >
                         {markShipped.isPending ? "Sending…" : "Mark shipped & send tracking"}
                       </button>
@@ -164,11 +164,11 @@ export default function OrdersPage() {
                   )}
                   {o.status === "shipped" && o.trackingNumber && (
                     <div className="flex flex-col">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted">
                         {o.trackingCarrier ? `${o.trackingCarrier} · ` : ""}
                         {o.trackingNumber}
                       </p>
-                      <span className="text-xs text-gray-400 mt-0.5">Tracking sent ✓</span>
+                      <span className="text-xs text-faint mt-0.5">Tracking sent ✓</span>
                     </div>
                   )}
                 </td>
@@ -182,18 +182,18 @@ export default function OrdersPage() {
       {/* Mobile cards */}
       <div className="lg:hidden space-y-3">
         {orderList?.length === 0 && (
-          <p className="text-center text-gray-400 text-sm py-8">No orders yet.</p>
+          <p className="text-center text-faint text-sm py-8">No orders yet.</p>
         )}
         {orderList?.map((o) => {
           const address = formatAddress(o.shippingAddress);
           return (
-          <div key={o.id} className="bg-white border rounded-lg p-4 space-y-3 text-sm">
+          <div key={o.id} className="bg-field border rounded-lg p-4 space-y-3 text-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-medium">{o.buyerName}</p>
                 <a
                   href={`mailto:${o.buyerEmail}?subject=Your vamy order`}
-                  className="text-xs text-blue-600 hover:underline break-all"
+                  className="text-xs text-accent hover:underline break-all"
                 >
                   {o.buyerEmail}
                 </a>
@@ -201,28 +201,28 @@ export default function OrdersPage() {
               <span
                 className={`shrink-0 px-2 py-1 rounded text-xs font-medium ${
                   o.status === "shipped"
-                    ? "bg-green-100 text-green-800"
+                    ? "bg-accent-wash text-accent"
                     : o.status === "paid"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-gray-100 text-gray-500"
+                    ? "bg-accent-wash text-accent"
+                    : "bg-wall text-muted"
                 }`}
               >
                 {o.status}
               </span>
             </div>
             {address && (
-              <p className="text-xs text-gray-500 whitespace-pre-line">
+              <p className="text-xs text-muted whitespace-pre-line">
                 {address}
               </p>
             )}
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between text-muted">
               <span>{o.productVariant?.name ?? "—"}</span>
-              <span className="font-medium text-gray-900">€{Number(o.amountPaid).toLocaleString()}</span>
+              <span className="font-medium text-ink">€{Number(o.amountPaid).toLocaleString()}</span>
             </div>
             {o.productVariant?.product?.name && (
-              <p className="text-xs text-gray-400 -mt-2">{o.productVariant.product.name}</p>
+              <p className="text-xs text-faint -mt-2">{o.productVariant.product.name}</p>
             )}
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-faint">
               {formatDistanceToNow(new Date(o.createdAt), { addSuffix: true })}
             </p>
             <ShipForm
@@ -267,11 +267,11 @@ function ShipForm({
   if (order.status === "shipped" && order.trackingNumber) {
     return (
       <div className="flex flex-col">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted">
           {order.trackingCarrier ? `${order.trackingCarrier} · ` : ""}
           {order.trackingNumber}
         </p>
-        <span className="text-xs text-gray-400 mt-0.5">Tracking sent ✓</span>
+        <span className="text-xs text-faint mt-0.5">Tracking sent ✓</span>
       </div>
     );
   }
@@ -282,7 +282,7 @@ function ShipForm({
         <select
           value={draft.carrier}
           onChange={(e) => onPatch({ carrier: e.target.value as ShipDraft["carrier"] })}
-          className="border px-2 py-1.5 rounded text-xs bg-white"
+          className="border px-2 py-1.5 rounded text-xs bg-field"
         >
           <option value="DHL">DHL</option>
           <option value="GLS">GLS</option>
@@ -308,7 +308,7 @@ function ShipForm({
       <button
         onClick={onSubmit}
         disabled={pending || !draft.trackingNumber}
-        className="text-xs bg-black text-white px-3 py-2 rounded disabled:opacity-50"
+        className="text-xs bg-ink text-paper px-3 py-2 rounded disabled:opacity-50"
       >
         {pending ? "Sending…" : "Mark shipped & send tracking"}
       </button>

@@ -56,19 +56,19 @@ export default function PostLayout(props) {
                         <div className="space-y-6">
                             <Link
                                 href="/gallery"
-                                className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors"
+                                className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-faint hover:text-muted transition-colors"
                             >
                                 <span aria-hidden="true">←</span> Back to gallery
                             </Link>
                             <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
                             {pieceId && (
-                                <p className="text-xs uppercase tracking-widest text-gray-400 -mt-4">
+                                <p className="text-xs uppercase tracking-widest text-faint -mt-4">
                                     {pieceId}
                                 </p>
                             )}
 
                             {(medium || dimensions || price) && (
-                                <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-500 mb-8">
+                                <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-muted mb-8">
                                     {medium && (
                                         <div><dt className="sr-only">Medium</dt><dd>{medium}</dd></div>
                                     )}
@@ -84,7 +84,7 @@ export default function PostLayout(props) {
                             {artworkSlug && (
                                 <Link
                                     href={`/get-a-piece?piece=${artworkSlug}`}
-                                    className="inline-block text-sm font-medium uppercase tracking-wide underline underline-offset-4 hover:text-gray-600"
+                                    className="inline-block text-sm font-medium uppercase tracking-wide underline underline-offset-4 hover:text-muted"
                                 >
                                     Inquire
                                 </Link>
@@ -108,7 +108,7 @@ export default function PostLayout(props) {
                                     <div className="pt-2 text-center">
                                         <Link
                                             href={`/get-a-piece?piece=${artworkSlug}`}
-                                            className="inline-block text-sm font-medium underline underline-offset-4 hover:text-gray-600"
+                                            className="inline-block text-sm font-medium underline underline-offset-4 hover:text-muted"
                                         >
                                             Or inquire about this piece
                                         </Link>
@@ -117,22 +117,22 @@ export default function PostLayout(props) {
                             )}
 
                             {(prevPost || nextPost) && (
-                                <nav aria-label="Artwork navigation" className="flex items-center justify-between pt-8 border-t border-gray-200">
+                                <nav aria-label="Artwork navigation" className="flex items-center justify-between pt-8 border-t border-hair">
                                     {prevPost ? (
                                         <Link
                                             href={prevPost.urlPath}
-                                            className="group flex flex-col items-start gap-0.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                                            className="group flex flex-col items-start gap-0.5 text-sm text-muted hover:text-ink transition-colors"
                                         >
-                                            <span className="text-xs uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors">← Previous</span>
+                                            <span className="text-xs uppercase tracking-widest text-faint group-hover:text-muted transition-colors">← Previous</span>
                                             <span className="font-light">{prevPost.title}</span>
                                         </Link>
                                     ) : <span />}
                                     {nextPost ? (
                                         <Link
                                             href={nextPost.urlPath}
-                                            className="group flex flex-col items-end gap-0.5 text-sm text-gray-500 hover:text-gray-900 transition-colors text-right"
+                                            className="group flex flex-col items-end gap-0.5 text-sm text-muted hover:text-ink transition-colors text-right"
                                         >
-                                            <span className="text-xs uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors">Next →</span>
+                                            <span className="text-xs uppercase tracking-widest text-faint group-hover:text-muted transition-colors">Next →</span>
                                             <span className="font-light">{nextPost.title}</span>
                                         </Link>
                                     ) : <span />}

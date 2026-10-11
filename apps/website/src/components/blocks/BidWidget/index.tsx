@@ -42,21 +42,21 @@ export function BidWidget({ artworkSlug }: { artworkSlug: string }) {
     const currentBid = auction.currentBid ? Number(auction.currentBid) : null;
 
     return (
-        <div className="border border-black p-6 mt-8">
+        <div className="border border-ink p-6 mt-8">
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-500 mb-1">
+                    <p className="text-xs uppercase tracking-widest text-muted mb-1">
                         {currentBid ? 'Current bid' : 'Starting bid'}
                     </p>
                     <p className="text-3xl font-light">
                         €{(currentBid ?? Number(auction.minBid)).toLocaleString()}
                     </p>
                     {auction.bidCount > 0 && (
-                        <p className="text-xs text-gray-500 mt-1">{auction.bidCount} bid{auction.bidCount !== 1 ? 's' : ''}</p>
+                        <p className="text-xs text-muted mt-1">{auction.bidCount} bid{auction.bidCount !== 1 ? 's' : ''}</p>
                     )}
                 </div>
                 <div className="text-right">
-                    <p className="text-xs uppercase tracking-widest text-gray-500 mb-1">
+                    <p className="text-xs uppercase tracking-widest text-muted mb-1">
                         {isEnded ? 'Ended' : 'Ends in'}
                     </p>
                     <p className="text-lg font-light">
@@ -67,13 +67,13 @@ export function BidWidget({ artworkSlug }: { artworkSlug: string }) {
             {!isEnded && !bidSuccess && (
                 <button
                     onClick={() => setShowModal(true)}
-                    className="w-full bg-black text-white py-3 text-sm tracking-wide hover:bg-gray-800 transition-colors"
+                    className="w-full bg-ink text-paper py-3 text-sm tracking-wide hover:bg-ink/90 transition-colors"
                 >
                     Place a Bid
                 </button>
             )}
             {bidSuccess && (
-                <p className="text-center text-sm text-green-700 py-2">Your bid has been placed. Watch your inbox.</p>
+                <p className="text-center text-sm text-accent py-2">Your bid has been placed. Watch your inbox.</p>
             )}
             {showModal && (
                 <BidModal

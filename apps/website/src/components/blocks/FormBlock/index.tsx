@@ -89,12 +89,12 @@ export default function FormBlock(props) {
             data-sb-field-path={fieldPath}
         >
             {submitStatus === 'success' && (
-                <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-md">
+                <div className="mb-6 p-4 bg-accent-wash text-accent">
                     Thank you for your inquiry. We&apos;ll be in touch soon.
                 </div>
             )}
             {submitStatus === 'error' && (
-                <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-md">
+                <div className="mb-6 p-4 bg-neg/10 text-neg">
                     Something went wrong. Please try again.
                 </div>
             )}
@@ -119,7 +119,7 @@ export default function FormBlock(props) {
                 />
                 <span>
                     Email me about new work and studio updates.{' '}
-                    <span className="text-gray-500">Unsubscribe anytime. We won&apos;t share your email.</span>
+                    <span className="text-muted">Unsubscribe anytime. We won&apos;t share your email.</span>
                 </span>
             </label>
             {submitButton && (

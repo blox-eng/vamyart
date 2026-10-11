@@ -90,7 +90,7 @@ export default function ShippingPage() {
   return (
     <div className="p-4 sm:p-8 max-w-3xl">
       <h1 className="text-2xl font-light mb-8">Shipping Methods</h1>
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+      {error && <p className="text-sm text-neg mb-4">{error}</p>}
 
       <div className="space-y-3 mb-10">
         {methodsLoading ? (
@@ -111,21 +111,21 @@ export default function ShippingPage() {
                 <input type="number" className="w-full border px-3 py-2 rounded text-sm" placeholder="Cost (€)" value={editCost} onChange={e => setEditCost(e.target.value)} />
               )}
               <div className="flex gap-2">
-                <button onClick={saveEdit} className="bg-black text-white px-4 py-2 rounded text-sm">Save</button>
+                <button onClick={saveEdit} className="bg-ink text-paper px-4 py-2 rounded text-sm">Save</button>
                 <button onClick={() => setEditId(null)} className="border px-4 py-2 rounded text-sm">Cancel</button>
               </div>
             </div>
           ) : (
             <div key={m.id} className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <p className="text-sm font-medium">{m.name} {m.isDefault && <span className="text-xs text-gray-400 ml-1">(default)</span>}</p>
-                <p className="text-xs text-gray-500">{m.displayText} · {m.type}{m.type === "paid" && m.cost ? ` · €${m.cost}` : ""}</p>
+                <p className="text-sm font-medium">{m.name} {m.isDefault && <span className="text-xs text-faint ml-1">(default)</span>}</p>
+                <p className="text-xs text-muted">{m.displayText} · {m.type}{m.type === "paid" && m.cost ? ` · €${m.cost}` : ""}</p>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => startEdit(m)} className="border px-3 py-2 rounded text-xs">Edit</button>
                 <button
                   onClick={() => handleDelete(m.id)}
-                  className={`px-3 py-2 rounded text-xs ${confirmDelete === m.id ? "bg-red-600 text-white" : "border text-red-600"}`}
+                  className={`px-3 py-2 rounded text-xs ${confirmDelete === m.id ? "bg-neg text-paper" : "border text-neg"}`}
                 >
                   {confirmDelete === m.id ? "Confirm" : "Delete"}
                 </button>
@@ -133,7 +133,7 @@ export default function ShippingPage() {
             </div>
           )
         )}
-        {(methods ?? []).length === 0 && <p className="text-sm text-gray-400">No shipping methods yet.</p>}
+        {(methods ?? []).length === 0 && <p className="text-sm text-faint">No shipping methods yet.</p>}
         </>
         )}
       </div>
@@ -154,7 +154,7 @@ export default function ShippingPage() {
           <input type="checkbox" checked={newDefault} onChange={e => setNewDefault(e.target.checked)} />
           Set as default
         </label>
-        <button type="submit" disabled={create.isPending} className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
+        <button type="submit" disabled={create.isPending} className="bg-ink text-paper px-4 py-2 rounded text-sm disabled:opacity-50">
           {create.isPending ? "Adding…" : "Add method"}
         </button>
       </form>

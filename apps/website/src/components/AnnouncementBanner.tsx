@@ -10,7 +10,7 @@ export function AnnouncementBanner({ banner }: AnnouncementBannerProps) {
     if (!banner) return null;
 
     return (
-        <div className="bg-black text-white text-center text-sm py-2 px-4">
+        <div className="bg-ink text-paper text-center text-sm py-2 px-4">
             {banner.text}
         </div>
     );

@@ -160,12 +160,12 @@ export default function CollectionsPage() {
       ) : (
         <div className="mb-10">
           {orderDirty && (
-            <div className="mb-3 flex justify-end sticky top-0 z-10 bg-white py-2">
+            <div className="mb-3 flex justify-end sticky top-0 z-10 bg-field py-2">
               <button
                 type="button"
                 onClick={() => reorder.mutate({ ids: order })}
                 disabled={reorder.isPending}
-                className="text-xs bg-black text-white px-4 min-h-11 inline-flex items-center rounded disabled:opacity-50"
+                className="text-xs bg-ink text-paper px-4 min-h-11 inline-flex items-center rounded disabled:opacity-50"
               >
                 {reorder.isPending ? "Saving…" : "Save order"}
               </button>
@@ -183,7 +183,7 @@ export default function CollectionsPage() {
                 <input className="w-full border px-3 py-2 rounded text-sm" placeholder="SEO title" value={editSeoTitle} onChange={e => setEditSeoTitle(e.target.value)} />
                 <textarea className="w-full border px-3 py-2 rounded text-sm" rows={2} placeholder="SEO description" value={editSeoDescription} onChange={e => setEditSeoDescription(e.target.value)} />
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={update.isPending} className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">Save</button>
+                  <button onClick={saveEdit} disabled={update.isPending} className="bg-ink text-paper px-4 py-2 rounded text-sm disabled:opacity-50">Save</button>
                   <button onClick={() => setEditId(null)} className="border px-4 py-2 rounded text-sm">Cancel</button>
                 </div>
 
@@ -194,7 +194,7 @@ export default function CollectionsPage() {
               <div key={c.id} className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{c.title}</p>
-                  <p className="text-xs text-gray-400">/{c.slug}</p>
+                  <p className="text-xs text-faint">/{c.slug}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
@@ -218,14 +218,14 @@ export default function CollectionsPage() {
                   <button
                     onClick={() => toggleFeatured(c)}
                     disabled={setFeatured.isPending}
-                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.featured ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}
+                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.featured ? "bg-warn/10 text-warn" : "bg-wall text-muted"}`}
                   >
                     {c.featured ? "★ Featured" : "☆ Feature"}
                   </button>
                   <button
                     onClick={() => togglePublished(c)}
                     disabled={update.isPending}
-                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.published ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.published ? "bg-accent-wash text-accent" : "bg-wall text-muted"}`}
                   >
                     {c.published ? "Published" : "Draft"}
                   </button>
@@ -233,7 +233,7 @@ export default function CollectionsPage() {
                   <button
                     onClick={() => handleDelete(c.id)}
                     disabled={del.isPending}
-                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs disabled:opacity-50 ${confirmDelete === c.id ? "bg-red-600 text-white" : "border text-red-600"}`}
+                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs disabled:opacity-50 ${confirmDelete === c.id ? "bg-neg text-paper" : "border text-neg"}`}
                   >
                     {confirmDelete === c.id ? "Confirm" : "Delete"}
                   </button>
@@ -241,7 +241,7 @@ export default function CollectionsPage() {
               </div>
             );
           })}
-          {order.length === 0 && <p className="text-sm text-gray-400">No collections yet.</p>}
+          {order.length === 0 && <p className="text-sm text-faint">No collections yet.</p>}
           </div>
         </div>
       )}
@@ -249,7 +249,7 @@ export default function CollectionsPage() {
       <h2 className="text-lg font-light mb-4">Create collection</h2>
       <form onSubmit={handleCreate} className="border rounded-lg p-4 space-y-3">
         <input className="w-full border px-3 py-2 rounded text-sm" placeholder="Collection title" value={newTitle} onChange={e => setNewTitle(e.target.value)} required />
-        <button type="submit" disabled={create.isPending} className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
+        <button type="submit" disabled={create.isPending} className="bg-ink text-paper px-4 py-2 rounded text-sm disabled:opacity-50">
           {create.isPending ? "Creating…" : "Create collection"}
         </button>
       </form>
@@ -307,7 +307,7 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
 
   return (
     <div className="border-t pt-3">
-      <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">Cover image (3:2)</label>
+      <label className="block text-xs text-muted uppercase tracking-wide mb-2">Cover image (3:2)</label>
       <div className="flex items-center gap-3">
         {collection.coverImagePath ? (
           <img
@@ -316,12 +316,12 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
             className="w-24 h-16 object-cover rounded border"
           />
         ) : (
-          <div className="w-24 h-16 rounded border border-dashed flex items-center justify-center text-xs text-gray-400">
+          <div className="w-24 h-16 rounded border border-dashed flex items-center justify-center text-xs text-faint">
             None
           </div>
         )}
         <div className="flex flex-col gap-2">
-          <label className="text-xs border px-3 py-2 rounded cursor-pointer hover:bg-gray-100 w-fit">
+          <label className="text-xs border px-3 py-2 rounded cursor-pointer hover:bg-hover w-fit">
             <input
               type="file"
               className="hidden"
@@ -340,7 +340,7 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
               type="button"
               onClick={() => updateCover.mutate({ id: collection.id, coverImagePath: null })}
               disabled={updateCover.isPending}
-              className="text-xs text-red-600 hover:underline w-fit disabled:opacity-50"
+              className="text-xs text-neg hover:underline w-fit disabled:opacity-50"
             >
               Clear cover
             </button>
@@ -402,7 +402,7 @@ function CollectionPieces({ collectionId }: { collectionId: string }) {
   }
 
   if (artworksLoading || pieceIdsLoading) {
-    return <div className="border-t pt-3 text-xs text-gray-400">Loading pieces…</div>;
+    return <div className="border-t pt-3 text-xs text-faint">Loading pieces…</div>;
   }
 
   const byId = new Map((artworkList ?? []).map((a) => [a.id, a]));
@@ -411,14 +411,14 @@ function CollectionPieces({ collectionId }: { collectionId: string }) {
   return (
     <div className="border-t pt-3">
       <div className="flex items-center justify-between mb-2">
-        <label className="block text-xs text-gray-500 uppercase tracking-wide">
+        <label className="block text-xs text-muted uppercase tracking-wide">
           Pieces ({ordered.length})
         </label>
         <button
           type="button"
           onClick={save}
           disabled={!dirty || setPieces.isPending}
-          className="text-xs bg-black text-white px-3 py-1.5 rounded disabled:opacity-50"
+          className="text-xs bg-ink text-paper px-3 py-1.5 rounded disabled:opacity-50"
         >
           {setPieces.isPending ? "Saving…" : "Save order"}
         </button>
@@ -429,12 +429,12 @@ function CollectionPieces({ collectionId }: { collectionId: string }) {
           {ordered.map((id, i) => {
             const a = byId.get(id);
             return (
-              <li key={id} className="flex items-center justify-between gap-2 text-sm border rounded px-2 py-1.5 bg-gray-50">
+              <li key={id} className="flex items-center justify-between gap-2 text-sm border rounded px-2 py-1.5 bg-paper">
                 <span className="truncate">{a?.title ?? id.slice(0, 8)}</span>
                 <div className="flex items-center gap-2 shrink-0">
                   <button type="button" onClick={() => move(i, -1)} className="text-xs border rounded min-h-11 min-w-11 inline-flex items-center justify-center" title="Move earlier">↑</button>
                   <button type="button" onClick={() => move(i, 1)} className="text-xs border rounded min-h-11 min-w-11 inline-flex items-center justify-center" title="Move later">↓</button>
-                  <button type="button" onClick={() => toggle(id)} className="text-xs text-red-600 min-h-11 inline-flex items-center px-3 ml-1" title="Remove from collection">Remove</button>
+                  <button type="button" onClick={() => toggle(id)} className="text-xs text-neg min-h-11 inline-flex items-center px-3 ml-1" title="Remove from collection">Remove</button>
                 </div>
               </li>
             );
@@ -444,14 +444,14 @@ function CollectionPieces({ collectionId }: { collectionId: string }) {
 
       {unassigned.length > 0 && (
         <div>
-          <p className="text-xs text-gray-400 mb-1">Add a piece:</p>
+          <p className="text-xs text-faint mb-1">Add a piece:</p>
           <div className="flex flex-wrap gap-2">
             {unassigned.map((a) => (
               <button
                 key={a.id}
                 type="button"
                 onClick={() => toggle(a.id)}
-                className="text-xs border px-2 py-1 rounded hover:bg-gray-100"
+                className="text-xs border px-2 py-1 rounded hover:bg-hover"
               >
                 + {a.title}
               </button>
@@ -461,7 +461,7 @@ function CollectionPieces({ collectionId }: { collectionId: string }) {
       )}
 
       {ordered.length === 0 && unassigned.length === 0 && (
-        <p className="text-xs text-gray-400">No pieces available.</p>
+        <p className="text-xs text-faint">No pieces available.</p>
       )}
     </div>
   );

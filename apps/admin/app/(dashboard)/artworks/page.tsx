@@ -391,7 +391,7 @@ export default function ArtworksPage() {
       {/* Artwork dropdown */}
       {artworkEntries.length > 0 && (
         <div className="mb-8">
-          <label className="block text-xs text-gray-500 uppercase tracking-wide mb-2">
+          <label className="block text-xs text-muted uppercase tracking-wide mb-2">
             Select artwork
           </label>
           <select
@@ -403,7 +403,7 @@ export default function ArtworksPage() {
               setConfirmDelete(null);
               setExpandedImages(false);
             }}
-            className="border rounded-lg px-4 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-black"
+            className="border rounded-lg px-4 py-2 text-sm bg-field shadow-sm focus:outline-none focus:ring-1 focus:ring-accent"
           >
             {artworkEntries.map(([key, { artwork }]) => (
               <option key={key} value={key}>
@@ -430,7 +430,7 @@ export default function ArtworksPage() {
           <div className="flex items-center justify-between mb-3">
             <button
               onClick={() => setExpandedImages(!expandedImages)}
-              className="text-xs text-gray-600 hover:text-black flex items-center gap-1"
+              className="text-xs text-muted hover:text-ink flex items-center gap-1"
             >
               <span className="transform transition-transform" style={{ display: 'inline-block', transform: expandedImages ? 'rotate(90deg)' : 'none' }}>▶</span>
               Images ({imagesList.data?.length ?? 0})
@@ -450,16 +450,16 @@ export default function ArtworksPage() {
                     images: imagesList.data ?? [],
                   })
                 }
-                className="text-xs border px-3 py-2 rounded hover:bg-gray-100"
+                className="text-xs border px-3 py-2 rounded hover:bg-hover"
               >
                 Issue certificate
               </button>
             )}
           </div>
           {expandedImages && (
-            <div className="bg-white border rounded-lg p-4 space-y-4">
+            <div className="bg-field border rounded-lg p-4 space-y-4">
               {/* Upload zone */}
-              <label className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-gray-400 transition-colors">
+              <label className="flex items-center justify-center border-2 border-dashed border-hair rounded-lg p-6 cursor-pointer hover:border-hair transition-colors">
                 <input
                   type="file"
                   className="hidden"
@@ -471,7 +471,7 @@ export default function ArtworksPage() {
                     e.target.value = "";
                   }}
                 />
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-faint">
                   {uploading ? "Uploading..." : "Click to upload image (jpg/png/webp, max 25MB)"}
                 </span>
               </label>
@@ -480,36 +480,36 @@ export default function ArtworksPage() {
               {imagesList.isLoading && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-gray-100 animate-pulse rounded" />
+                    <div key={i} className="aspect-square bg-wall animate-pulse rounded" />
                   ))}
                 </div>
               )}
               {!imagesList.isLoading && (imagesList.data?.length ?? 0) > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {imagesList.data?.map((img) => (
-                    <div key={img.id} className="relative group rounded overflow-hidden bg-gray-100">
+                    <div key={img.id} className="relative group rounded overflow-hidden bg-wall">
                       <img
                         src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${img.storagePath}`}
                         alt={img.altText || "Artwork image"}
                         className="w-full aspect-square object-cover"
                       />
                       {img.isPrimary && (
-                        <span className="absolute top-1 left-1 bg-amber-100 text-amber-700 text-xs px-1.5 py-0.5 rounded">
+                        <span className="absolute top-1 left-1 bg-warn/10 text-warn text-xs px-1.5 py-0.5 rounded">
                           ★ Primary
                         </span>
                       )}
-                      <div className="absolute inset-0 bg-black/60 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-ink/60 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         {!img.isPrimary && (
                           <button
                             onClick={() => setPrimaryImage.mutate({ id: img.id })}
-                            className="text-xs bg-white/20 text-white px-2 py-1 rounded hover:bg-white/40"
+                            className="text-xs bg-field/20 text-paper px-2 py-1 rounded hover:bg-field/40"
                           >
                             ★ Set Primary
                           </button>
                         )}
                         <button
                           onClick={() => deleteImage.mutate({ id: img.id })}
-                          className="text-xs bg-red-500/80 text-white px-2 py-1 rounded hover:bg-red-500"
+                          className="text-xs bg-neg/80 text-paper px-2 py-1 rounded hover:bg-neg"
                         >
                           Delete
                         </button>
@@ -524,7 +524,7 @@ export default function ArtworksPage() {
       )}
 
       {!productsLoading && artworkEntries.length === 0 && (
-        <p className="text-gray-400 text-sm text-center py-12">No artworks or products yet.</p>
+        <p className="text-faint text-sm text-center py-12">No artworks or products yet.</p>
       )}
 
       {/* Products */}
@@ -535,9 +535,9 @@ export default function ArtworksPage() {
         {selected?.products.map((p) => {
           const pe = editingProduct[p.id];
           return (
-            <div key={p.id} className="bg-white border rounded-lg overflow-hidden">
+            <div key={p.id} className="bg-field border rounded-lg overflow-hidden">
               {/* Product header */}
-              <div className="px-6 py-4 border-b bg-gray-50">
+              <div className="px-6 py-4 border-b bg-paper">
                 {pe ? (
                   <div className="flex items-start gap-3 flex-wrap">
                     <div className="flex-1 min-w-0 space-y-2">
@@ -553,7 +553,7 @@ export default function ArtworksPage() {
                         placeholder="Product name"
                       />
                       <input
-                        className="border rounded px-2 py-1 text-xs w-full max-w-sm text-gray-500"
+                        className="border rounded px-2 py-1 text-xs w-full max-w-sm text-muted"
                         value={pe.description}
                         onChange={(e) =>
                           setEditingProduct((prev) => ({
@@ -563,7 +563,7 @@ export default function ArtworksPage() {
                         }
                         placeholder="Description (optional)"
                       />
-                      <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
                         <input
                           type="checkbox"
                           checked={pe.active}
@@ -581,7 +581,7 @@ export default function ArtworksPage() {
                       <button
                         onClick={() => saveProduct(p.id)}
                         disabled={updateProduct.isPending}
-                        className="text-xs bg-black text-white px-3 py-1 rounded disabled:opacity-50"
+                        className="text-xs bg-ink text-paper px-3 py-1 rounded disabled:opacity-50"
                       >
                         Save
                       </button>
@@ -603,21 +603,21 @@ export default function ArtworksPage() {
                           disabled={setFeatured.isPending}
                           className={`text-xs px-2 py-0.5 rounded disabled:opacity-50 ${
                             p.featured
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                              ? "bg-warn/10 text-warn"
+                              : "bg-wall text-muted hover:bg-hover"
                           }`}
                         >
                           {p.featured ? "\u2605 Featured" : "Feature"}
                         </button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-xs text-muted mt-0.5">
                         {p.variants.length} variant{p.variants.length !== 1 ? "s" : ""}
                         {!p.active && (
-                          <span className="ml-2 text-orange-500 font-medium">· hidden</span>
+                          <span className="ml-2 text-warn font-medium">· hidden</span>
                         )}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-gray-500">Shipping:</span>
+                        <span className="text-xs text-muted">Shipping:</span>
                         <select
                           className="text-xs border rounded px-2 py-1"
                           value={p.shippingMethodId ?? ""}
@@ -639,7 +639,7 @@ export default function ArtworksPage() {
                     <div className="flex gap-2 shrink-0">
                       <button
                         onClick={() => startEditProduct(p)}
-                        className="text-xs border px-3 py-1 rounded hover:bg-gray-100"
+                        className="text-xs border px-3 py-1 rounded hover:bg-hover"
                       >
                         Edit
                       </button>
@@ -648,8 +648,8 @@ export default function ArtworksPage() {
                         disabled={deleteProduct.isPending}
                         className={`text-xs px-3 py-1 rounded disabled:opacity-50 ${
                           confirmDelete === p.id
-                            ? "bg-red-600 text-white"
-                            : "border text-red-500 hover:bg-red-50"
+                            ? "bg-neg text-paper"
+                            : "border text-neg hover:bg-neg/10"
                         }`}
                       >
                         {confirmDelete === p.id ? "Confirm delete" : "Delete"}
@@ -671,7 +671,7 @@ export default function ArtworksPage() {
               <div className="px-6 py-4">
                 <table className="hidden lg:table w-full text-sm mb-4">
                   <thead>
-                    <tr className="text-left text-xs text-gray-500 uppercase tracking-wide border-b">
+                    <tr className="text-left text-xs text-muted uppercase tracking-wide border-b">
                       <th className="pb-2 pr-3">Variant</th>
                       <th className="pb-2 pr-3">Price</th>
                       <th className="pb-2 pr-3">Stock</th>
@@ -685,7 +685,7 @@ export default function ArtworksPage() {
                       if (ve) {
                         return (
                           <React.Fragment key={v.id}>
-                          <tr className="border-b last:border-0 bg-blue-50">
+                          <tr className="border-b last:border-0 bg-accent-wash">
                             <td className="py-2 pr-3">
                               <input
                                 className="border rounded px-2 py-1 text-xs w-32"
@@ -700,7 +700,7 @@ export default function ArtworksPage() {
                             </td>
                             <td className="py-2 pr-3">
                               <div className="flex items-center gap-1">
-                                <span className="text-xs text-gray-400">€</span>
+                                <span className="text-xs text-faint">€</span>
                                 <input
                                   type="number"
                                   min="0"
@@ -763,7 +763,7 @@ export default function ArtworksPage() {
                                 <button
                                   onClick={() => saveVariant(v.id)}
                                   disabled={updateVariant.isPending}
-                                  className="text-xs bg-black text-white px-2 py-1 rounded disabled:opacity-50"
+                                  className="text-xs bg-ink text-paper px-2 py-1 rounded disabled:opacity-50"
                                 >
                                   Save
                                 </button>
@@ -776,11 +776,11 @@ export default function ArtworksPage() {
                               </div>
                             </td>
                           </tr>
-                          <tr className="border-b last:border-0 bg-blue-50">
+                          <tr className="border-b last:border-0 bg-accent-wash">
                             <td colSpan={5} className="py-2 px-3">
                               <div className="flex gap-3 items-center">
                                 <div>
-                                  <label className="block text-xs text-gray-500 mb-0.5">Medium</label>
+                                  <label className="block text-xs text-muted mb-0.5">Medium</label>
                                   <input
                                     className="border rounded px-2 py-1 text-xs w-40"
                                     value={ve.medium}
@@ -794,7 +794,7 @@ export default function ArtworksPage() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs text-gray-500 mb-0.5">Dimensions</label>
+                                  <label className="block text-xs text-muted mb-0.5">Dimensions</label>
                                   <input
                                     className="border rounded px-2 py-1 text-xs w-40"
                                     value={ve.dimensions}
@@ -815,13 +815,13 @@ export default function ArtworksPage() {
                       }
 
                       return (
-                        <tr key={v.id} className="border-b last:border-0 hover:bg-gray-50 group">
+                        <tr key={v.id} className="border-b last:border-0 hover:bg-hover group">
                           <td className="py-2 pr-3">{v.name}</td>
                           <td className="py-2 pr-3">€{Number(v.price).toLocaleString()}</td>
                           <td className="py-2 pr-3">
                             {v.stockQuantity}
                             {v.soldAt || (v.isOriginal && v.stockQuantity <= 0) ? (
-                              <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-800">Sold</span>
+                              <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-neg/10 text-neg">Sold</span>
                             ) : (
                               <WaitlistBadge variantId={v.id} />
                             )}
@@ -835,8 +835,8 @@ export default function ArtworksPage() {
                                 title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
                                 className={`px-2 py-0.5 rounded text-xs disabled:opacity-50 ${
                                   v.available
-                                    ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                    ? "bg-accent-wash text-accent hover:bg-accent/20"
+                                    : "bg-hair text-muted hover:bg-hover"
                                 }`}
                               >
                                 {v.available ? "Visible" : "Hidden"}
@@ -846,7 +846,7 @@ export default function ArtworksPage() {
                                 disabled={setVariantSold.isPending}
                                 title={v.soldAt ? "Marked sold — click to relist" : "Mark as sold"}
                                 className={`text-xs px-2 py-1 rounded ${
-                                  v.soldAt ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                  v.soldAt ? "bg-neg/10 text-neg hover:bg-neg/20" : "bg-wall text-muted hover:bg-hover"
                                 }`}
                               >
                                 {v.soldAt ? "Sold" : "Mark sold"}
@@ -871,14 +871,14 @@ export default function ArtworksPage() {
                                       print: { productVariantId: v.id },
                                     })
                                   }
-                                  className="text-xs border px-2 py-1 rounded hover:bg-gray-100"
+                                  className="text-xs border px-2 py-1 rounded hover:bg-hover"
                                 >
                                   Issue edition certificate
                                 </button>
                               )}
                               <button
                                 onClick={() => startEditVariant(v)}
-                                className="text-xs border px-2 py-1 rounded hover:bg-gray-100"
+                                className="text-xs border px-2 py-1 rounded hover:bg-hover"
                               >
                                 Edit
                               </button>
@@ -887,8 +887,8 @@ export default function ArtworksPage() {
                                 disabled={deleteVariant.isPending}
                                 className={`text-xs px-2 py-1 rounded disabled:opacity-50 ${
                                   confirmDelete === v.id
-                                    ? "bg-red-600 text-white"
-                                    : "border text-red-500 hover:bg-red-50"
+                                    ? "bg-neg text-paper"
+                                    : "border text-neg hover:bg-neg/10"
                                 }`}
                               >
                                 {confirmDelete === v.id ? "Confirm" : "Delete"}
@@ -915,9 +915,9 @@ export default function ArtworksPage() {
                     const ve = editingVariant[v.id];
                     if (ve) {
                       return (
-                        <div key={v.id} className="border rounded-lg p-3 bg-blue-50 space-y-2">
+                        <div key={v.id} className="border rounded-lg p-3 bg-accent-wash space-y-2">
                           <div>
-                            <label className="block text-xs text-gray-500 mb-0.5">Name</label>
+                            <label className="block text-xs text-muted mb-0.5">Name</label>
                             <input
                               className="border rounded px-2 py-1.5 text-sm w-full"
                               value={ve.name}
@@ -926,7 +926,7 @@ export default function ArtworksPage() {
                           </div>
                           <div className="flex gap-2">
                             <div className="flex-1">
-                              <label className="block text-xs text-gray-500 mb-0.5">Price (€)</label>
+                              <label className="block text-xs text-muted mb-0.5">Price (€)</label>
                               <input
                                 type="number" min="0" step="0.01"
                                 className="border rounded px-2 py-1.5 text-sm w-full"
@@ -935,7 +935,7 @@ export default function ArtworksPage() {
                               />
                             </div>
                             <div className="flex-1">
-                              <label className="block text-xs text-gray-500 mb-0.5">Stock</label>
+                              <label className="block text-xs text-muted mb-0.5">Stock</label>
                               <input
                                 type="number" min="0"
                                 className="border rounded px-2 py-1.5 text-sm w-full"
@@ -944,7 +944,7 @@ export default function ArtworksPage() {
                               />
                             </div>
                           </div>
-                          <label className="flex items-center gap-2 text-xs text-gray-600">
+                          <label className="flex items-center gap-2 text-xs text-muted">
                             <input
                               type="checkbox"
                               checked={ve.available}
@@ -966,7 +966,7 @@ export default function ArtworksPage() {
                             One-of-a-kind original
                           </label>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-0.5">Medium</label>
+                            <label className="block text-xs text-muted mb-0.5">Medium</label>
                             <input
                               className="border rounded px-2 py-1.5 text-sm w-full"
                               value={ve.medium}
@@ -975,7 +975,7 @@ export default function ArtworksPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-0.5">Dimensions</label>
+                            <label className="block text-xs text-muted mb-0.5">Dimensions</label>
                             <input
                               className="border rounded px-2 py-1.5 text-sm w-full"
                               value={ve.dimensions}
@@ -984,7 +984,7 @@ export default function ArtworksPage() {
                             />
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => saveVariant(v.id)} disabled={updateVariant.isPending} className="text-xs bg-black text-white px-3 py-2 rounded disabled:opacity-50">Save</button>
+                            <button onClick={() => saveVariant(v.id)} disabled={updateVariant.isPending} className="text-xs bg-ink text-paper px-3 py-2 rounded disabled:opacity-50">Save</button>
                             <button onClick={() => cancelEditVariant(v.id)} className="text-xs border px-3 py-2 rounded">Cancel</button>
                           </div>
                         </div>
@@ -1001,7 +1001,7 @@ export default function ArtworksPage() {
                               disabled={setVariantAvailable.isPending}
                               title={v.available ? "Visible to customers — click to hide" : "Hidden from customers — click to show"}
                               className={`px-2 py-1 rounded text-xs disabled:opacity-50 ${
-                                v.available ? "bg-green-100 text-green-800 hover:bg-green-200" : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                v.available ? "bg-accent-wash text-accent hover:bg-accent/20" : "bg-hair text-muted hover:bg-hover"
                               }`}
                             >
                               {v.available ? "Visible" : "Hidden"}
@@ -1011,19 +1011,19 @@ export default function ArtworksPage() {
                               disabled={setVariantSold.isPending}
                               title={v.soldAt ? "Marked sold — click to relist" : "Mark as sold"}
                               className={`text-xs px-2 py-1 rounded ${
-                                v.soldAt ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                v.soldAt ? "bg-neg/10 text-neg hover:bg-neg/20" : "bg-wall text-muted hover:bg-hover"
                               }`}
                             >
                               {v.soldAt ? "Sold" : "Mark sold"}
                             </button>
                           </div>
                         </div>
-                        <div className="flex justify-between text-sm text-gray-600">
+                        <div className="flex justify-between text-sm text-muted">
                           <span>€{Number(v.price).toLocaleString()}</span>
                           <span className="flex items-center">
                             Stock: {v.stockQuantity}
                             {v.soldAt || (v.isOriginal && v.stockQuantity <= 0) ? (
-                              <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-800">Sold</span>
+                              <span className="ml-1 text-xs px-1.5 py-0.5 rounded bg-neg/10 text-neg">Sold</span>
                             ) : (
                               <WaitlistBadge variantId={v.id} />
                             )}
@@ -1046,17 +1046,17 @@ export default function ArtworksPage() {
                                   print: { productVariantId: v.id },
                                 })
                               }
-                              className="text-xs border px-3 py-2 rounded hover:bg-gray-100"
+                              className="text-xs border px-3 py-2 rounded hover:bg-hover"
                             >
                               Issue edition certificate
                             </button>
                           )}
-                          <button onClick={() => startEditVariant(v)} className="text-xs border px-3 py-2 rounded hover:bg-gray-100">Edit</button>
+                          <button onClick={() => startEditVariant(v)} className="text-xs border px-3 py-2 rounded hover:bg-hover">Edit</button>
                           <button
                             onClick={() => handleDeleteVariant(v.id)}
                             disabled={deleteVariant.isPending}
                             className={`text-xs px-3 py-2 rounded disabled:opacity-50 ${
-                              confirmDelete === v.id ? "bg-red-600 text-white" : "border text-red-500 hover:bg-red-50"
+                              confirmDelete === v.id ? "bg-neg text-paper" : "border text-neg hover:bg-neg/10"
                             }`}
                           >
                             {confirmDelete === v.id ? "Confirm" : "Delete"}
@@ -1074,7 +1074,7 @@ export default function ArtworksPage() {
                 {newVariantForm && newVariantForm.productId === p.id ? (
                   <form onSubmit={submitNewVariant} className="flex gap-2 items-end mt-2 flex-wrap">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Name</label>
+                      <label className="block text-xs text-muted mb-1">Name</label>
                       <input
                         className="border px-2 py-1 rounded text-xs"
                         placeholder='e.g. "A3 print"'
@@ -1084,7 +1084,7 @@ export default function ArtworksPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Price (€)</label>
+                      <label className="block text-xs text-muted mb-1">Price (€)</label>
                       <input
                         type="number"
                         min="1"
@@ -1096,7 +1096,7 @@ export default function ArtworksPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Stock</label>
+                      <label className="block text-xs text-muted mb-1">Stock</label>
                       <input
                         type="number"
                         min="0"
@@ -1106,7 +1106,7 @@ export default function ArtworksPage() {
                         required
                       />
                     </div>
-                    <label className="flex items-center gap-1 text-xs text-gray-600 pb-1">
+                    <label className="flex items-center gap-1 text-xs text-muted pb-1">
                       <input
                         type="checkbox"
                         checked={newVariantForm.isOriginal}
@@ -1117,7 +1117,7 @@ export default function ArtworksPage() {
                     <button
                       type="submit"
                       disabled={createVariant.isPending}
-                      className="text-xs bg-black text-white px-3 py-1 rounded disabled:opacity-50"
+                      className="text-xs bg-ink text-paper px-3 py-1 rounded disabled:opacity-50"
                     >
                       Add
                     </button>
@@ -1134,7 +1134,7 @@ export default function ArtworksPage() {
                     onClick={() =>
                       setNewVariantForm({ productId: p.id, name: "", price: "150", stock: "1", isOriginal: false })
                     }
-                    className="text-xs text-gray-600 hover:underline"
+                    className="text-xs text-muted hover:underline"
                   >
                     + Add variant
                   </button>
@@ -1152,14 +1152,14 @@ export default function ArtworksPage() {
           {newProductForm?.artworkId === selectedKey ? (
             <form
               onSubmit={submitNewProduct}
-              className="bg-white border rounded-lg p-6 space-y-3"
+              className="bg-field border rounded-lg p-6 space-y-3"
             >
-              <p className="text-sm font-medium text-gray-700 mb-3">New product</p>
+              <p className="text-sm font-medium text-ink mb-3">New product</p>
               <div className="flex gap-3 flex-wrap">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Type</label>
+                  <label className="block text-xs text-muted mb-1">Type</label>
                   <select
-                    className="border px-2 py-1 rounded text-xs bg-white"
+                    className="border px-2 py-1 rounded text-xs bg-field"
                     value={newProductForm.productType}
                     onChange={(e) =>
                       setNewProductForm({ ...newProductForm, productType: e.target.value })
@@ -1173,7 +1173,7 @@ export default function ArtworksPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Name</label>
+                  <label className="block text-xs text-muted mb-1">Name</label>
                   <input
                     className="border px-2 py-1 rounded text-xs w-56"
                     placeholder='e.g. "Whispers — Giclée Print"'
@@ -1185,7 +1185,7 @@ export default function ArtworksPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Description</label>
+                  <label className="block text-xs text-muted mb-1">Description</label>
                   <input
                     className="border px-2 py-1 rounded text-xs w-56"
                     placeholder="Optional"
@@ -1200,7 +1200,7 @@ export default function ArtworksPage() {
                 <button
                   type="submit"
                   disabled={createProduct.isPending}
-                  className="text-xs bg-black text-white px-3 py-1.5 rounded disabled:opacity-50"
+                  className="text-xs bg-ink text-paper px-3 py-1.5 rounded disabled:opacity-50"
                 >
                   Create product
                 </button>
@@ -1223,7 +1223,7 @@ export default function ArtworksPage() {
                   description: "",
                 })
               }
-              className="text-sm border border-dashed border-gray-300 rounded-lg px-6 py-3 text-gray-500 hover:border-gray-400 hover:text-gray-700 w-full transition-colors"
+              className="text-sm border border-dashed border-hair rounded-lg px-6 py-3 text-muted hover:border-hair hover:text-ink w-full transition-colors"
             >
               + Add product to this artwork
             </button>
@@ -1234,25 +1234,25 @@ export default function ArtworksPage() {
       <div className="mt-10 border-t pt-6">
         <button
           onClick={() => setShowTrash((s) => !s)}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-muted hover:text-ink"
         >
           {showTrash ? "Hide trash" : "Show trash"}
         </button>
         {showTrash && (
           <div className="mt-4 space-y-2">
             {trashedList && trashedList.length === 0 && (
-              <p className="text-sm text-gray-400">Trash is empty.</p>
+              <p className="text-sm text-faint">Trash is empty.</p>
             )}
             {trashedList?.map((a) => (
-              <div key={a.id} className="flex items-center justify-between border rounded px-3 py-2 bg-gray-50">
+              <div key={a.id} className="flex items-center justify-between border rounded px-3 py-2 bg-paper">
                 <div className="text-sm">
-                  <span className="font-medium text-gray-700">{a.title}</span>
-                  <span className="ml-2 text-gray-400">/{a.slug}</span>
+                  <span className="font-medium text-ink">{a.title}</span>
+                  <span className="ml-2 text-faint">/{a.slug}</span>
                 </div>
                 <button
                   onClick={() => restore.mutate({ id: a.id })}
                   disabled={restore.isPending}
-                  className="text-sm px-3 py-1 rounded border text-green-700 hover:bg-green-50 disabled:opacity-50"
+                  className="text-sm px-3 py-1 rounded border text-accent hover:bg-accent-wash disabled:opacity-50"
                 >
                   Restore
                 </button>
@@ -1288,7 +1288,7 @@ function WaitlistBadge({ variantId }: { variantId: string }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 px-2 py-0.5 rounded"
+        className="text-xs bg-wall text-ink hover:bg-hover px-2 py-0.5 rounded"
         title="Show waitlist subscribers"
       >
         {data.count} waiting
@@ -1300,21 +1300,21 @@ function WaitlistBadge({ variantId }: { variantId: string }) {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute z-20 left-0 sm:left-auto sm:right-0 mt-1 w-64 sm:w-72 max-w-[calc(100vw-3rem)] bg-white border rounded-lg shadow-lg p-3 text-left">
+          <div className="absolute z-20 left-0 sm:left-auto sm:right-0 mt-1 w-64 sm:w-72 max-w-[calc(100vw-3rem)] bg-field border rounded-lg shadow-lg p-3 text-left">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-gray-700">Waitlist</p>
+              <p className="text-xs font-medium text-ink">Waitlist</p>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-xs text-gray-400 hover:text-gray-700"
+                className="text-xs text-faint hover:text-ink"
                 aria-label="Close"
               >
                 ✕
               </button>
             </div>
-            {list.isLoading && <p className="text-xs text-gray-400">Loading…</p>}
+            {list.isLoading && <p className="text-xs text-faint">Loading…</p>}
             {!list.isLoading && (list.data?.length ?? 0) === 0 && (
-              <p className="text-xs text-gray-400">No subscribers.</p>
+              <p className="text-xs text-faint">No subscribers.</p>
             )}
             {!list.isLoading && (list.data?.length ?? 0) > 0 && (
               <ul className="max-h-64 overflow-y-auto space-y-1">
@@ -1322,11 +1322,11 @@ function WaitlistBadge({ variantId }: { variantId: string }) {
                   <li key={row.id} className="flex items-center justify-between gap-2 text-xs">
                     <span className="truncate" title={row.email}>{row.email}</span>
                     {row.notifiedAt ? (
-                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-gray-400">
+                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-faint">
                         notified
                       </span>
                     ) : (
-                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-amber-600">
+                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-warn">
                         waiting
                       </span>
                     )}

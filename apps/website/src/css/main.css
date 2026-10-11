@@ -4,7 +4,12 @@
 
 @layer base {
     body {
-        @apply text-base;
+        @apply text-base bg-paper text-ink;
+    }
+    input,
+    textarea,
+    select {
+        @apply bg-field placeholder:text-faint;
     }
     h1,
     .h1,
@@ -25,14 +30,14 @@
     .sb-markdown {
         @apply leading-relaxed;
         a {
-            @apply underline transition duration-200 ease-in;
+            @apply underline transition;
         }
         a:hover {
             @apply text-primary;
         }
         b,
         strong {
-            @apply font-bold;
+            @apply font-semibold;
         }
         em {
             @apply italic;
@@ -123,12 +128,12 @@
 
     /* Buttons */
     .sb-component-button {
-        @apply inline-flex justify-center items-center text-center border transition duration-200 ease-in;
+        @apply inline-flex justify-center items-center text-center border transition;
     }
 
     /* Links */
     .sb-component-link {
-        @apply inline-flex justify-center items-center text-center transition duration-200 ease-linear;
+        @apply inline-flex justify-center items-center text-center transition;
     }
     .sb-component-link-primary {
         @apply text-primary hover:underline;
@@ -195,7 +200,7 @@
         }
         .sb-divider,
         .sb-footer-bottom {
-            @apply border-neutral;
+            @apply border-hair;
         }
         .sb-carousel-prev,
         .sb-carousel-next {

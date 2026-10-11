@@ -35,7 +35,7 @@ export default function CertificateSettingsPage() {
     }
   }, [data]);
 
-  if (isLoading) return <div className="p-6 text-sm text-gray-500">Loading…</div>;
+  if (isLoading) return <div className="p-6 text-sm text-muted">Loading…</div>;
 
   const field = (key: keyof typeof form) => ({
     value: form[key],
@@ -58,7 +58,7 @@ export default function CertificateSettingsPage() {
       </label>
       <label className="block text-sm">Authenticity statement
         <textarea className="mt-1 w-full border rounded px-2 py-1" rows={4} {...field("statementTemplate")} />
-        <span className="text-xs text-gray-500">Tokens: {"{title}"}, {"{edition}"}, {"{year}"}, {"{medium}"}.</span>
+        <span className="text-xs text-muted">Tokens: {"{title}"}, {"{edition}"}, {"{year}"}, {"{medium}"}.</span>
       </label>
       <label className="block text-sm">Copyright line
         <input className="mt-1 w-full border rounded px-2 py-1" {...field("copyrightLine")} />
@@ -70,9 +70,9 @@ export default function CertificateSettingsPage() {
         <input className="mt-1 w-full border rounded px-2 py-1" {...field("signatureLabel")} />
       </label>
 
-      <div className="sticky bottom-0 -mx-6 border-t bg-white px-6 py-3">
+      <div className="sticky bottom-0 -mx-6 border-t bg-field px-6 py-3">
         <button
-          className="w-full rounded bg-black px-5 py-3 text-sm text-white disabled:opacity-50 sm:w-auto"
+          className="w-full rounded bg-ink px-5 py-3 text-sm text-paper disabled:opacity-50 sm:w-auto"
           disabled={update.isPending}
           onClick={() => update.mutate(form)}
         >

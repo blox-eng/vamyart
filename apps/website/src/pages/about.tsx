@@ -32,7 +32,7 @@ export default function About({ site }: { site: any }) {
                 <div className="sb-base sb-default-base-layout">
                     {site?.header && <Header {...site.header} />}
 
-                    <main className="min-h-screen bg-white">
+                    <main className="min-h-screen bg-paper">
                         <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
                             <div className="grid gap-10 sm:gap-14 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-start">
                                 {/* Portrait — Maeve at work in the studio */}
@@ -41,7 +41,7 @@ export default function About({ site }: { site: any }) {
                                     alt="Maeve Vamy painting at her easel in her studio"
                                     width={1920}
                                     height={2560}
-                                    className="w-full max-w-sm mx-auto md:max-w-none rounded-sm object-cover"
+                                    className="w-full max-w-sm mx-auto md:max-w-none object-cover"
                                     loading="eager"
                                 />
 
@@ -51,7 +51,7 @@ export default function About({ site }: { site: any }) {
                                     <section className="mb-14">
                                         <h1 className="text-3xl font-light mb-8">Maeve Vamy</h1>
 
-                                        <div className="space-y-5 text-gray-600 leading-relaxed">
+                                        <div className="space-y-5 text-muted leading-relaxed">
                                             <p>
                                                 Maeve Vamy is a Bulgarian fine artist. She works between realism and
                                                 abstraction, painting from direct observation in her studio in Stara
@@ -66,14 +66,14 @@ export default function About({ site }: { site: any }) {
 
                                     {/* Artist statement */}
                                     <section>
-                                        <h2 className="text-xs uppercase tracking-widest text-gray-400 mb-6">Artist statement</h2>
-                                        <blockquote className="border-l-2 border-gray-300 pl-6">
-                                            <p className="italic text-gray-600 leading-relaxed">
+                                        <h2 className="text-xs uppercase tracking-widest text-faint mb-6">Artist statement</h2>
+                                        <blockquote className="border-l-2 border-hair pl-6">
+                                            <p className="italic text-muted leading-relaxed">
                                                 "I paint because looking isn't enough. A painting captures what a
                                                 moment felt like — the mess, the slowness, the refusal to be rushed.
                                                 That's the point."
                                             </p>
-                                            <footer className="mt-4 text-sm text-gray-400">— Maeve Vamy</footer>
+                                            <footer className="mt-4 text-sm text-faint">— Maeve Vamy</footer>
                                         </blockquote>
                                     </section>
                                 </div>

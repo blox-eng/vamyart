@@ -11,44 +11,44 @@ export default function Welcome() {
                 <meta name="robots" content="noindex" />
             </Head>
 
-            <main className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-6 py-24">
+            <main className="min-h-screen bg-paper text-ink flex items-center justify-center px-6 py-24">
                 <div className="max-w-[520px] w-full text-center font-serif">
                     <h1
                         className="text-4xl font-light mb-12 opacity-0"
-                        style={{ animation: 'letters-fade-in 1200ms ease-out 200ms forwards' }}
+                        style={{ animation: 'letters-fade-in 1200ms 200ms forwards' }}
                     >
                         You&rsquo;re in.
                     </h1>
 
                     <p
-                        className="text-lg leading-relaxed text-gray-700 mb-16 opacity-0"
-                        style={{ animation: 'letters-fade-in 1200ms ease-out 1000ms forwards' }}
+                        className="text-lg leading-relaxed text-ink mb-16 opacity-0"
+                        style={{ animation: 'letters-fade-in 1200ms 1000ms forwards' }}
                     >
                         {TEASER}
                     </p>
 
                     <p
-                        className="text-base text-gray-600 mb-2 opacity-0"
-                        style={{ animation: 'letters-fade-in 1200ms ease-out 1800ms forwards' }}
+                        className="text-base text-muted mb-2 opacity-0"
+                        style={{ animation: 'letters-fade-in 1200ms 1800ms forwards' }}
                     >
                         &mdash; Maeve
                     </p>
 
                     <p
-                        className="text-sm text-gray-500 mb-16 opacity-0"
-                        style={{ animation: 'letters-fade-in 1200ms ease-out 2400ms forwards' }}
+                        className="text-sm text-muted mb-16 opacity-0"
+                        style={{ animation: 'letters-fade-in 1200ms 2400ms forwards' }}
                     >
                         vamy.art
                     </p>
 
                     <div
-                        className="flex flex-col gap-3 text-sm text-gray-500 opacity-0"
-                        style={{ animation: 'letters-fade-in 1200ms ease-out 3200ms forwards' }}
+                        className="flex flex-col gap-3 text-sm text-muted opacity-0"
+                        style={{ animation: 'letters-fade-in 1200ms 3200ms forwards' }}
                     >
-                        <Link href="/gallery" className="hover:text-gray-900 transition-colors">
+                        <Link href="/gallery" className="hover:text-ink transition-colors">
                             &rarr; see the gallery
                         </Link>
-                        <Link href="/" className="hover:text-gray-900 transition-colors">
+                        <Link href="/" className="hover:text-ink transition-colors">
                             &rarr; back to vamy.art
                         </Link>
                     </div>

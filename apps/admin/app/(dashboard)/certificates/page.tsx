@@ -37,14 +37,14 @@ export default function CertificatesPage() {
       </div>
 
       {!data?.length ? (
-        <p className="text-sm text-gray-500">No certificates issued yet. Issue one from a piece on the Pieces page.</p>
+        <p className="text-sm text-muted">No certificates issued yet. Issue one from a piece on the Pieces page.</p>
       ) : (
         <>
           {/* Desktop: table */}
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500 border-b">
+                <tr className="text-left text-muted border-b">
                   <th className="py-2">Number</th>
                   <th>Piece</th>
                   <th>Kind</th>
@@ -83,10 +83,10 @@ export default function CertificatesPage() {
                 <div key={row.id} className="rounded-lg border p-4">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="font-medium">{row.certNumber}</span>
-                    <span className="text-xs text-gray-500">{snap.issuedDateText}</span>
+                    <span className="text-xs text-muted">{snap.issuedDateText}</span>
                   </div>
                   <p className="mt-1 text-sm">{snap.title}</p>
-                  <p className="mt-0.5 text-xs text-gray-500">
+                  <p className="mt-0.5 text-xs text-muted">
                     {row.kind}
                     {snap.editionLabel ? ` · ${snap.editionLabel}` : ""}
                     {row.buyerName ? ` · ${row.buyerName}` : ""}

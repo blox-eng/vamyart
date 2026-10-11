@@ -41,7 +41,7 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
                 'sb-component-button sb-component-button-secondary',
                 // min-h-[44px] + inline-flex centering keeps the tap target at
                 // Apple's 44px minimum on touch without changing the pill look.
-                'px-5 py-2.5 min-h-[44px] inline-flex items-center text-sm rounded-full transition-colors duration-200',
+                'px-5 py-2.5 min-h-[44px] inline-flex items-center text-sm rounded-xs transition-colors duration-standard',
                 { 'bg-dark text-light border-dark': active }
             )}
         >

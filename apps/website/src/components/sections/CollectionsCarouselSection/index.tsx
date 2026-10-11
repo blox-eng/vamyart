@@ -66,17 +66,17 @@ export default function CollectionsCarouselSection(props) {
                         {collections.map((c) => (
                             <SwiperSlide key={c.slug}>
                                 <Link href={`/gallery/collections/${c.slug}`} className="group block pb-10">
-                                    <div className="relative w-full overflow-hidden rounded-lg" style={{ aspectRatio: '3 / 2' }}>
+                                    <div className="relative w-full overflow-hidden" style={{ aspectRatio: '3 / 2' }}>
                                         {c.coverUrl ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
                                                 src={c.coverUrl}
                                                 alt={c.title}
                                                 loading="lazy"
-                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-reveal group-hover:scale-105"
                                             />
                                         ) : (
-                                            <div className="absolute inset-0 bg-neutral-200" />
+                                            <div className="absolute inset-0 bg-wall" />
                                         )}
                                     </div>
                                     <div className="mt-3">

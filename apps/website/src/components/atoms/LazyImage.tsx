@@ -37,7 +37,7 @@ export default function LazyImage({ src, alt, className, imgClassName, loading =
     const srcSet = netlifyImageSrcSet(resolvedSrc, widths) || undefined;
 
     return (
-        <div className={classNames('relative bg-gray-100 overflow-hidden', className)} {...rest}>
+        <div className={classNames('relative bg-wall overflow-hidden', className)} {...rest}>
             <img
                 ref={imgRef}
                 src={optimizedSrc}
@@ -49,7 +49,7 @@ export default function LazyImage({ src, alt, className, imgClassName, loading =
                 onLoad={() => { setLoaded(true); onLoad?.(); }}
                 onError={() => { if (!errored) setErrored(true); }}
                 className={classNames(
-                    'w-full h-full transition-opacity duration-300',
+                    'w-full h-full transition-opacity duration-deliberate',
                     loaded ? 'opacity-100' : 'opacity-0',
                     imgClassName,
                 )}

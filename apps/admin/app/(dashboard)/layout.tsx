@@ -72,7 +72,7 @@ export default function DashboardLayout({
       <div className="p-6 border-b">
         <div className="flex items-center gap-3">
           <img src="/vamy-black.png" alt="vamy" className="h-6 w-auto" />
-          <span className="text-sm font-light tracking-widest text-gray-500">studio</span>
+          <span className="text-sm font-light tracking-widest text-muted">studio</span>
         </div>
       </div>
       <nav className="flex-1 p-3 space-y-1" aria-label="Main navigation">
@@ -82,8 +82,8 @@ export default function DashboardLayout({
             href={href}
             className={`flex items-center gap-3 px-3 py-3 rounded text-sm transition-colors ${
               pathname.startsWith(href)
-                ? "bg-black text-white"
-                : "text-gray-600 hover:bg-gray-100"
+                ? "bg-ink text-paper"
+                : "text-muted hover:bg-hover"
             }`}
           >
             <Icon size={16} aria-hidden />
@@ -94,7 +94,7 @@ export default function DashboardLayout({
       <div className="p-3 border-t">
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-3 rounded text-sm text-gray-600 hover:bg-gray-100 w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-3 rounded text-sm text-muted hover:bg-hover w-full transition-colors"
         >
           <LogOut size={16} aria-hidden />
           Sign out
@@ -106,16 +106,16 @@ export default function DashboardLayout({
   return (
     <ToastProvider>
       <WelcomeToast />
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen bg-paper">
         {/* Desktop sidebar */}
-        <aside className="hidden lg:flex w-56 bg-white border-r flex-col shrink-0">
+        <aside className="hidden lg:flex w-56 bg-field border-r flex-col shrink-0">
           {SidebarBody}
         </aside>
 
         {/* Mobile drawer + backdrop */}
         {drawerOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-40 bg-ink/40 lg:hidden"
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
@@ -124,14 +124,14 @@ export default function DashboardLayout({
           ref={drawerRef}
           tabIndex={-1}
           inert={!drawerOpen ? true : undefined}
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col shrink-0 transition-transform duration-200 lg:hidden ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-field border-r flex flex-col shrink-0 transition-transform duration-standard lg:hidden ${
             drawerOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           aria-hidden={!drawerOpen}
         >
           <button
             onClick={() => setDrawerOpen(false)}
-            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700"
+            className="absolute top-4 right-4 p-2 text-faint hover:text-ink"
             aria-label="Close menu"
           >
             <X size={20} />
@@ -142,16 +142,16 @@ export default function DashboardLayout({
         {/* Main column */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Mobile top bar */}
-          <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 bg-white border-b px-4 h-14 shrink-0">
+          <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 bg-field border-b px-4 h-14 shrink-0">
             <button
               onClick={() => setDrawerOpen(true)}
-              className="p-2 -ml-2 text-gray-600 hover:text-black"
+              className="p-2 -ml-2 text-muted hover:text-ink"
               aria-label="Open menu"
             >
               <Menu size={22} />
             </button>
             <img src="/vamy-black.png" alt="vamy" className="h-5 w-auto" />
-            <span className="text-xs font-light tracking-widest text-gray-500">studio</span>
+            <span className="text-xs font-light tracking-widest text-muted">studio</span>
           </header>
           <main className="flex-1 overflow-y-auto">{children}</main>
         </div>

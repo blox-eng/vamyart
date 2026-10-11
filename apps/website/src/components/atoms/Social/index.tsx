@@ -22,8 +22,8 @@ export default function Social(props) {
                 'items-center',
                 'justify-center',
                 'transition',
-                'duration-200',
-                'ease-in',
+                'duration-standard',
+                '',
                 'hover:-translate-y-1',
                 className
             )}
