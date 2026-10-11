@@ -4,7 +4,8 @@
   "private": true,
   "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/styles/tokens.css"
   },
   "scripts": {
     "lint": "tsc --noEmit"

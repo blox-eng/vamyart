@@ -9,6 +9,10 @@ A Next.js monorepo with two deployable apps:
 - **`apps/website`** — public-facing artist site (gallery, auctions, shop, contact)
 - **`apps/admin`** — Maeve's private admin panel (artworks, orders, bids, inquiries)
 
+## Design
+
+**Read [`DESIGN.md`](DESIGN.md) before any UI work** — colour, type, spacing, radius, motion, states and copy rules for both apps. Tokens live in `packages/ui/src/styles/tokens.css` (import as `@vamy/ui/tokens.css`).
+
 ## Tech Stack
 
 | Layer | Choice |
