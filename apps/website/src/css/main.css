@@ -464,8 +464,13 @@
     color: var(--muted);
     transition: color var(--dur-micro) var(--ease);
 }
-.landing-arrows button:hover {
+.landing-arrows button:hover,
+.landing-arrows button:focus-visible {
     color: var(--text);
+}
+.landing-arrows button:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: -4px;
 }
 @media (min-width: 640px) {
     .landing-strip,

@@ -102,13 +102,8 @@ export async function getStaticProps({ params }) {
         const page = props.page;
         const sections = page.sections ?? [];
         const landing = sections.find((s) => s?.elementId === 'landing');
-        let pieces = [];
-        try {
-            pieces = await serverTrpc.gallery.landing();
-        } catch (err) {
-            // DB unavailable: the slider still renders its last frame.
-            console.error('[home] gallery.landing failed', err);
-        }
+        // No try: if the DB is down, ISR keeps serving the last good page (a build fails loudly).
+        const pieces = await serverTrpc.gallery.landing();
         if (landing) landing.pieces = pieces;
         page.hideFooter = true;
         // The slider renders the page's only h1 ("Maeve Vamy"); drop the layout's sr-only "Home".
