@@ -30,11 +30,26 @@ describe("collections.onLanding", () => {
 });
 
 describe("collections.list pieceCount", () => {
-  it("counts assigned pieces", async () => {
+  it("counts assigned pieces, excluding soft-deleted ones", async () => {
     const c = await caller.collections.create({ title: `count-${suffix}` });
     collIds.push(c.id);
-    const listed = (await caller.collections.list()).find((x) => x.id === c.id);
-    expect(listed?.pieceCount).toBe(0);
+    const listed0 = (await caller.collections.list()).find((x) => x.id === c.id);
+    expect(listed0?.pieceCount).toBe(0);
+
+    const a1 = await caller.artworks.create({ title: `cnt-a-${suffix}` });
+    const a2 = await caller.artworks.create({ title: `cnt-b-${suffix}` });
+    try {
+      await caller.collections.setPieces({ collectionId: c.id, artworkIds: [a1.id, a2.id] });
+      const two = (await caller.collections.list()).find((x) => x.id === c.id);
+      expect(two?.pieceCount).toBe(2);
+
+      await caller.artworks.delete({ id: a2.id });
+      const one = (await caller.collections.list()).find((x) => x.id === c.id);
+      expect(one?.pieceCount).toBe(1);
+      expect(await caller.collections.getPieceIds({ collectionId: c.id })).toEqual([a1.id]);
+    } finally {
+      await db.delete(artworks).where(inArray(artworks.id, [a1.id, a2.id]));
+    }
   });
 });
 

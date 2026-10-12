@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { eq, and, ne, sql } from "drizzle-orm";
+import { eq, and, ne, sql, isNull, asc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createClient } from "@supabase/supabase-js";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { collections, artworkCollections } from "../../schema";
+import { collections, artworkCollections, artworks } from "../../schema";
 import { slugify } from "./artworks";
 import { extForContentType } from "./artworkImages";
 
@@ -47,8 +47,8 @@ export const collectionsRouter = router({
     return db.query.collections.findMany({
       where: (c, { isNull }) => isNull(c.deletedAt),
       orderBy: (c, { asc }) => [asc(c.sortOrder), asc(c.title)],
-      extras: (c) => ({
-        pieceCount: sql<number>`(select count(*)::int from ${artworkCollections} ac where ac.collection_id = ${c.id})`.as("piece_count"),
+      extras: () => ({
+        pieceCount: sql<number>`(select count(*)::int from ${artworkCollections} ac join ${artworks} a on a.id = ac.artwork_id where ac.collection_id = "collections"."id" and a.deleted_at is null)`.as("piece_count"),
       }),
     });
   }),
@@ -150,10 +150,12 @@ export const collectionsRouter = router({
   getPieceIds: protectedProcedure
     .input(z.object({ collectionId: z.string().uuid() }))
     .query(async ({ input }) => {
-      const rows = await db.query.artworkCollections.findMany({
-        where: (ac, { eq }) => eq(ac.collectionId, input.collectionId),
-        orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-      });
+      const rows = await db
+        .select({ artworkId: artworkCollections.artworkId })
+        .from(artworkCollections)
+        .innerJoin(artworks, eq(artworks.id, artworkCollections.artworkId))
+        .where(and(eq(artworkCollections.collectionId, input.collectionId), isNull(artworks.deletedAt)))
+        .orderBy(asc(artworkCollections.sortOrder));
       return rows.map((r) => r.artworkId);
     }),
 
