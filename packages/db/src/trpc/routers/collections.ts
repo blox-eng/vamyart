@@ -2,7 +2,7 @@ import { z } from "zod";
 import { eq, and, ne, sql, isNull, asc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createClient } from "@supabase/supabase-js";
-import { router, publicProcedure, protectedProcedure } from "../index";
+import { router, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { collections, artworkCollections, artworks } from "../../schema";
 import { slugify } from "./artworks";
@@ -188,72 +188,5 @@ export const collectionsRouter = router({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error?.message ?? "Could not create upload URL" });
       }
       return { path: data.path, token: data.token };
-    }),
-
-  // ── Public reads ─────────────────────────────────────────────────────────────
-  listPublic: publicProcedure.query(async () => {
-    const rows = await db.query.collections.findMany({
-      where: (c, { eq, and, isNull }) => and(eq(c.published, true), isNull(c.deletedAt)),
-      orderBy: (c, { asc }) => [asc(c.sortOrder), asc(c.title)],
-      with: {
-        pieces: {
-          orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-          with: { artwork: { with: { images: { orderBy: (i, { asc }) => [asc(i.sortOrder)] } } } },
-        },
-      },
-    });
-    return rows.map((c) => {
-      const visiblePieces = c.pieces
-        .map((p) => p.artwork)
-        .filter((a) => a.published && !a.deletedAt);
-      const first = visiblePieces[0];
-      const firstImg = first ? first.images.find((i) => i.isPrimary) ?? first.images[0] ?? null : null;
-      return {
-        id: c.id,
-        slug: c.slug,
-        title: c.title,
-        description: c.description,
-        pieceCount: visiblePieces.length,
-        coverUrl: collectionCoverUrl(c.coverImagePath, firstImg?.storagePath ?? null),
-      };
-    });
-  }),
-
-  getBySlug: publicProcedure
-    .input(z.object({ slug: z.string().min(1) }))
-    .query(async ({ input }) => {
-      const c = await db.query.collections.findFirst({
-        where: (col, { eq }) => eq(col.slug, input.slug),
-        with: {
-          pieces: {
-            orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-            with: { artwork: { with: { images: { orderBy: (i, { asc }) => [asc(i.sortOrder)] } } } },
-          },
-        },
-      });
-      if (!c || !c.published || c.deletedAt) return null;
-      const pieces = c.pieces
-        .map((p) => p.artwork)
-        .filter((a) => a.published && !a.deletedAt)
-        .map((a) => {
-          const primary = a.images.find((i) => i.isPrimary) ?? a.images[0] ?? null;
-          return {
-            slug: a.slug,
-            title: a.title,
-            excerpt: a.excerpt,
-            primaryImage: primary
-              ? { url: collectionCoverUrl(primary.storagePath, null), altText: primary.altText ?? a.title }
-              : null,
-          };
-        });
-      return {
-        slug: c.slug,
-        title: c.title,
-        description: c.description,
-        seoTitle: c.seoTitle,
-        seoDescription: c.seoDescription,
-        coverUrl: c.coverImagePath ? collectionCoverUrl(c.coverImagePath, null) : pieces[0]?.primaryImage?.url ?? null,
-        pieces,
-      };
     }),
 });
