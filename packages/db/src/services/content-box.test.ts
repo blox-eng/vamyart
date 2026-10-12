@@ -5,6 +5,13 @@ function canvas(width: number, height: number, fill: number): Uint8Array {
   return new Uint8Array(width * height).fill(fill);
 }
 
+function noise(seed: number) {
+  return () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
+}
+
 function rect(gray: Uint8Array, width: number, x0: number, y0: number, w: number, h: number, value: number) {
   for (let y = y0; y < y0 + h; y++) gray.fill(value, y * width + x0, y * width + x0 + w);
 }
@@ -33,6 +40,30 @@ describe("findContentBox", () => {
     rect(gray, 100, 19, 29, 62, 42, 150);
     rect(gray, 100, 20, 30, 60, 40, 40);
     expect(findContentBox(gray, 100, 100)).toEqual({ left: 20, top: 30, width: 60, height: 40 });
+  });
+
+  it("ignores a faint shadow just outside the edge", () => {
+    const gray = canvas(100, 100, 255);
+    rect(gray, 100, 20, 70, 60, 3, 249);
+    rect(gray, 100, 20, 30, 60, 40, 40);
+    expect(findContentBox(gray, 100, 100)).toEqual({ left: 20, top: 30, width: 60, height: 40 });
+  });
+
+  it("keeps a pale sky that runs to the canvas edge", () => {
+    const gray = canvas(100, 100, 255);
+    const rand = noise(3);
+    for (let y = 12; y < 37; y++) {
+      for (let x = 10; x < 90; x++) gray[y * 100 + x] = 246 + Math.round((4 * (y - 12)) / 25 + rand() * 2);
+    }
+    rect(gray, 100, 10, 37, 80, 51, 60);
+    expect(findContentBox(gray, 100, 100)).toBeNull();
+  });
+
+  it("leaves a white-on-white painting with a dark mark alone", () => {
+    const rand = noise(11);
+    const gray = new Uint8Array(100 * 100).map(() => 232 + Math.round(rand() * 23));
+    rect(gray, 100, 25, 25, 50, 50, 50);
+    expect(findContentBox(gray, 100, 100)).toBeNull();
   });
 
   it("leaves an already tight image alone", () => {

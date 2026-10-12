@@ -1,7 +1,9 @@
 // Finds the painting inside a photo of a canvas shot on white with a soft drop
 // shadow. The canvas edge is a sharp luminance step; the shadow is a smooth
 // gradient, so from each side we skip the white, then take the outermost strong
-// step as the edge and settle inward past any blurred/halo pixels.
+// step as the edge and settle inward past any blurred/halo pixels. Every cut
+// margin must then prove to be flat background (a pale sky or a white-on-white
+// field reaching the canvas edge is not), or nothing is trimmed.
 // Pure and dependency-free: runs in the studio (browser) and in node scripts.
 
 export type ContentBox = { left: number; top: number; width: number; height: number };
@@ -12,11 +14,15 @@ const MIN_BACKGROUND = 200;
 const MAX_CORNER_SPREAD = 30;
 const BACKGROUND_TOLERANCE = 10;
 const EDGE_BAND = 0.12;
-const MIN_STEP = 12;
+const MIN_STEP = 20;
 const SETTLE_TOLERANCE = 4;
 const MAX_SETTLE = 0.015;
 const MAX_SIDE_SHIFT = 0.4;
 const MIN_AREA = 0.2;
+// Next to the edge the drop shadow lives; it is left out of the margin check.
+const SHADOW_BAND = 0.05;
+const MARGIN_TOLERANCE = 4;
+const MAX_MARGIN_STD = 3;
 
 function patchMean(gray: ArrayLike<number>, width: number, x0: number, y0: number, size: number): number {
   let sum = 0;
@@ -50,13 +56,16 @@ function rowProfile(gray: ArrayLike<number>, width: number, height: number): Flo
   return out;
 }
 
-// Number of samples to drop from the start of `profile` (walking inward), or
-// null when no clear canvas edge is found.
-function edgeOffset(profile: ArrayLike<number>, background: number): number | null {
+type Edge = { offset: number; marginEnd: number };
+
+// From the start of `profile` (walking inward): `offset` samples to drop, and
+// `marginEnd`, where the white margin stops and the shadow/edge band begins.
+// Null when no clear canvas edge is found.
+function findEdge(profile: ArrayLike<number>, background: number): Edge | null {
   const n = profile.length;
   let start = 0;
   while (start < n && profile[start] >= background - BACKGROUND_TOLERANCE) start++;
-  if (start === 0) return 0;
+  if (start === 0) return { offset: 0, marginEnd: 0 };
   if (start > n * MAX_SIDE_SHIFT) return null;
 
   const end = Math.min(n - 1, start + Math.ceil(n * EDGE_BAND));
@@ -76,7 +85,38 @@ function edgeOffset(profile: ArrayLike<number>, background: number): number | nu
   ) {
     settled++;
   }
-  return settled;
+  return { offset: settled, marginEnd: Math.max(0, start - Math.ceil(n * SHADOW_BAND)) };
+}
+
+// Pixel standard deviation over a rectangle (x1/y1 exclusive).
+function regionStd(gray: ArrayLike<number>, width: number, x0: number, x1: number, y0: number, y1: number): number {
+  let sum = 0;
+  let sumSq = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const v = gray[y * width + x];
+      sum += v;
+      sumSq += v * v;
+    }
+  }
+  const count = (x1 - x0) * (y1 - y0);
+  const mean = sum / count;
+  return Math.sqrt(Math.max(0, sumSq / count - mean * mean));
+}
+
+// The cut margin (outermost line skipped for JPEG border ringing, shadow band
+// excluded) must be flat and at background level along its whole run.
+function marginIsBackground(
+  profile: ArrayLike<number>,
+  marginEnd: number,
+  background: number,
+  std: (from: number, to: number) => number
+): boolean {
+  if (marginEnd <= 1) return true;
+  for (let i = 1; i < marginEnd; i++) {
+    if (Math.abs(profile[i] - background) > MARGIN_TOLERANCE) return false;
+  }
+  return std(1, marginEnd) <= MAX_MARGIN_STD;
 }
 
 export function findContentBox(
@@ -100,11 +140,33 @@ export function findContentBox(
 
   const cols = columnProfile(gray, width, height);
   const rows = rowProfile(gray, width, height);
-  const left = edgeOffset(cols, background);
-  const right = edgeOffset(Array.from(cols).reverse(), background);
-  const top = edgeOffset(rows, background);
-  const bottom = edgeOffset(Array.from(rows).reverse(), background);
-  if (left === null || right === null || top === null || bottom === null) return null;
+  const reversedCols = Array.from(cols).reverse();
+  const reversedRows = Array.from(rows).reverse();
+  const leftEdge = findEdge(cols, background);
+  const rightEdge = findEdge(reversedCols, background);
+  const topEdge = findEdge(rows, background);
+  const bottomEdge = findEdge(reversedRows, background);
+  if (!leftEdge || !rightEdge || !topEdge || !bottomEdge) return null;
+
+  const x0 = Math.floor(width * 0.2);
+  const x1 = Math.max(x0 + 1, Math.ceil(width * 0.8));
+  const y0 = Math.floor(height * 0.2);
+  const y1 = Math.max(y0 + 1, Math.ceil(height * 0.8));
+  const flat =
+    marginIsBackground(cols, leftEdge.marginEnd, background, (a, b) => regionStd(gray, width, a, b, y0, y1)) &&
+    marginIsBackground(reversedCols, rightEdge.marginEnd, background, (a, b) =>
+      regionStd(gray, width, width - b, width - a, y0, y1)
+    ) &&
+    marginIsBackground(rows, topEdge.marginEnd, background, (a, b) => regionStd(gray, width, x0, x1, a, b)) &&
+    marginIsBackground(reversedRows, bottomEdge.marginEnd, background, (a, b) =>
+      regionStd(gray, width, x0, x1, height - b, height - a)
+    );
+  if (!flat) return null;
+
+  const left = leftEdge.offset;
+  const right = rightEdge.offset;
+  const top = topEdge.offset;
+  const bottom = bottomEdge.offset;
 
   if (Math.max(left, right) > width * MAX_SIDE_SHIFT) return null;
   if (Math.max(top, bottom) > height * MAX_SIDE_SHIFT) return null;
