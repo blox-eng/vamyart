@@ -334,22 +334,45 @@
     }
 }
 
-/* Landing slider: one sideways strip of the work on a white wall (#44). */
-.landing {
-    --landing-h: calc(78svh - var(--header-h, 72px));
+/* Landing slider: one sideways strip of the work filling the screen on a white
+   wall, at every width (#44). The page is exactly one screen tall. */
+:root {
+    --landing-header-h: 56px;
+    --landing-gutter: 16px;
+}
+@media (min-width: 640px) {
+    :root {
+        --landing-header-h: 64px;
+        --landing-gutter: 32px;
+    }
+}
+.landing-header {
+    height: var(--landing-header-h);
+    padding-inline: var(--landing-gutter);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: calc(100svh - var(--header-h, 72px));
-    padding-block: 24px;
+    align-items: center;
+}
+.landing-header > div {
+    width: 100%;
+}
+.landing {
+    /* --landing-top is measured by the slider (header + banner); the header is the no-JS default. */
+    --landing-gap: 12px;
+    --landing-caption-h: 56px;
+    --landing-bottom: 12px;
+    --landing-h: calc(100svh - var(--landing-top, var(--landing-header-h)) - var(--landing-gap) - var(--landing-caption-h) - var(--landing-bottom));
+    box-sizing: border-box;
+    height: calc(100svh - var(--landing-top, var(--landing-header-h)));
+    padding-top: var(--landing-gap);
     background: var(--bg);
 }
 .landing-strip {
     overflow-x: auto;
     overflow-y: hidden;
-    padding-inline: 16px;
+    padding-inline: var(--landing-gutter);
     scrollbar-width: none;
     overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
 }
 .landing-strip::-webkit-scrollbar {
     display: none;
@@ -367,8 +390,18 @@
     gap: 10px;
     width: max-content;
 }
+.landing-rail {
+    height: calc(var(--landing-h) + var(--landing-caption-h));
+}
+.landing--empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: var(--landing-gap);
+}
 .landing--empty .landing-rail {
     width: auto;
+    height: auto;
     justify-content: center;
 }
 .landing-piece {
@@ -422,14 +455,14 @@
     justify-content: center;
     gap: 14px;
     height: var(--landing-h);
-    width: calc(var(--landing-h) * 0.8);
+    width: min(calc(var(--landing-h) * 0.8), calc(100vw - 2 * var(--landing-gutter)));
     text-align: center;
     font-family: theme('fontFamily.serif');
     color: var(--text);
 }
 .landing-end p {
     margin: 0;
-    font-size: 44px;
+    font-size: clamp(32px, 10vw, 44px);
     font-weight: 300;
     line-height: 1;
     letter-spacing: -0.02em;
@@ -446,63 +479,6 @@
 }
 .landing-end a:hover {
     text-decoration-color: currentColor;
-}
-.landing-arrows {
-    display: flex;
-    justify-content: flex-end;
-    gap: 4px;
-    margin-top: 16px;
-    padding-inline: 16px;
-}
-.landing-arrows button {
-    width: 40px;
-    height: 40px;
-    font-family: theme('fontFamily.serif');
-    font-size: 20px;
-    line-height: 1;
-    color: var(--muted);
-    transition: color var(--dur-micro) var(--ease);
-}
-.landing-arrows button:hover,
-.landing-arrows button:focus-visible {
-    color: var(--text);
-}
-.landing-arrows button:focus-visible {
-    outline: 1px solid var(--accent);
-    outline-offset: -4px;
-}
-@media (min-width: 640px) {
-    .landing-strip,
-    .landing-arrows {
-        padding-inline: 28px;
-    }
-    .landing-arrows {
-        padding-inline-end: 16px;
-    }
-}
-@media (max-width: 639px) {
-    .landing {
-        min-height: 0;
-        padding-block: 16px 64px;
-    }
-    .landing-strip {
-        overflow: visible;
-    }
-    .landing-rail,
-    .landing-track {
-        flex-direction: column;
-        width: auto;
-        gap: 40px;
-    }
-    .landing-piece img {
-        width: 100%;
-        height: auto;
-    }
-    .landing-end {
-        width: 100%;
-        height: auto;
-        padding-block: 72px;
-    }
 }
 
 /* Gallery wall: the work in masonry columns on a white wall, nothing else (#44). */
@@ -630,7 +606,9 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .wall-filters a,
-    .wall-title {
+    .wall-title,
+    .landing-title,
+    .landing-end a {
         transition: none;
     }
 }

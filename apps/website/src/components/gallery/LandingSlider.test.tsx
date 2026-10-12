@@ -36,6 +36,11 @@ describe('LandingSlider server render', () => {
         expect(html.match(/<h1/g)).toHaveLength(1);
     });
 
+    it('has no arrow buttons: wheel, swipe and arrow keys move the strip', () => {
+        expect(html).not.toContain('<button');
+        expect(html).not.toContain('landing-arrows');
+    });
+
     it('renders only the last frame when there are no pieces', () => {
         const empty = render([]);
         expect(empty).toContain('landing--empty');

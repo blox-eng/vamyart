@@ -21,13 +21,16 @@ export function shouldLoop(trackWidth: number, viewportWidth: number): boolean {
     return trackWidth > viewportWidth;
 }
 
-export const LANDING_WIDTHS = [400, 800, 1200, 1600, 2000];
+// 2400 covers a landscape piece at ~85svh on a 2× phone and a 2× laptop screen.
+export const LANDING_WIDTHS = [400, 800, 1200, 1600, 2000, 2400];
 
-// Mirrors the slider CSS: full width below 640px, otherwise a fixed height of
-// 78svh minus the header, so the rendered width is that height times the aspect.
+// Mirrors the slider CSS: every image is the screen height minus the slim header,
+// the top gap, the caption block and the bottom margin (136px on phones, 144px
+// above 640px), so its rendered width is that height times the aspect.
 // Uses vh, not svh: vh >= svh, so it errs one candidate large on mobile at worst,
 // and an unparsable svh entry would make browsers fall back to 100vw.
 // The home page preload must use the same string, or the browser fetches twice.
 export function landingImageSizes(aspect: number): string {
-    return `(max-width: 639px) calc(100vw - 32px), calc((78vh - 72px) * ${Number(aspect.toFixed(3))})`;
+    const a = Number(aspect.toFixed(3));
+    return `(max-width: 639px) calc((100vh - 136px) * ${a}), calc((100vh - 144px) * ${a})`;
 }

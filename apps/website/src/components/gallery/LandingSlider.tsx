@@ -6,32 +6,47 @@ import { LANDING_WIDTHS, centerScroll, landingImageSizes, planMove, shouldLoop }
 
 type Props = { pieces: GalleryPiece[]; contactEmail: string };
 
-const WIDE = '(min-width: 640px)';
 const NUDGE = 0.6;
 const IDLE_MS = 120;
 
 export default function LandingSlider({ pieces = [], contactEmail }: Props) {
     const shown = pieces.filter((p) => p.image);
+    const sectionRef = React.useRef<HTMLElement>(null);
     const stripRef = React.useRef<HTMLDivElement>(null);
     const beforeRef = React.useRef<HTMLDivElement>(null);
     const trackRef = React.useRef<HTMLDivElement>(null);
     const [looping, setLooping] = React.useState(false);
 
+    // The images fill the screen below everything above the slider: the slim header
+    // (the CSS default) plus the announcement banner when one is showing.
+    React.useLayoutEffect(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+        const measure = () => section.style.setProperty('--landing-top', `${section.getBoundingClientRect().top + window.scrollY}px`);
+        measure();
+        // Measure a frame later: writing from inside the observer would re-trigger it.
+        let frame = 0;
+        const observer = new ResizeObserver(() => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(measure);
+        });
+        observer.observe(document.body);
+        return () => {
+            observer.disconnect();
+            cancelAnimationFrame(frame);
+        };
+    }, []);
+
     React.useEffect(() => {
         const strip = stripRef.current;
         const track = trackRef.current;
         if (!strip || !track || shown.length === 0) return;
-        const wide = window.matchMedia(WIDE);
-        const update = () => setLooping(wide.matches && shouldLoop(track.offsetWidth, strip.clientWidth));
+        const update = () => setLooping(shouldLoop(track.offsetWidth, strip.clientWidth));
         update();
         const observer = new ResizeObserver(update);
         observer.observe(strip);
         observer.observe(track);
-        wide.addEventListener('change', update);
-        return () => {
-            observer.disconnect();
-            wide.removeEventListener('change', update);
-        };
+        return () => observer.disconnect();
     }, [shown.length]);
 
     // The real track sits between two clones; `loop` is the distance between copies.
@@ -61,46 +76,59 @@ export default function LandingSlider({ pieces = [], contactEmail }: Props) {
         if (smooth) g.strip.scrollTo({ left: target, behavior: 'smooth' });
     };
 
-    const nudge = (dir: 1 | -1) => {
-        const strip = stripRef.current;
-        if (!strip) return;
-        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        move(dir * NUDGE * strip.clientWidth, !reduced);
-    };
-
     React.useEffect(() => {
         const strip = stripRef.current;
         if (!strip || !looping) return;
         let idle: ReturnType<typeof setTimeout> | undefined;
+        let touching = false;
         const onWheel = (e: WheelEvent) => {
             if (e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
             e.preventDefault();
             const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? strip.clientWidth : 1;
             move(e.deltaY * unit, false);
         };
-        // Native swipes can reach an edge; once scrolling settles, jump back to the
-        // middle copy. Never mid-scroll, which would cancel a smooth move.
-        const onScroll = () => {
+        // Swipes and trackpads can reach an edge; once scrolling settles, jump back to
+        // the middle copy. Never mid-scroll or under a finger: that would cancel a smooth
+        // move or kill the swipe's momentum. Momentum keeps firing scroll, so the idle
+        // timer only runs out after it ends.
+        const settle = () => {
             clearTimeout(idle);
-            idle = setTimeout(recenter, IDLE_MS);
+            idle = setTimeout(() => {
+                if (!touching) recenter();
+            }, IDLE_MS);
+        };
+        const onTouchStart = () => {
+            touching = true;
+            clearTimeout(idle);
+        };
+        const onTouchEnd = (e: TouchEvent) => {
+            touching = e.touches.length > 0;
+            settle();
         };
         strip.addEventListener('wheel', onWheel, { passive: false });
-        strip.addEventListener('scroll', onScroll, { passive: true });
+        strip.addEventListener('scroll', settle, { passive: true });
+        strip.addEventListener('touchstart', onTouchStart, { passive: true });
+        strip.addEventListener('touchend', onTouchEnd, { passive: true });
+        strip.addEventListener('touchcancel', onTouchEnd, { passive: true });
         return () => {
             clearTimeout(idle);
             strip.removeEventListener('wheel', onWheel);
-            strip.removeEventListener('scroll', onScroll);
+            strip.removeEventListener('scroll', settle);
+            strip.removeEventListener('touchstart', onTouchStart);
+            strip.removeEventListener('touchend', onTouchEnd);
+            strip.removeEventListener('touchcancel', onTouchEnd);
         };
     }, [looping]);
 
-    const onKeyDown = (e: React.KeyboardEvent) => {
+    const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (!looping || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
         e.preventDefault();
-        nudge(e.key === 'ArrowRight' ? 1 : -1);
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        move((e.key === 'ArrowRight' ? 1 : -1) * NUDGE * e.currentTarget.clientWidth, !reduced);
     };
 
     return (
-        <section aria-label="Selected work" className={shown.length ? 'landing' : 'landing landing--empty'}>
+        <section ref={sectionRef} aria-label="Selected work" className={shown.length ? 'landing' : 'landing landing--empty'}>
             <h1 className="sr-only">Maeve Vamy</h1>
             <div
                 ref={stripRef}
@@ -114,16 +142,6 @@ export default function LandingSlider({ pieces = [], contactEmail }: Props) {
                     {looping && <Track pieces={shown} contactEmail={contactEmail} clone />}
                 </div>
             </div>
-            {looping && (
-                <div className="landing-arrows">
-                    <button type="button" aria-label="Previous pieces" onClick={() => nudge(-1)}>
-                        ←
-                    </button>
-                    <button type="button" aria-label="Next pieces" onClick={() => nudge(1)}>
-                        →
-                    </button>
-                </div>
-            )}
         </section>
     );
 }

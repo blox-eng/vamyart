@@ -52,7 +52,11 @@ describe('shouldLoop', () => {
 });
 
 describe('landingImageSizes', () => {
-    it('scales the fixed strip height by the aspect, full width on phones', () => {
-        expect(landingImageSizes(0.8)).toBe('(max-width: 639px) calc(100vw - 32px), calc((78vh - 72px) * 0.8)');
+    it('scales the screen-filling image height by the aspect at every width', () => {
+        expect(landingImageSizes(0.8)).toBe('(max-width: 639px) calc((100vh - 136px) * 0.8), calc((100vh - 144px) * 0.8)');
+    });
+
+    it('rounds the aspect to three decimals', () => {
+        expect(landingImageSizes(4 / 3)).toContain('* 1.333)');
     });
 });
