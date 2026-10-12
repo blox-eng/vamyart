@@ -23,14 +23,14 @@ export function computeTargetDimensions(
   };
 }
 
-// Browser-only. Returns a resized Blob, or the original File when no resize is
-// needed / possible. Preserves the source MIME type so the result stays within
+// Browser-only. Returns a resized Blob (or the original File when no resize is
+// needed / possible) plus the pixel size of the returned image. Preserves the source MIME type so the result stays within
 // the jpeg|png|webp allowlist enforced client- and server-side.
 export async function resizeImageForUpload(
   file: File,
   maxEdge: number = DEFAULT_MAX_EDGE,
   quality: number = DEFAULT_QUALITY
-): Promise<Blob> {
+): Promise<{ blob: Blob; width: number; height: number }> {
   // Honor EXIF orientation: phone photos carry a rotation flag that canvas
   // re-encoding would otherwise drop, flipping the image sideways.
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -40,19 +40,20 @@ export async function resizeImageForUpload(
       bitmap.height,
       maxEdge
     );
-    if (!resized) return file;
+    if (!resized) return { blob: file, width: bitmap.width, height: bitmap.height };
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return file;
+    if (!ctx) return { blob: file, width: bitmap.width, height: bitmap.height };
     ctx.drawImage(bitmap, 0, 0, width, height);
 
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, file.type, quality)
     );
-    return blob ?? file;
+    if (!blob) return { blob: file, width: bitmap.width, height: bitmap.height };
+    return { blob, width, height };
   } finally {
     bitmap.close();
   }

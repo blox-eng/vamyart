@@ -74,6 +74,8 @@ export const artworkImagesRouter = router({
       artworkId: z.string().uuid(),
       storagePath: z.string().min(1),
       altText: z.string().optional(),
+      width: z.number().int().positive().nullable().optional(),
+      height: z.number().int().positive().nullable().optional(),
     }))
     .mutation(async ({ input }) => {
       const [artwork] = await db
@@ -99,6 +101,8 @@ export const artworkImagesRouter = router({
           artworkId: input.artworkId,
           storagePath: input.storagePath,
           altText: input.altText ?? null,
+          width: input.width ?? null,
+          height: input.height ?? null,
           isPrimary: existing.length === 0,
           sortOrder: existing.length,
         })

@@ -226,8 +226,10 @@ export default function ArtworksPage() {
       // the original if the resize can't run). Format is preserved, so the
       // content type stays within the jpeg|png|webp allowlist.
       let uploadBlob: Blob = file;
+      let width: number | null = null;
+      let height: number | null = null;
       try {
-        uploadBlob = await resizeImageForUpload(file);
+        ({ blob: uploadBlob, width, height } = await resizeImageForUpload(file));
       } catch {
         uploadBlob = file;
       }
@@ -243,7 +245,7 @@ export default function ArtworksPage() {
         // content-addressed UUIDs (createUploadUrl mints a fresh one; upsert:false).
         .uploadToSignedUrl(path, token, uploadBlob, { contentType, cacheControl: "31536000" });
       if (error) throw error;
-      await recordImage.mutateAsync({ artworkId: selectedKey, storagePath: path });
+      await recordImage.mutateAsync({ artworkId: selectedKey, storagePath: path, width, height });
     } catch (e) {
       toast(e instanceof Error ? e.message : "Upload failed", "error");
     } finally {
