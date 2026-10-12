@@ -71,5 +71,7 @@ export function aspectOf(img: { width: number | null; height: number | null }): 
 export function pieceAltText(p: { altText: string | null; title: string; medium: string | null }): string {
   const custom = p.altText?.trim();
   if (custom) return custom;
-  return p.medium ? `${p.title}, ${p.medium}, by ${ARTIST}` : `${p.title}, by ${ARTIST}`;
+  const title = p.title.trim();
+  const medium = p.medium?.trim();
+  return medium ? `${title}, ${medium}, by ${ARTIST}` : `${title}, by ${ARTIST}`;
 }

@@ -58,7 +58,7 @@ async function loadGallery() {
         a.id,
         {
           slug: a.slug,
-          title: a.title,
+          title: a.title.trim(),
           excerpt: a.excerpt,
           medium: a.medium,
           image:

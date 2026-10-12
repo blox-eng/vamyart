@@ -92,4 +92,10 @@ describe("pieceAltText", () => {
   it("returns custom altText trimmed", () => {
     expect(pieceAltText({ altText: "  A quiet room ", title: "Silence", medium: null })).toBe("A quiet room");
   });
+  it("trims stray spaces around title and medium", () => {
+    expect(pieceAltText({ altText: null, title: "Silence ", medium: "Oil on canvas " })).toBe(
+      "Silence, Oil on canvas, by Maeve Vamy"
+    );
+    expect(pieceAltText({ altText: null, title: "Silence", medium: "  " })).toBe("Silence, by Maeve Vamy");
+  });
 });
