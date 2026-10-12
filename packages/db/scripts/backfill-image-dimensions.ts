@@ -3,6 +3,8 @@
  * reading the image header over a ranged GET of the public Storage URL.
  * Never touches rows that already have dimensions, nor any other column.
  *
+ * With --recheck, recomputes every row and updates only those whose stored dims differ.
+ *
  * Run with: cd packages/db && pnpm dlx tsx scripts/backfill-image-dimensions.ts
  */
 import * as dotenv from "dotenv";
@@ -29,10 +31,16 @@ async function main() {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!base) throw new Error("NEXT_PUBLIC_SUPABASE_URL not set");
 
-  const rows = await db
-    .select({ id: artworkImages.id, storagePath: artworkImages.storagePath })
-    .from(artworkImages)
-    .where(isNull(artworkImages.width));
+  const recheck = process.argv.includes("--recheck");
+  const query = db
+    .select({
+      id: artworkImages.id,
+      storagePath: artworkImages.storagePath,
+      width: artworkImages.width,
+      height: artworkImages.height,
+    })
+    .from(artworkImages);
+  const rows = recheck ? await query : await query.where(isNull(artworkImages.width));
 
   let updated = 0;
   const skipped: string[] = [];
@@ -50,6 +58,10 @@ async function main() {
     if (!size) {
       skipped.push(row.storagePath);
       continue;
+    }
+    if (row.width === size.width && row.height === size.height) continue;
+    if (recheck) {
+      console.log(`  corrected: ${row.storagePath} ${row.width}x${row.height} -> ${size.width}x${size.height}`);
     }
     await db
       .update(artworkImages)

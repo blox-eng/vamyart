@@ -67,4 +67,46 @@ describe("readImageSize", () => {
     expect(readImageSize(jpeg(800, 600).slice(0, 24))).toBeNull();
     expect(readImageSize(new Uint8Array())).toBeNull();
   });
+
+  describe("JPEG EXIF orientation", () => {
+    const exif = (orientation: number, le: boolean) => {
+      const u16 = (n: number) => (le ? [n & 255, n >> 8] : [n >> 8, n & 255]);
+      const u32 = (n: number) => (le ? [n, 0, 0, 0] : [0, 0, 0, n]);
+      const body = [
+        ...ascii("Exif"), 0, 0,
+        ...(le ? ascii("II") : ascii("MM")), ...u16(0x2a), ...u32(8),
+        ...u16(1), ...u16(0x0112), ...u16(3), ...u32(1), ...u16(orientation), 0, 0, ...u32(0),
+      ];
+      return [0xff, 0xe1, ...u16be(body.length + 2), ...body];
+    };
+    const withExif = (seg: number[], w = 800, h = 600) => {
+      const base = jpeg(w, h);
+      return new Uint8Array([...base.slice(0, 2), ...seg, ...base.slice(2)]);
+    };
+
+    it("swaps dims for orientation 6 (both byte orders)", () => {
+      expect(readImageSize(withExif(exif(6, false)))).toEqual({ width: 600, height: 800 });
+      expect(readImageSize(withExif(exif(6, true)))).toEqual({ width: 600, height: 800 });
+    });
+
+    it("leaves orientation 1 and 3 unchanged", () => {
+      expect(readImageSize(withExif(exif(1, false)))).toEqual({ width: 800, height: 600 });
+      expect(readImageSize(withExif(exif(3, true)))).toEqual({ width: 800, height: 600 });
+    });
+
+    it("ignores a truncated or garbage APP1", () => {
+      expect(readImageSize(withExif(exif(6, false).slice(0, 20)))).toBeNull();
+      const bad = [0xff, 0xe1, ...u16be(12), ...ascii("Exif"), 0, 0, 1, 2, 3, 4];
+      expect(readImageSize(withExif(bad))).toEqual({ width: 800, height: 600 });
+    });
+  });
+
+  it("returns null for a truncated VP8X", () => {
+    expect(readImageSize(riff([...ascii("VP8X"), 10, 0, 0, 0, 0, 0, 0, 0, 1, 0]))).toBeNull();
+  });
+
+  it("returns null for zero or oversized dimensions", () => {
+    expect(readImageSize(png(0, 480))).toBeNull();
+    expect(readImageSize(png(70000, 480))).toBeNull();
+  });
 });

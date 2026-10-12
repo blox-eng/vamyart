@@ -7,8 +7,10 @@ const u24le = (b: Uint8Array, i: number) => b[i] | (b[i + 1] << 8) | (b[i + 2] <
 const tag = (b: Uint8Array, i: number, s: string) =>
   b.length >= i + s.length && [...s].every((c, k) => b[i + k] === c.charCodeAt(0));
 
+const MAX_DIM = 65535;
+
 function valid(width: number, height: number): ImageSize | null {
-  return width > 0 && height > 0 ? { width, height } : null;
+  return width > 0 && height > 0 && width <= MAX_DIM && height <= MAX_DIM ? { width, height } : null;
 }
 
 function readPng(b: Uint8Array): ImageSize | null {
@@ -16,8 +18,32 @@ function readPng(b: Uint8Array): ImageSize | null {
   return valid(u32be(b, 16), u32be(b, 20));
 }
 
+// EXIF orientation from an APP1 segment body (starting at "Exif\0\0"); 1 when absent or malformed.
+function readExifOrientation(b: Uint8Array, start: number, end: number): number {
+  if (end > b.length || end - start < 14 || !tag(b, start, "Exif") || b[start + 4] !== 0 || b[start + 5] !== 0) return 1;
+  const t = start + 6;
+  const le = b[t] === 0x49 && b[t + 1] === 0x49;
+  if (!le && !(b[t] === 0x4d && b[t + 1] === 0x4d)) return 1;
+  const r16 = (i: number) => (le ? u16le(b, i) : u16be(b, i));
+  const r32 = (i: number) => (le ? (u16le(b, i) | (u16le(b, i + 2) << 16)) >>> 0 : u32be(b, i));
+  if (r16(t + 2) !== 0x2a) return 1;
+  const ifd = t + r32(t + 4);
+  if (ifd + 2 > end) return 1;
+  const count = r16(ifd);
+  for (let n = 0; n < count; n++) {
+    const e = ifd + 2 + n * 12;
+    if (e + 12 > end) return 1;
+    if (r16(e) === 0x0112) {
+      const o = r16(e + 8);
+      return o >= 1 && o <= 8 ? o : 1;
+    }
+  }
+  return 1;
+}
+
 function readJpeg(b: Uint8Array): ImageSize | null {
   let i = 2;
+  let orientation = 1;
   while (i + 4 <= b.length) {
     if (b[i] !== 0xff) return null;
     const marker = b[i + 1];
@@ -30,10 +56,15 @@ function readJpeg(b: Uint8Array): ImageSize | null {
       continue;
     }
     if (marker === 0xd9 || marker === 0xda) return null;
+    if (marker === 0xe1) {
+      orientation = readExifOrientation(b, i + 4, Math.min(i + 2 + u16be(b, i + 2), b.length));
+    }
     const isSof = marker >= 0xc0 && marker <= 0xc2;
     if (isSof) {
       if (i + 9 > b.length) return null;
-      return valid(u16be(b, i + 7), u16be(b, i + 5));
+      const w = u16be(b, i + 7);
+      const h = u16be(b, i + 5);
+      return orientation >= 5 ? valid(h, w) : valid(w, h);
     }
     i += 2 + u16be(b, i + 2);
   }
