@@ -59,8 +59,6 @@ export function seoGenerateMetaTags(page, site) {
         ...(ogUrl && { 'og:url': ogUrl }),
         ...(ogImage && { 'og:image': ogImage }),
         ...(ogImage && { 'og:image:alt': ogImageAlt }),
-        ...(ogImage && { 'og:image:width': '1200' }),
-        ...(ogImage && { 'og:image:height': '630' }),
         'twitter:card': 'summary_large_image',
         ...(seoTitle && { 'twitter:title': seoTitle }),
         ...(metaDescription && { 'twitter:description': metaDescription }),
