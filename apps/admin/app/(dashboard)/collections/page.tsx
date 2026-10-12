@@ -33,14 +33,6 @@ export default function CollectionsPage() {
     },
     onError: () => toast("failed to update collection", "error"),
   });
-  const setFeatured = trpc.collections.setFeatured.useMutation({
-    onSuccess: async (data) => {
-      await revalidatePaths([...PUBLIC_COLLECTION_PATHS, `/gallery/collections/${data.slug}`]);
-      refetch();
-      toast("collection featured", "success");
-    },
-    onError: () => toast("failed to feature collection", "error"),
-  });
   const del = trpc.collections.delete.useMutation({
     onSuccess: async () => {
       await revalidatePaths(PUBLIC_COLLECTION_PATHS);
@@ -103,14 +95,6 @@ export default function CollectionsPage() {
   async function togglePublished(c: NonNullable<typeof collectionList>[0]) {
     try {
       await update.mutateAsync({ id: c.id, published: !c.published });
-    } catch {
-      // error toast fires from onError callback
-    }
-  }
-
-  async function toggleFeatured(c: NonNullable<typeof collectionList>[0]) {
-    try {
-      await setFeatured.mutateAsync({ id: c.id, featured: !c.featured });
     } catch {
       // error toast fires from onError callback
     }
@@ -214,13 +198,6 @@ export default function CollectionsPage() {
                     title="Move down"
                   >
                     ↓
-                  </button>
-                  <button
-                    onClick={() => toggleFeatured(c)}
-                    disabled={setFeatured.isPending}
-                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.featured ? "bg-warn/10 text-warn" : "bg-wall text-muted"}`}
-                  >
-                    {c.featured ? "★ Featured" : "☆ Feature"}
                   </button>
                   <button
                     onClick={() => togglePublished(c)}

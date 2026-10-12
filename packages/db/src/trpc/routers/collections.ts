@@ -74,6 +74,7 @@ export const collectionsRouter = router({
         description: z.string().nullable().optional(),
         coverImagePath: z.string().nullable().optional(),
         published: z.boolean().optional(),
+        onLanding: z.boolean().optional(),
         seoTitle: z.string().nullable().optional(),
         seoDescription: z.string().nullable().optional(),
       })
@@ -120,26 +121,6 @@ export const collectionsRouter = router({
         }
       });
       return { ok: true };
-    }),
-
-  setFeatured: protectedProcedure
-    .input(z.object({ id: z.string().uuid(), featured: z.boolean() }))
-    .mutation(async ({ input }) => {
-      return db.transaction(async (tx) => {
-        if (input.featured) {
-          await tx
-            .update(collections)
-            .set({ featured: false, updatedAt: new Date() })
-            .where(and(eq(collections.featured, true), ne(collections.id, input.id)));
-        }
-        const [c] = await tx
-          .update(collections)
-          .set({ featured: input.featured, updatedAt: new Date() })
-          .where(eq(collections.id, input.id))
-          .returning();
-        if (!c) throw new TRPCError({ code: "NOT_FOUND", message: "Collection not found" });
-        return c;
-      });
     }),
 
   setPieces: protectedProcedure
@@ -263,32 +244,4 @@ export const collectionsRouter = router({
         pieces,
       };
     }),
-
-  getFeatured: publicProcedure.query(async () => {
-    const c = await db.query.collections.findFirst({
-      where: (col, { eq, and, isNull }) => and(eq(col.featured, true), eq(col.published, true), isNull(col.deletedAt)),
-      with: {
-        pieces: {
-          orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-          with: { artwork: { with: { images: { orderBy: (i, { asc }) => [asc(i.sortOrder)] } } } },
-        },
-      },
-    });
-    if (!c) return null;
-    const pieces = c.pieces
-      .map((p) => p.artwork)
-      .filter((a) => a.published && !a.deletedAt)
-      .slice(0, 3)
-      .map((a) => {
-        const primary = a.images.find((i) => i.isPrimary) ?? a.images[0] ?? null;
-        return { slug: a.slug, title: a.title, imageUrl: primary ? collectionCoverUrl(primary.storagePath, null) : null };
-      });
-    return {
-      slug: c.slug,
-      title: c.title,
-      description: c.description,
-      coverUrl: c.coverImagePath ? collectionCoverUrl(c.coverImagePath, null) : pieces[0]?.imageUrl ?? null,
-      pieces,
-    };
-  }),
 });

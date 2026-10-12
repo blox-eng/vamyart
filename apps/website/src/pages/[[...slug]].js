@@ -10,7 +10,7 @@ import { buildWebsiteJsonLd, buildPersonJsonLd } from '../utils/structured-data'
 import JsonLd from '../components/atoms/JsonLd';
 import { appRouter } from '@vamy/db/trpc';
 
-// Server-side tRPC caller for homepage DB injection (featured image + active banner).
+// Server-side tRPC caller for homepage DB injection (active banner + collections).
 const serverTrpc = appRouter.createCaller({ userId: null });
 
 
@@ -86,25 +86,8 @@ export async function getStaticProps({ params }) {
     const urlPath = '/' + (params.slug || []).join('/');
     const props = await resolveStaticProps(urlPath, data);
 
-    // Homepage: inject featured artwork image + active banner server-side.
-    // The hero features the artwork flagged `featured` in the admin (artworks.getFeatured),
-    // not a print product. When nothing is featured, the markdown default image stands.
+    // Homepage: inject the active banner and published collections server-side.
     if (urlPath === '/') {
-        try {
-            const featured = await serverTrpc.artworks.getFeatured();
-            if (featured?.primaryImage) {
-                const heroSection = props.page?.sections?.[0];
-                if (heroSection?.media) {
-                    heroSection.media.url = featured.primaryImage.url;
-                    heroSection.media.altText = featured.primaryImage.altText || `${featured.title} by Maeve Vamy`;
-                    heroSection.media.priority = true;
-                    props.page.heroPreload = { url: featured.primaryImage.url, sizes: heroSection.media.sizes ?? '100vw' };
-                }
-            }
-        } catch {
-            // Fallback to the markdown default if the DB is unavailable at build time.
-        }
-
         try {
             const banner = await serverTrpc.banners.getActive({ slug: '' });
             if (banner) {
@@ -112,31 +95,6 @@ export async function getStaticProps({ params }) {
             }
         } catch {
             // No banner — component handles null gracefully
-        }
-
-        try {
-            const featuredCollection = await serverTrpc.collections.getFeatured();
-            const sections = props.page?.sections ?? [];
-            const idx = sections.findIndex((s) => s?.elementId === 'featured-collection');
-            if (idx !== -1) {
-                if (featuredCollection) {
-                    const section = sections[idx];
-                    if (section.title) section.title.text = featuredCollection.title;
-                    section.text = featuredCollection.description ?? '';
-                    if (section.media) {
-                        section.media.url = featuredCollection.coverUrl ?? section.media.url;
-                        section.media.altText = `${featuredCollection.title} — collection by Maeve Vamy`;
-                    }
-                    if (section.actions?.[0]) {
-                        section.actions[0].url = `/gallery/collections/${featuredCollection.slug}`;
-                    }
-                } else {
-                    // No featured collection — remove the placeholder section entirely.
-                    sections.splice(idx, 1);
-                }
-            }
-        } catch {
-            // DB unavailable at build time — leave the markdown placeholder as-is.
         }
 
         try {
