@@ -84,6 +84,15 @@ describe('buildBreadcrumbJsonLd', () => {
     expect(out.itemListElement[0]).toMatchObject({ position: 1, name: 'Home', item: 'https://a.co/' });
     expect(out.itemListElement[2]).toMatchObject({ position: 3, name: 'Never', item: 'https://a.co/gallery/never/' });
   });
+  it('builds the four-level piece trail without duplicating Home', () => {
+    const out = buildBreadcrumbJsonLd('https://vamy.art', [
+      { name: 'on the wall', path: '/gallery/' },
+      { name: 'Oil', path: '/gallery/collections/oil/' },
+      { name: 'Silence', path: '/gallery/silence/' },
+    ]);
+    expect(out.itemListElement.map((i) => i.name)).toEqual(['Home', 'on the wall', 'Oil', 'Silence']);
+    expect(out.itemListElement[2].item).toBe('https://vamy.art/gallery/collections/oil/');
+  });
 });
 
 describe('buildWebsiteJsonLd / buildPersonJsonLd', () => {
