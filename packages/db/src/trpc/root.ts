@@ -14,6 +14,7 @@ import { waitlistRouter } from "./routers/waitlist";
 import { contactsRouter } from "./routers/contacts";
 import { certificatesRouter } from "./routers/certificates";
 import { collectionsRouter } from "./routers/collections";
+import { galleryRouter } from "./routers/gallery";
 
 export const appRouter = router({
   inquiries: inquiriesRouter,
@@ -25,6 +26,7 @@ export const appRouter = router({
   orders: ordersRouter,
   artworks: artworksRouter,
   collections: collectionsRouter,
+  gallery: galleryRouter,
   shippingMethods: shippingMethodsRouter,
   banners: bannersRouter,
   artworkImages: artworkImagesRouter,
