@@ -59,6 +59,23 @@ describe("findContentBox", () => {
     expect(findContentBox(gray, 100, 100)).toBeNull();
   });
 
+  it("keeps a textured mid-grey sky cut off by a dark band near the edge", () => {
+    const gray = canvas(100, 100, 255);
+    const rand = noise(5);
+    for (let y = 10; y < 18; y++) {
+      for (let x = 10; x < 90; x++) gray[y * 100 + x] = 228 + Math.round(rand() * 16);
+    }
+    rect(gray, 100, 10, 18, 80, 72, 50);
+    expect(findContentBox(gray, 100, 100)).toBeNull();
+  });
+
+  it("keeps a smooth flat grey strip at the canvas edge (not a fading shadow)", () => {
+    const gray = canvas(100, 100, 255);
+    rect(gray, 100, 10, 10, 80, 8, 235);
+    rect(gray, 100, 10, 18, 80, 72, 50);
+    expect(findContentBox(gray, 100, 100)).toBeNull();
+  });
+
   it("leaves a white-on-white painting with a dark mark alone", () => {
     const rand = noise(11);
     const gray = new Uint8Array(100 * 100).map(() => 232 + Math.round(rand() * 23));
