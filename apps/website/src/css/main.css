@@ -1,3 +1,9 @@
+/* Temporary: the public site stays white until artwork photos lose their white studio
+   backgrounds (cut-out editor, #40). Then drop this to return to the bone paper. */
+:root[data-theme='light'] {
+    --bg: #ffffff;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
