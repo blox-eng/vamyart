@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createClient } from "@supabase/supabase-js";
 import { router, publicProcedure, protectedProcedure } from "../index";
@@ -47,11 +47,14 @@ export const collectionsRouter = router({
     return db.query.collections.findMany({
       where: (c, { isNull }) => isNull(c.deletedAt),
       orderBy: (c, { asc }) => [asc(c.sortOrder), asc(c.title)],
+      extras: (c) => ({
+        pieceCount: sql<number>`(select count(*)::int from ${artworkCollections} ac where ac.collection_id = ${c.id})`.as("piece_count"),
+      }),
     });
   }),
 
   create: protectedProcedure
-    .input(z.object({ title: z.string().min(1), description: z.string().optional() }))
+    .input(z.object({ title: z.string().trim().min(1), description: z.string().optional() }))
     .mutation(async ({ input }) => {
       const slug = slugify(input.title);
       if (!slug) {
@@ -69,7 +72,7 @@ export const collectionsRouter = router({
     .input(
       z.object({
         id: z.string().uuid(),
-        title: z.string().min(1).optional(),
+        title: z.string().trim().min(1).optional(),
         slug: z.string().min(1).optional(),
         description: z.string().nullable().optional(),
         coverImagePath: z.string().nullable().optional(),

@@ -30,10 +30,10 @@ export function artworkDeleteBlockReason(input: {
 }
 
 const contentFields = {
-  title: z.string().min(1),
+  title: z.string().trim().min(1),
   slug: z.string().min(1).optional(),
   year: z.number().int().nullable().optional(),
-  medium: z.string().nullable().optional(),
+  medium: z.string().trim().nullable().optional(),
   dimensions: z.string().nullable().optional(),
   status: z.enum(["available", "bidding", "sold"]).optional(),
   excerpt: z.string().nullable().optional(),
