@@ -29,6 +29,15 @@
             "iconPosition": "right",
             "style": "secondary",
             "type": "Link"
+        },
+        {
+            "label": "instagram",
+            "altText": "Maeve Vamy on Instagram",
+            "url": "https://www.instagram.com/maeve_vamy_art",
+            "icon": "arrowRight",
+            "iconPosition": "right",
+            "style": "secondary",
+            "type": "Link"
         }
     ],
     "secondaryLinks": [
