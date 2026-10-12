@@ -21,6 +21,27 @@ export function buildArtworkJsonLd({ title, description, year, medium, image, ur
     };
 }
 
+export function buildItemList(base, pieces = []) {
+    return {
+        '@type': 'ItemList',
+        itemListElement: pieces.map((p, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            url: p.url ?? `${base}/gallery/${p.slug}/`,
+            name: p.name,
+            ...(p.image ? { image: p.image } : {}),
+        })),
+    };
+}
+
+// Wall pieces as JSON-LD list entries: absolute url, name and image. Imageless pieces
+// are skipped, as on the wall itself.
+export function wallItemListPieces(base, pieces = []) {
+    return pieces
+        .filter((p) => p.image?.url)
+        .map((p) => ({ name: p.title, url: `${base}/gallery/${p.slug}/`, image: p.image.url }));
+}
+
 export function buildCollectionJsonLd({ name, description, url, pieces = [] }) {
     return {
         '@context': 'https://schema.org',
@@ -29,6 +50,7 @@ export function buildCollectionJsonLd({ name, description, url, pieces = [] }) {
         url,
         ...(description ? { description } : {}),
         hasPart: pieces.map((p) => ({ '@type': 'VisualArtwork', name: p.name, url: p.url })),
+        mainEntity: buildItemList('', pieces),
     };
 }
 

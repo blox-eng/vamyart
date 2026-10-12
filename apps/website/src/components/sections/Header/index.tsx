@@ -40,7 +40,7 @@ function LocaleSwitcher() {
 }
 
 export default function Header(props) {
-    const { colors = 'bg-light-fg-dark', styles = {}, enableAnnotations } = props;
+    const { colors = 'bg-light-fg-dark', styles = {}, slim = false, enableAnnotations } = props;
     return (
         <header
             className={classNames(
@@ -48,14 +48,18 @@ export default function Header(props) {
                 'sb-component-header',
                 colors,
                 'relative',
-                'border-b border-hair',
-                styles?.self?.margin ? mapStyles({ padding: styles?.self?.margin }) : undefined,
-                styles?.self?.padding ? mapStyles({ padding: styles?.self?.padding }) : 'p-4',
+                slim
+                    ? 'landing-header'
+                    : [
+                          'border-b border-hair',
+                          styles?.self?.margin ? mapStyles({ padding: styles?.self?.margin }) : undefined,
+                          styles?.self?.padding ? mapStyles({ padding: styles?.self?.padding }) : 'p-4'
+                      ],
                 'z-50'
             )}
             {...(enableAnnotations && { 'data-sb-object-id': props?.__metadata?.id })}
         >
-            <div className="mx-auto max-w-7xl">
+            <div className={slim ? undefined : 'mx-auto max-w-7xl'}>
                 <Link href="#main" className="sr-only">
                     Skip to main content
                 </Link>

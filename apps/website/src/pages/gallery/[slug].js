@@ -2,10 +2,10 @@ import React from 'react';
 import Head from 'next/head';
 import { allContent } from '../../utils/local-content';
 import { getComponent } from '../../components/components-registry';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl } from '../../utils/seo-utils';
+import { absoluteUrl, ogImageUrl, resolveSiteUrl } from '../../utils/seo-utils';
 import { buildHeroPreload } from '../../utils/netlify-image';
 import { buildArtworkJsonLd, buildBreadcrumbJsonLd } from '../../utils/structured-data';
-import JsonLd from '../../components/atoms/JsonLd';
+import PageHead from '../../components/atoms/PageHead';
 import { appRouter } from '@vamy/db/trpc';
 
 const serverTrpc = appRouter.createCaller({ userId: null });
@@ -14,39 +14,38 @@ function toJson(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function Page({ page, site }) {
+function Page({ page, site, collection }) {
   const PageLayout = getComponent('PostLayout');
-  const title = seoGenerateTitle(page, site);
-  const metaTags = seoGenerateMetaTags(page, site);
-  const metaDescription = seoGenerateMetaDescription(page, site);
-  const canonicalUrl = seoGenerateCanonicalUrl(page, site);
+  const base = resolveSiteUrl(site);
+  const canonicalPath = `/gallery/${page.artworkSlug}/`;
   const heroPreload = page.featuredImage?.url
     ? buildHeroPreload(page.featuredImage.url, { sizes: '(min-width: 1024px) 50vw, 100vw' })
     : null;
-  const base = resolveSiteUrl(site);
   const artworkLd = buildArtworkJsonLd({
     title: page.title, description: page.excerpt, year: page.year, medium: page.medium,
-    image: page.featuredImage?.url, url: canonicalUrl,
+    image: page.featuredImage?.url, url: absoluteUrl(base, canonicalPath),
   });
-  const breadcrumbLd = base
-    ? buildBreadcrumbJsonLd(base, [{ name: 'Gallery', path: '/gallery/' }, { name: page.title, path: canonicalUrl?.replace(base, '') || '/' }])
-    : null;
+  const breadcrumbLd = buildBreadcrumbJsonLd(base, [
+    { name: 'on the wall', path: '/gallery/' },
+    ...(collection ? [{ name: collection.title, path: `/gallery/collections/${collection.slug}/` }] : []),
+    { name: page.title, path: canonicalPath },
+  ]);
   return (
     <>
-      <Head>
-        <title>{title}</title>
-        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
-        {metaDescription && <meta name="description" content={metaDescription} />}
-        {metaTags.map((m) =>
-          m.format === 'property' ? (
-            <meta key={m.property} property={m.property} content={m.content} />
-          ) : (
-            <meta key={m.property} name={m.property} content={m.content} />
-          )
-        )}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {heroPreload && (
+      <PageHead
+        title={page.seo.metaTitle}
+        description={page.seo.metaDescription || null}
+        canonicalPath={canonicalPath}
+        ogImage={page.featuredImage ? ogImageUrl(page.featuredImage.url, base) : null}
+        ogType="article"
+        ogImageAlt={page.featuredImage?.altText ?? null}
+        jsonLd={[artworkLd, breadcrumbLd]}
+        site={site}
+      />
+      {heroPreload && (
+        <Head>
           <link
+            key="hero-preload"
             rel="preload"
             as="image"
             href={heroPreload.href}
@@ -54,11 +53,8 @@ function Page({ page, site }) {
             imageSizes={heroPreload.imageSizes}
             fetchPriority="high"
           />
-        )}
-        {site.favicon && <link rel="icon" href={site.favicon} />}
-        {base && <JsonLd data={artworkLd} />}
-        {breadcrumbLd && <JsonLd data={breadcrumbLd} />}
-      </Head>
+        </Head>
+      )}
       <PageLayout page={page} site={site} />
     </>
   );
@@ -78,26 +74,31 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const { props: { site } } = allContent();
 
-  let artwork = null;
-  let list = [];
+  let artwork;
+  let wall;
+  let listing;
   try {
-    [artwork, list] = await Promise.all([
+    [artwork, wall, listing] = await Promise.all([
       serverTrpc.artworks.getBySlug({ slug: params.slug }),
+      serverTrpc.gallery.wall({}),
       serverTrpc.artworks.listPublic(),
     ]);
-  } catch {
-    // fall through to notFound below
+  } catch (err) {
+    if (err?.code === 'NOT_FOUND') return { notFound: true, revalidate: 3600 };
+    throw err;
   }
   if (!artwork) {
     return { notFound: true, revalidate: 3600 };
   }
 
-  const idx = list.findIndex((a) => a.slug === artwork.slug);
-  const prevPost = idx > 0 ? { title: list[idx - 1].title, urlPath: `/gallery/${list[idx - 1].slug}` } : null;
-  const nextPost =
-    idx >= 0 && idx < list.length - 1
-      ? { title: list[idx + 1].title, urlPath: `/gallery/${list[idx + 1].slug}` }
-      : null;
+  const { pieces, filters } = wall;
+  const idx = pieces.findIndex((p) => p.slug === artwork.slug);
+  const toNav = (p) => ({ title: p.title, urlPath: `/gallery/${p.slug}` });
+  const prevPost = idx > 0 ? toNav(pieces[idx - 1]) : null;
+  const nextPost = idx >= 0 && idx < pieces.length - 1 ? toNav(pieces[idx + 1]) : null;
+
+  const memberOf = listing.find((a) => a.slug === artwork.slug)?.collectionSlugs ?? [];
+  const collection = filters.find((f) => memberOf.includes(f.slug)) ?? null;
 
   const page = {
     __metadata: { modelName: 'PostLayout', urlPath: `/gallery/${artwork.slug}`, id: artwork.id },
@@ -115,14 +116,14 @@ export async function getStaticProps({ params }) {
     prevPost,
     nextPost,
     seo: {
-      metaTitle: artwork.seoTitle ?? artwork.title,
-      metaDescription: artwork.seoDescription ?? artwork.excerpt ?? '',
+      metaTitle: artwork.seoTitle || artwork.title,
+      metaDescription: artwork.seoDescription || artwork.excerpt || '',
       socialImage: artwork.primaryImage?.url ?? null,
       type: 'Seo',
     },
   };
 
-  return { props: { page: toJson(page), site: toJson(site) }, revalidate: 3600 };
+  return { props: { page: toJson(page), site: toJson(site), collection }, revalidate: 3600 };
 }
 
 export default Page;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd,
+  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildItemList, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd, wallItemListPieces,
 } from './structured-data';
 
 const ARTIST = 'Maeve Vamy';
@@ -52,6 +52,51 @@ describe('buildCollectionJsonLd', () => {
   });
 });
 
+describe('buildItemList / collection mainEntity', () => {
+  const pieces = [
+    { name: 'Never', slug: 'never', image: 'https://a.co/never.jpg' },
+    { name: 'Tide', slug: 'tide' },
+  ];
+  it('builds a positioned ItemList with absolute urls and images', () => {
+    const out = buildItemList('https://a.co', pieces);
+    expect(out['@type']).toBe('ItemList');
+    expect(out.itemListElement[0]).toEqual({
+      '@type': 'ListItem', position: 1, url: 'https://a.co/gallery/never/', name: 'Never', image: 'https://a.co/never.jpg',
+    });
+    expect(out.itemListElement[1].position).toBe(2);
+    expect(out.itemListElement[1]).not.toHaveProperty('image');
+  });
+  it('buildCollectionJsonLd includes the ItemList as mainEntity', () => {
+    const out = buildCollectionJsonLd({ name: 'S', url: 'https://a.co/gallery/collections/s/', pieces: [{ name: 'Never', url: 'https://a.co/gallery/never/', image: 'https://a.co/n.jpg' }] });
+    expect(out.mainEntity['@type']).toBe('ItemList');
+    expect(out.mainEntity.itemListElement[0].position).toBe(1);
+    expect(out.mainEntity.itemListElement[0].image).toBe('https://a.co/n.jpg');
+  });
+});
+
+describe('wallItemListPieces', () => {
+  const pieces = [
+    { title: 'Never', slug: 'never', image: { url: 'https://s.co/never.jpg' } },
+    { title: 'No image', slug: 'blank', image: null },
+    { title: 'Tide', slug: 'tide', image: { url: 'https://s.co/tide.jpg' } },
+  ];
+  it('gives each entry an absolute url, name and image, skipping imageless pieces', () => {
+    expect(wallItemListPieces('https://a.co', pieces)).toEqual([
+      { name: 'Never', url: 'https://a.co/gallery/never/', image: 'https://s.co/never.jpg' },
+      { name: 'Tide', url: 'https://a.co/gallery/tide/', image: 'https://s.co/tide.jpg' },
+    ]);
+  });
+  it('feeds an ItemList whose every entry has url, name and image', () => {
+    const out = buildCollectionJsonLd({ name: 'S', url: 'https://a.co/gallery/', pieces: wallItemListPieces('https://a.co', pieces) });
+    for (const el of out.mainEntity.itemListElement) {
+      expect(el.url).toMatch(/^https:\/\/a\.co\/gallery\//);
+      expect(el.name).toBeTruthy();
+      expect(el.image).toMatch(/^https:\/\/s\.co\//);
+    }
+    expect(out.mainEntity.itemListElement.map((e) => e.position)).toEqual([1, 2]);
+  });
+});
+
 describe('buildBreadcrumbJsonLd', () => {
   it('builds an ordered Home > Gallery > piece trail', () => {
     const out = buildBreadcrumbJsonLd('https://a.co', [
@@ -61,6 +106,15 @@ describe('buildBreadcrumbJsonLd', () => {
     expect(out.itemListElement).toHaveLength(3);
     expect(out.itemListElement[0]).toMatchObject({ position: 1, name: 'Home', item: 'https://a.co/' });
     expect(out.itemListElement[2]).toMatchObject({ position: 3, name: 'Never', item: 'https://a.co/gallery/never/' });
+  });
+  it('builds the four-level piece trail without duplicating Home', () => {
+    const out = buildBreadcrumbJsonLd('https://vamy.art', [
+      { name: 'on the wall', path: '/gallery/' },
+      { name: 'Oil', path: '/gallery/collections/oil/' },
+      { name: 'Silence', path: '/gallery/silence/' },
+    ]);
+    expect(out.itemListElement.map((i) => i.name)).toEqual(['Home', 'on the wall', 'Oil', 'Silence']);
+    expect(out.itemListElement[2].item).toBe('https://vamy.art/gallery/collections/oil/');
   });
 });
 

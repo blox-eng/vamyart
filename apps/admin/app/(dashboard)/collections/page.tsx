@@ -9,53 +9,46 @@ import { SkeletonTable } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { CoverCropModal } from "./CoverCropModal";
 import { revalidatePaths } from "@/lib/revalidate";
+import { collectionRevalidatePaths } from "@/lib/revalidate-paths";
 
 type CollectionRow = inferRouterOutputs<AppRouter>["collections"]["list"][number];
-
-// Public ISR pages that reflect collection changes: homepage (featured band +
-// carousel), gallery filter chips, and the collections index. Per-collection
-// landing pages are added per-mutation when the slug is known. Mirrors the
-// revalidation the artworks studio already does on every public-facing write.
-const PUBLIC_COLLECTION_PATHS = ["/", "/gallery", "/gallery/collections"];
 
 export default function CollectionsPage() {
   const toast = useToast();
   const { data: collectionList, refetch, isLoading: collectionsLoading } = trpc.collections.list.useQuery();
+  const slugs = () => (collectionList ?? []).map((c) => c.slug);
   const create = trpc.collections.create.useMutation({
-    onSuccess: () => { refetch(); toast("collection created", "success"); },
-    onError: () => toast("failed to create collection", "error"),
+    onSuccess: async (data) => {
+      await revalidatePaths(collectionRevalidatePaths([...slugs(), data.slug]));
+      refetch();
+      toast("Collection created", "success");
+    },
+    onError: () => toast("Failed to create collection", "error"),
   });
   const update = trpc.collections.update.useMutation({
-    onSuccess: async (data) => {
-      await revalidatePaths([...PUBLIC_COLLECTION_PATHS, `/gallery/collections/${data.slug}`]);
+    onSuccess: async (data, vars) => {
+      const old = (collectionList ?? []).find((c) => c.id === vars.id)?.slug;
+      await revalidatePaths(collectionRevalidatePaths([...slugs(), data.slug, ...(old ? [old] : [])]));
       refetch();
-      toast("collection updated", "success");
+      toast("Collection updated", "success");
     },
-    onError: () => toast("failed to update collection", "error"),
-  });
-  const setFeatured = trpc.collections.setFeatured.useMutation({
-    onSuccess: async (data) => {
-      await revalidatePaths([...PUBLIC_COLLECTION_PATHS, `/gallery/collections/${data.slug}`]);
-      refetch();
-      toast("collection featured", "success");
-    },
-    onError: () => toast("failed to feature collection", "error"),
+    onError: () => toast("Failed to update collection", "error"),
   });
   const del = trpc.collections.delete.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(PUBLIC_COLLECTION_PATHS);
+      await revalidatePaths(collectionRevalidatePaths(slugs()));
       refetch();
-      toast("collection deleted", "success");
+      toast("Collection deleted", "success");
     },
-    onError: () => toast("failed to delete collection", "error"),
+    onError: () => toast("Failed to delete collection", "error"),
   });
   const reorder = trpc.collections.reorder.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(PUBLIC_COLLECTION_PATHS);
+      await revalidatePaths(collectionRevalidatePaths(slugs()));
       refetch();
-      toast("order saved", "success");
+      toast("Order saved", "success");
     },
-    onError: () => toast("failed to save order", "error"),
+    onError: () => toast("Failed to save order", "error"),
   });
 
   const [order, setOrder] = useState<string[]>([]);
@@ -100,20 +93,14 @@ export default function CollectionsPage() {
     setEditSeoDescription(c.seoDescription ?? "");
   }
 
-  async function togglePublished(c: NonNullable<typeof collectionList>[0]) {
-    try {
-      await update.mutateAsync({ id: c.id, published: !c.published });
-    } catch {
-      // error toast fires from onError callback
-    }
+  const actingId = update.isPending ? update.variables?.id : undefined;
+
+  function togglePublished(c: CollectionRow) {
+    update.mutate({ id: c.id, published: !c.published });
   }
 
-  async function toggleFeatured(c: NonNullable<typeof collectionList>[0]) {
-    try {
-      await setFeatured.mutateAsync({ id: c.id, featured: !c.featured });
-    } catch {
-      // error toast fires from onError callback
-    }
+  function toggleLanding(c: CollectionRow) {
+    update.mutate({ id: c.id, onLanding: !c.onLanding });
   }
 
   async function saveEdit() {
@@ -187,14 +174,19 @@ export default function CollectionsPage() {
                   <button onClick={() => setEditId(null)} className="border px-4 py-2 rounded text-sm">Cancel</button>
                 </div>
 
-                <CoverImageEditor collection={c} onUpdated={refetch} />
-                <CollectionPieces collectionId={c.id} />
+                <CoverImageEditor collection={c} slugs={slugs()} onUpdated={refetch} />
+                <CollectionPieces collectionId={c.id} slugs={slugs()} onSaved={refetch} />
               </div>
             ) : (
               <div key={c.id} className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{c.title}</p>
                   <p className="text-xs text-faint">/{c.slug}</p>
+                  <p className="mt-1 flex flex-wrap gap-x-2 text-xs text-muted">
+                    <span>{c.pieceCount} {c.pieceCount === 1 ? "piece" : "pieces"}</span>
+                    {c.onLanding && <span>landing</span>}
+                    {!c.published && <span>draft</span>}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
@@ -216,15 +208,24 @@ export default function CollectionsPage() {
                     ↓
                   </button>
                   <button
-                    onClick={() => toggleFeatured(c)}
-                    disabled={setFeatured.isPending}
-                    className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.featured ? "bg-warn/10 text-warn" : "bg-wall text-muted"}`}
+                    type="button"
+                    role="switch"
+                    aria-checked={c.onLanding}
+                    onClick={() => toggleLanding(c)}
+                    disabled={actingId === c.id}
+                    className="px-3 min-h-11 inline-flex items-center gap-2 rounded border text-xs disabled:opacity-50"
                   >
-                    {c.featured ? "★ Featured" : "☆ Feature"}
+                    <span
+                      aria-hidden
+                      className={`relative inline-block h-4 w-7 rounded-full ${c.onLanding ? "bg-accent" : "bg-wall"}`}
+                    >
+                      <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-paper ${c.onLanding ? "left-3.5" : "left-0.5"}`} />
+                    </span>
+                    On the landing page
                   </button>
                   <button
                     onClick={() => togglePublished(c)}
-                    disabled={update.isPending}
+                    disabled={actingId === c.id}
                     className={`px-3 min-h-11 inline-flex items-center rounded text-xs font-medium disabled:opacity-50 ${c.published ? "bg-accent-wash text-accent" : "bg-wall text-muted"}`}
                   >
                     {c.published ? "Published" : "Draft"}
@@ -232,7 +233,7 @@ export default function CollectionsPage() {
                   <button onClick={() => startEdit(c)} className="border px-3 min-h-11 inline-flex items-center rounded text-xs">Edit</button>
                   <button
                     onClick={() => handleDelete(c.id)}
-                    disabled={del.isPending}
+                    disabled={del.isPending && del.variables?.id === c.id}
                     className={`px-3 min-h-11 inline-flex items-center rounded text-xs disabled:opacity-50 ${confirmDelete === c.id ? "bg-neg text-paper" : "border text-neg"}`}
                   >
                     {confirmDelete === c.id ? "Confirm" : "Delete"}
@@ -257,18 +258,18 @@ export default function CollectionsPage() {
   );
 }
 
-function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow; onUpdated: () => void }) {
+function CoverImageEditor({ collection, slugs, onUpdated }: { collection: CollectionRow; slugs: string[]; onUpdated: () => void }) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const createCoverUploadUrl = trpc.collections.createCoverUploadUrl.useMutation();
   const updateCover = trpc.collections.update.useMutation({
     onSuccess: async (data) => {
-      await revalidatePaths([...PUBLIC_COLLECTION_PATHS, `/gallery/collections/${data.slug}`]);
+      await revalidatePaths(collectionRevalidatePaths([...slugs, data.slug]));
       onUpdated();
-      toast("cover image updated", "success");
+      toast("Cover image updated", "success");
     },
-    onError: () => toast("failed to update cover image", "error"),
+    onError: () => toast("Failed to update cover image", "error"),
   });
 
   function pickFile(file: File) {
@@ -359,17 +360,18 @@ function CoverImageEditor({ collection, onUpdated }: { collection: CollectionRow
   );
 }
 
-function CollectionPieces({ collectionId }: { collectionId: string }) {
+function CollectionPieces({ collectionId, slugs, onSaved }: { collectionId: string; slugs: string[]; onSaved: () => void }) {
   const toast = useToast();
   const { data: artworkList, isLoading: artworksLoading } = trpc.artworks.list.useQuery();
   const { data: pieceIds, refetch: refetchPieceIds, isLoading: pieceIdsLoading } = trpc.collections.getPieceIds.useQuery({ collectionId });
   const setPieces = trpc.collections.setPieces.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(PUBLIC_COLLECTION_PATHS);
+      await revalidatePaths(collectionRevalidatePaths(slugs));
       refetchPieceIds();
-      toast("pieces updated", "success");
+      onSaved();
+      toast("Pieces updated", "success");
     },
-    onError: () => toast("failed to update pieces", "error"),
+    onError: () => toast("Failed to update pieces", "error"),
   });
 
   // Ordered list of assigned artwork ids, kept local until "Save order" is pressed.

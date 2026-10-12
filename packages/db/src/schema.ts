@@ -30,6 +30,7 @@ export const artworks = pgTable("artworks", {
   status: text("status").notNull().default("available"), // available | bidding | sold
   excerpt: text("excerpt"),
   description: text("description"),
+  // Unused since #44; dropped in a follow-up migration after deploy.
   featured: boolean("featured").notNull().default(false),
   published: boolean("published").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
@@ -49,6 +50,8 @@ export const artworkImages = pgTable("artwork_images", {
   storagePath: text("storage_path").notNull(),
   altText: text("alt_text"),
   isPrimary: boolean("is_primary").notNull().default(false),
+  width: integer("width"),
+  height: integer("height"),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -61,7 +64,9 @@ export const collections = pgTable("collections", {
   title: text("title").notNull(),
   description: text("description"),
   coverImagePath: text("cover_image_path"),
+  // Unused since #44; dropped in a follow-up migration after deploy.
   featured: boolean("featured").notNull().default(false),
+  onLanding: boolean("on_landing").notNull().default(true),
   published: boolean("published").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
   seoTitle: text("seo_title"),

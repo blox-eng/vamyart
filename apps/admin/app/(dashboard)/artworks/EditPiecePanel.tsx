@@ -4,36 +4,35 @@ import React, { useEffect, useState } from "react";
 import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { revalidatePaths } from "@/lib/revalidate";
+import { pieceRevalidatePaths } from "@/lib/revalidate-paths";
 
 type Artwork = {
   id: string; slug: string; title: string; year: number | null;
   medium: string | null; dimensions: string | null; status: string;
   excerpt: string | null; description: string | null;
   seoTitle: string | null; seoDescription: string | null;
-  featured: boolean; published: boolean;
+  published: boolean;
 };
 
 export function EditPiecePanel({ artwork, onChanged, onDeleted }: { artwork: Artwork; onChanged: () => void; onDeleted: () => void; }) {
   const toast = useToast();
+  const { data: collectionList } = trpc.collections.list.useQuery();
+  const collectionSlugs = (collectionList ?? []).map((c) => c.slug);
   const [form, setForm] = useState(artwork);
   const [confirmDelete, setConfirmDelete] = useState(false);
   useEffect(() => { setForm(artwork); setConfirmDelete(false); }, [artwork]);
 
   const update = trpc.artworks.update.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/", "/gallery", `/gallery/${form.slug}`]);
+      await revalidatePaths(pieceRevalidatePaths(form.slug, collectionSlugs));
       toast("Piece updated", "success");
       onChanged();
     },
     onError: (e) => toast(e.message || "Failed to update", "error"),
   });
-  const setFeatured = trpc.artworks.setFeatured.useMutation({
-    onSuccess: async () => { await revalidatePaths(["/", "/gallery"]); toast("Featured updated", "success"); onChanged(); },
-    onError: () => toast("Failed to update featured", "error"),
-  });
   const del = trpc.artworks.delete.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/", "/gallery", `/gallery/${form.slug}`]);
+      await revalidatePaths(pieceRevalidatePaths(form.slug, collectionSlugs));
       toast("Piece deleted", "success");
       onDeleted();
     },
@@ -45,11 +44,6 @@ export function EditPiecePanel({ artwork, onChanged, onDeleted }: { artwork: Art
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-ink">Edit piece</p>
         <div className="flex gap-2">
-          <button onClick={() => setFeatured.mutate({ id: artwork.id, featured: !artwork.featured })}
-            disabled={setFeatured.isPending}
-            className={`text-xs px-2 py-0.5 rounded disabled:opacity-50 ${artwork.featured ? "bg-warn/10 text-warn" : "bg-wall text-muted hover:bg-hover"}`}>
-            {artwork.featured ? "★ Featured" : "Feature"}
-          </button>
           <span className={`text-xs px-2 py-0.5 rounded ${artwork.published ? "bg-accent-wash text-accent" : "bg-wall text-muted"}`}>
             {artwork.published ? "Published" : "Draft"}
           </span>

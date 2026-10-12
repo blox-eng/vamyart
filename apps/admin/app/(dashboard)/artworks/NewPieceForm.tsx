@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { revalidatePaths } from "@/lib/revalidate";
+import { pieceRevalidatePaths } from "@/lib/revalidate-paths";
 
 const EMPTY = {
   title: "", year: "", medium: "", dimensions: "", excerpt: "", description: "",
@@ -13,12 +14,14 @@ const EMPTY = {
 
 export function NewPieceForm({ onCreated }: { onCreated: (id: string) => void }) {
   const toast = useToast();
+  const { data: collectionList } = trpc.collections.list.useQuery();
+  const collectionSlugs = (collectionList ?? []).map((c) => c.slug);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...EMPTY });
 
   const create = trpc.artworks.create.useMutation({
     onSuccess: async (a) => {
-      await revalidatePaths(["/gallery", `/gallery/${a.slug}`]);
+      await revalidatePaths(pieceRevalidatePaths(a.slug, collectionSlugs));
       toast("Piece created", "success");
       setOpen(false);
       setForm({ ...EMPTY });

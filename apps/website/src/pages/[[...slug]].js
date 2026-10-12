@@ -4,13 +4,15 @@ import { allContent } from '../utils/local-content';
 import { getComponent } from '../components/components-registry';
 import { resolveStaticProps } from '../utils/static-props-resolvers';
 import { resolveStaticPaths } from '../utils/static-paths-resolvers';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl } from '../utils/seo-utils';
+import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl, ogImageUrl } from '../utils/seo-utils';
 import { buildHeroPreload } from '../utils/netlify-image';
 import { buildWebsiteJsonLd, buildPersonJsonLd } from '../utils/structured-data';
 import JsonLd from '../components/atoms/JsonLd';
 import { appRouter } from '@vamy/db/trpc';
+import { aspectOf } from '@vamy/db/gallery';
+import { LANDING_WIDTHS, landingImageSizes } from '../utils/slider-loop';
 
-// Server-side tRPC caller for homepage DB injection (featured image + active banner).
+// Server-side tRPC caller for homepage DB injection (active banner + landing pieces).
 const serverTrpc = appRouter.createCaller({ userId: null });
 
 
@@ -28,7 +30,7 @@ function Page(props) {
     const metaTags = seoGenerateMetaTags(page, site);
     const metaDescription = seoGenerateMetaDescription(page, site);
     const canonicalUrl = seoGenerateCanonicalUrl(page, site);
-    const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes }) : null;
+    const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes, widths: page.heroPreload.widths }) : null;
     const isHome = page.__metadata?.urlPath === '/';
     const base = resolveSiteUrl(site);
     const socialLinks = Array.isArray(site.footer?.socialLinks)
@@ -86,25 +88,8 @@ export async function getStaticProps({ params }) {
     const urlPath = '/' + (params.slug || []).join('/');
     const props = await resolveStaticProps(urlPath, data);
 
-    // Homepage: inject featured artwork image + active banner server-side.
-    // The hero features the artwork flagged `featured` in the admin (artworks.getFeatured),
-    // not a print product. When nothing is featured, the markdown default image stands.
+    // Homepage: inject the active banner and the landing slider's pieces server-side.
     if (urlPath === '/') {
-        try {
-            const featured = await serverTrpc.artworks.getFeatured();
-            if (featured?.primaryImage) {
-                const heroSection = props.page?.sections?.[0];
-                if (heroSection?.media) {
-                    heroSection.media.url = featured.primaryImage.url;
-                    heroSection.media.altText = featured.primaryImage.altText || `${featured.title} by Maeve Vamy`;
-                    heroSection.media.priority = true;
-                    props.page.heroPreload = { url: featured.primaryImage.url, sizes: heroSection.media.sizes ?? '100vw' };
-                }
-            }
-        } catch {
-            // Fallback to the markdown default if the DB is unavailable at build time.
-        }
-
         try {
             const banner = await serverTrpc.banners.getActive({ slug: '' });
             if (banner) {
@@ -114,48 +99,21 @@ export async function getStaticProps({ params }) {
             // No banner — component handles null gracefully
         }
 
-        try {
-            const featuredCollection = await serverTrpc.collections.getFeatured();
-            const sections = props.page?.sections ?? [];
-            const idx = sections.findIndex((s) => s?.elementId === 'featured-collection');
-            if (idx !== -1) {
-                if (featuredCollection) {
-                    const section = sections[idx];
-                    if (section.title) section.title.text = featuredCollection.title;
-                    section.text = featuredCollection.description ?? '';
-                    if (section.media) {
-                        section.media.url = featuredCollection.coverUrl ?? section.media.url;
-                        section.media.altText = `${featuredCollection.title} — collection by Maeve Vamy`;
-                    }
-                    if (section.actions?.[0]) {
-                        section.actions[0].url = `/gallery/collections/${featuredCollection.slug}`;
-                    }
-                } else {
-                    // No featured collection — remove the placeholder section entirely.
-                    sections.splice(idx, 1);
-                }
-            }
-        } catch {
-            // DB unavailable at build time — leave the markdown placeholder as-is.
-        }
+        const page = props.page;
+        const sections = page.sections ?? [];
+        const landing = sections.find((s) => s?.elementId === 'landing');
+        // No try: if the DB is down, ISR keeps serving the last good page (a build fails loudly).
+        const pieces = await serverTrpc.gallery.landing();
+        if (landing) landing.pieces = pieces;
+        page.hideFooter = true;
+        page.slimHeader = true;
+        // The slider renders the page's only h1 ("Maeve Vamy"); drop the layout's sr-only "Home".
+        page.title = null;
 
-        try {
-            const publishedCollections = await serverTrpc.collections.listPublic();
-            const sections = props.page?.sections ?? [];
-            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
-            if (carouselIdx !== -1) {
-                if (publishedCollections.length) {
-                    sections[carouselIdx].collections = publishedCollections;
-                } else {
-                    // No published collections — drop the placeholder rather than render empty.
-                    sections.splice(carouselIdx, 1);
-                }
-            }
-        } catch {
-            // DB unavailable at build — remove the carousel section so nothing empty renders.
-            const sections = props.page?.sections ?? [];
-            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
-            if (carouselIdx !== -1) sections.splice(carouselIdx, 1);
+        const firstImage = pieces.find((p) => p.image)?.image;
+        if (firstImage) {
+            page.heroPreload = { url: firstImage.url, sizes: landingImageSizes(aspectOf(firstImage)), widths: LANDING_WIDTHS };
+            page.seo = { ...page.seo, socialImage: ogImageUrl(firstImage.url, resolveSiteUrl(props.site)) };
         }
     }
 

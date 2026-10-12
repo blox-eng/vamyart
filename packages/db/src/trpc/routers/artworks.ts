@@ -3,6 +3,7 @@ import { eq, and, ne, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
+import { pieceAltText } from "../../services/gallery";
 import { artworks, products, productVariants, orders, auctions } from "../../schema";
 
 export function slugify(input: string): string {
@@ -30,15 +31,14 @@ export function artworkDeleteBlockReason(input: {
 }
 
 const contentFields = {
-  title: z.string().min(1),
+  title: z.string().trim().min(1),
   slug: z.string().min(1).optional(),
   year: z.number().int().nullable().optional(),
-  medium: z.string().nullable().optional(),
+  medium: z.string().trim().nullable().optional(),
   dimensions: z.string().nullable().optional(),
   status: z.enum(["available", "bidding", "sold"]).optional(),
   excerpt: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  featured: z.boolean().optional(),
   published: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
   seoTitle: z.string().nullable().optional(),
@@ -83,7 +83,6 @@ export const artworksRouter = router({
           status: input.status ?? "available",
           excerpt: input.excerpt ?? null,
           description: input.description ?? null,
-          featured: input.featured ?? false,
           published: input.published ?? false,
           sortOrder: input.sortOrder ?? 0,
           seoTitle: input.seoTitle ?? null,
@@ -200,53 +199,6 @@ export const artworksRouter = router({
       return { success: true };
     }),
 
-  setFeatured: protectedProcedure
-    .input(z.object({ id: z.string().uuid(), featured: z.boolean() }))
-    .mutation(async ({ input }) => {
-      return db.transaction(async (tx) => {
-        // Single-featured invariant: exactly one artwork drives the homepage hero.
-        if (input.featured) {
-          await tx
-            .update(artworks)
-            .set({ featured: false, updatedAt: new Date() })
-            .where(and(eq(artworks.featured, true), ne(artworks.id, input.id)));
-        }
-        const [a] = await tx
-          .update(artworks)
-          .set({ featured: input.featured, updatedAt: new Date() })
-          .where(eq(artworks.id, input.id))
-          .returning();
-        if (!a) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Artwork not found" });
-        }
-        return a;
-      });
-    }),
-
-  // Drives the homepage hero. The public site features an artwork (this flag),
-  // not a print product — the two are separate concepts.
-  getFeatured: publicProcedure.query(async () => {
-    const a = await db.query.artworks.findFirst({
-      where: (art, { eq, and, isNull }) =>
-        and(eq(art.featured, true), eq(art.published, true), isNull(art.deletedAt)),
-      orderBy: (art, { asc }) => [asc(art.sortOrder), asc(art.title)],
-      with: { images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] } },
-    });
-    if (!a) return null;
-    const primary = a.images.find((img) => img.isPrimary) ?? a.images[0] ?? null;
-    return {
-      id: a.id,
-      slug: a.slug,
-      title: a.title,
-      primaryImage: primary
-        ? {
-            url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-            altText: primary.altText ?? a.title,
-          }
-        : null,
-    };
-  }),
-
   listPublic: publicProcedure.query(async () => {
     const rows = await db.query.artworks.findMany({
       where: (a, { eq, and, isNull }) => and(eq(a.published, true), isNull(a.deletedAt)),
@@ -267,7 +219,6 @@ export const artworksRouter = router({
         excerpt: a.excerpt,
         medium: a.medium,
         dimensions: a.dimensions,
-        featured: a.featured,
         sortOrder: a.sortOrder,
         updatedAt: a.updatedAt,
         collectionSlugs: a.collections
@@ -277,7 +228,7 @@ export const artworksRouter = router({
         primaryImage: primary
           ? {
               url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-              altText: primary.altText ?? a.title,
+              altText: pieceAltText({ altText: primary.altText, title: a.title, medium: a.medium }),
             }
           : null,
       };
@@ -311,12 +262,12 @@ export const artworksRouter = router({
         primaryImage: primary
           ? {
               url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-              altText: primary.altText ?? a.title,
+              altText: pieceAltText({ altText: primary.altText, title: a.title, medium: a.medium }),
             }
           : null,
         images: a.images.map((img) => ({
           url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${img.storagePath}`,
-          altText: img.altText ?? a.title,
+          altText: pieceAltText({ altText: img.altText, title: a.title, medium: a.medium }),
         })),
       };
     }),

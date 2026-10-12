@@ -1,180 +1,51 @@
 import React from 'react';
-import Head from 'next/head';
 import { allContent } from '../../utils/local-content';
-import { getComponent } from '../../components/components-registry';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription } from '../../utils/seo-utils';
+import DefaultBaseLayout from '../../components/layouts/DefaultBaseLayout';
+import PageHead from '../../components/atoms/PageHead';
+import GalleryWall from '../../components/gallery/GalleryWall';
+import { ogImageUrl, resolveSiteUrl } from '../../utils/seo-utils';
+import { buildBreadcrumbJsonLd, buildCollectionJsonLd, wallItemListPieces } from '../../utils/structured-data';
 import { appRouter } from '@vamy/db/trpc';
 
 const serverTrpc = appRouter.createCaller({ userId: null });
 
-function toJson(value) {
-  return JSON.parse(JSON.stringify(value));
-}
+const TITLE = 'on the wall';
+const DESCRIPTION =
+    'Original fine art by Maeve Vamy — muted seascapes, abstract figurations, and surreal studies in warm, earthy tones.';
 
-// Mirror the markdown content pipeline (local-content.ts): every object with a
-// `type` gets `__metadata.modelName` so the section/component registry can resolve it.
-function withMetadata(value) {
-  if (Array.isArray(value)) return value.map(withMetadata);
-  if (value && typeof value === 'object') {
-    const next = {};
-    for (const [k, v] of Object.entries(value)) next[k] = withMetadata(v);
-    if (typeof next.type === 'string' && !next.__metadata) {
-      next.__metadata = { modelName: next.type };
-    }
-    return next;
-  }
-  return value;
-}
-
-// CTA block copied from the retired content/pages/gallery/index.md `bottomSections`.
-const BOTTOM_SECTIONS = [
-  {
-    type: 'GenericSection',
-    title: { type: 'TitleBlock', text: 'Commission something for your space.', color: 'text-dark' },
-    subtitle: '',
-    text: '',
-    badge: { type: 'Badge', label: "Don't see the right piece?", color: 'text-primary' },
-    actions: [
-      {
-        type: 'Button',
-        label: 'Start a conversation',
-        altText: '',
-        url: '/get-a-piece/',
-        showIcon: false,
-        icon: 'arrowRight',
-        iconPosition: 'right',
-        style: 'secondary',
-        elementId: '',
-      },
-    ],
-    colors: 'bg-light-fg-dark',
-    styles: {
-      self: {
-        flexDirection: 'col',
-        justifyContent: 'center',
-        textAlign: 'center',
-        padding: ['pt-16', 'pl-4', 'pb-16', 'pr-4'],
-        borderColor: 'border-dark',
-        borderStyle: 'solid',
-        borderWidth: 1,
-        borderRadius: 'none',
-      },
-    },
-  },
-];
-
-function Page({ page, site, collections }) {
-  const PageLayout = getComponent('PostFeedLayout');
-  const title = seoGenerateTitle(page, site);
-  const metaTags = seoGenerateMetaTags(page, site);
-  const metaDescription = seoGenerateMetaDescription(page, site);
-
-  // Client-side collection filter: selecting a chip narrows `page.items` to
-  // pieces whose collectionSlugs include the selected slug. No route change,
-  // no refetch — PostFeedLayout itself is untouched.
-  const [selectedSlug, setSelectedSlug] = React.useState(null);
-  const filteredItems = selectedSlug
-    ? page.items.filter((item) => (item.collectionSlugs || []).includes(selectedSlug))
-    : page.items;
-  const topSections =
-    collections.length > 0
-      ? [
-          {
-            __metadata: { modelName: 'CollectionFilterChips' },
-            collections,
-            selectedSlug,
-            onSelect: setSelectedSlug,
-          },
-        ]
-      : [];
-  const filteredPage = { ...page, items: filteredItems, topSections };
-
-  return (
-    <>
-      <Head>
-        <title>{title}</title>
-        {metaDescription && <meta name="description" content={metaDescription} />}
-        {metaTags.map((m) =>
-          m.format === 'property' ? (
-            <meta key={m.property} property={m.property} content={m.content} />
-          ) : (
-            <meta key={m.property} name={m.property} content={m.content} />
-          )
-        )}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {site.favicon && <link rel="icon" href={site.favicon} />}
-      </Head>
-      <PageLayout page={filteredPage} site={site} />
-    </>
-  );
+function Page({ site, pieces, filters }) {
+    const base = resolveSiteUrl(site);
+    const url = `${base}/gallery/`;
+    const firstImage = pieces.find((p) => p.image)?.image;
+    const jsonLd = [
+        buildCollectionJsonLd({
+            name: TITLE,
+            description: DESCRIPTION,
+            url,
+            pieces: wallItemListPieces(base, pieces),
+        }),
+        buildBreadcrumbJsonLd(base, [{ name: TITLE, path: '/gallery/' }]),
+    ];
+    return (
+        <DefaultBaseLayout page={{ __metadata: { id: 'gallery' } }} site={site}>
+            <PageHead
+                title={TITLE}
+                description={DESCRIPTION}
+                canonicalPath="/gallery/"
+                ogImage={firstImage ? ogImageUrl(firstImage.url, base) : null}
+                jsonLd={jsonLd}
+                site={site}
+            />
+            <GalleryWall pieces={pieces} filters={filters} activeSlug={null} />
+        </DefaultBaseLayout>
+    );
 }
 
 export async function getStaticProps() {
-  const { props: { site } } = allContent();
-
-  let artworks = [];
-  try {
-    artworks = await serverTrpc.artworks.listPublic();
-  } catch {
-    // DB unavailable at build — render an empty gallery; ISR will refill.
-  }
-
-  let collections = [];
-  try {
-    collections = (await serverTrpc.collections.listPublic()).map((c) => ({ slug: c.slug, title: c.title }));
-  } catch {
-    // DB unavailable at build — render the grid with no filter chips; ISR will refill.
-  }
-
-  const items = artworks.map((a) => ({
-    title: a.title,
-    // Bare slug: getPageUrl() (page-utils) prepends "/gallery" for PostLayout items.
-    slug: a.slug,
-    excerpt: a.excerpt ?? '',
-    featuredImage: a.primaryImage
-      ? { url: a.primaryImage.url, altText: a.primaryImage.altText, type: 'ImageBlock' }
-      : null,
-    colors: 'bg-light-fg-dark',
-    styles: { self: { flexDirection: 'row' } },
-    // Read client-side by the collection filter chips to decide membership.
-    collectionSlugs: a.collectionSlugs ?? [],
-    __metadata: { modelName: 'PostLayout', urlPath: `/gallery/${a.slug}`, id: a.id },
-  }));
-
-  const page = {
-    __metadata: { modelName: 'PostFeedLayout', urlPath: '/gallery', id: 'gallery-index' },
-    title: 'Gallery',
-    enableSearch: false,
-    topSections: [],
-    bottomSections: withMetadata(BOTTOM_SECTIONS),
-    seo: {
-      metaTitle: 'Gallery - Maeve Vamy',
-      metaDescription:
-        'Original fine art by Maeve Vamy — muted seascapes, abstract figurations, and surreal studies in warm, earthy tones.',
-      addTitleSuffix: false,
-      type: 'Seo',
-    },
-    pageIndex: 0,
-    baseUrlPath: '/gallery',
-    numOfPages: 1,
-    items: toJson(items),
-    postFeed: {
-      type: 'PagedPostsSection',
-      title: null,
-      subtitle: null,
-      showThumbnail: true,
-      showExcerpt: true,
-      showDate: false,
-      showAuthor: false,
-      actions: [],
-      elementId: null,
-      variant: 'big-list',
-      colors: 'bg-light-fg-dark',
-      hoverEffect: 'move-up',
-    },
-  };
-
-  return { props: { page, site: toJson(site), collections: toJson(collections) }, revalidate: 3600 };
+    const { props: { site } } = allContent();
+    // No try: if the DB is down, ISR keeps serving the last good page (a build fails loudly).
+    const { pieces, filters } = await serverTrpc.gallery.wall({});
+    return { props: { site: JSON.parse(JSON.stringify(site)), pieces, filters }, revalidate: 3600 };
 }
 
 export default Page;

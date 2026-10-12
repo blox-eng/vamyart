@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { timingSafeEqual, createHash } from "crypto";
+import { normalizeRevalidatePath } from "../../utils/revalidate-path";
 
 function secretsMatch(a: string, b: string): boolean {
   const ha = createHash("sha256").update(a).digest();
@@ -21,14 +22,20 @@ export default async function handler(
   }
 
   const rawPaths = (req.query.paths as string) ?? "";
-  const paths = rawPaths
+  const requested = rawPaths
     .split(",")
     .map((p) => p.trim())
     .filter(Boolean);
 
-  if (paths.length === 0) {
+  if (requested.length === 0) {
     return res.status(400).json({ error: "No paths provided" });
   }
+
+  const normalized = requested.map(normalizeRevalidatePath);
+  if (normalized.some((p) => p === null)) {
+    return res.status(400).json({ error: "Paths must start with /" });
+  }
+  const paths = [...new Set(normalized as string[])];
 
   try {
     await Promise.all(paths.map((path) => res.revalidate(path)));

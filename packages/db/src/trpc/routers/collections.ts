@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, sql, isNull, asc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createClient } from "@supabase/supabase-js";
-import { router, publicProcedure, protectedProcedure } from "../index";
+import { router, protectedProcedure } from "../index";
 import { db } from "../../client";
-import { collections, artworkCollections } from "../../schema";
+import { collections, artworkCollections, artworks } from "../../schema";
 import { slugify } from "./artworks";
 import { extForContentType } from "./artworkImages";
 
@@ -47,11 +47,15 @@ export const collectionsRouter = router({
     return db.query.collections.findMany({
       where: (c, { isNull }) => isNull(c.deletedAt),
       orderBy: (c, { asc }) => [asc(c.sortOrder), asc(c.title)],
+      extras: () => ({
+        // Literal on purpose: relational extras render ${collections.id} unqualified, which binds to the inner table.
+        pieceCount: sql<number>`(select count(*)::int from ${artworkCollections} ac join ${artworks} a on a.id = ac.artwork_id where ac.collection_id = "collections"."id" and a.deleted_at is null)`.as("piece_count"),
+      }),
     });
   }),
 
   create: protectedProcedure
-    .input(z.object({ title: z.string().min(1), description: z.string().optional() }))
+    .input(z.object({ title: z.string().trim().min(1), description: z.string().optional() }))
     .mutation(async ({ input }) => {
       const slug = slugify(input.title);
       if (!slug) {
@@ -69,11 +73,12 @@ export const collectionsRouter = router({
     .input(
       z.object({
         id: z.string().uuid(),
-        title: z.string().min(1).optional(),
+        title: z.string().trim().min(1).optional(),
         slug: z.string().min(1).optional(),
         description: z.string().nullable().optional(),
         coverImagePath: z.string().nullable().optional(),
         published: z.boolean().optional(),
+        onLanding: z.boolean().optional(),
         seoTitle: z.string().nullable().optional(),
         seoDescription: z.string().nullable().optional(),
       })
@@ -122,26 +127,6 @@ export const collectionsRouter = router({
       return { ok: true };
     }),
 
-  setFeatured: protectedProcedure
-    .input(z.object({ id: z.string().uuid(), featured: z.boolean() }))
-    .mutation(async ({ input }) => {
-      return db.transaction(async (tx) => {
-        if (input.featured) {
-          await tx
-            .update(collections)
-            .set({ featured: false, updatedAt: new Date() })
-            .where(and(eq(collections.featured, true), ne(collections.id, input.id)));
-        }
-        const [c] = await tx
-          .update(collections)
-          .set({ featured: input.featured, updatedAt: new Date() })
-          .where(eq(collections.id, input.id))
-          .returning();
-        if (!c) throw new TRPCError({ code: "NOT_FOUND", message: "Collection not found" });
-        return c;
-      });
-    }),
-
   setPieces: protectedProcedure
     .input(z.object({ collectionId: z.string().uuid(), artworkIds: z.array(z.string().uuid()) }))
     .mutation(async ({ input }) => {
@@ -149,7 +134,13 @@ export const collectionsRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Duplicate artwork ids in collection." });
       }
       await db.transaction(async (tx) => {
-        await tx.delete(artworkCollections).where(eq(artworkCollections.collectionId, input.collectionId));
+        // Only live pieces are replaced; soft-deleted pieces keep their membership so restore brings them back.
+        await tx.delete(artworkCollections).where(
+          and(
+            eq(artworkCollections.collectionId, input.collectionId),
+            inArray(artworkCollections.artworkId, tx.select({ id: artworks.id }).from(artworks).where(isNull(artworks.deletedAt)))
+          )
+        );
         if (input.artworkIds.length) {
           await tx.insert(artworkCollections).values(
             input.artworkIds.map((artworkId, i) => ({
@@ -166,10 +157,12 @@ export const collectionsRouter = router({
   getPieceIds: protectedProcedure
     .input(z.object({ collectionId: z.string().uuid() }))
     .query(async ({ input }) => {
-      const rows = await db.query.artworkCollections.findMany({
-        where: (ac, { eq }) => eq(ac.collectionId, input.collectionId),
-        orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-      });
+      const rows = await db
+        .select({ artworkId: artworkCollections.artworkId })
+        .from(artworkCollections)
+        .innerJoin(artworks, eq(artworks.id, artworkCollections.artworkId))
+        .where(and(eq(artworkCollections.collectionId, input.collectionId), isNull(artworks.deletedAt)))
+        .orderBy(asc(artworkCollections.sortOrder));
       return rows.map((r) => r.artworkId);
     }),
 
@@ -196,99 +189,4 @@ export const collectionsRouter = router({
       }
       return { path: data.path, token: data.token };
     }),
-
-  // ── Public reads ─────────────────────────────────────────────────────────────
-  listPublic: publicProcedure.query(async () => {
-    const rows = await db.query.collections.findMany({
-      where: (c, { eq, and, isNull }) => and(eq(c.published, true), isNull(c.deletedAt)),
-      orderBy: (c, { asc }) => [asc(c.sortOrder), asc(c.title)],
-      with: {
-        pieces: {
-          orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-          with: { artwork: { with: { images: { orderBy: (i, { asc }) => [asc(i.sortOrder)] } } } },
-        },
-      },
-    });
-    return rows.map((c) => {
-      const visiblePieces = c.pieces
-        .map((p) => p.artwork)
-        .filter((a) => a.published && !a.deletedAt);
-      const first = visiblePieces[0];
-      const firstImg = first ? first.images.find((i) => i.isPrimary) ?? first.images[0] ?? null : null;
-      return {
-        id: c.id,
-        slug: c.slug,
-        title: c.title,
-        description: c.description,
-        pieceCount: visiblePieces.length,
-        coverUrl: collectionCoverUrl(c.coverImagePath, firstImg?.storagePath ?? null),
-      };
-    });
-  }),
-
-  getBySlug: publicProcedure
-    .input(z.object({ slug: z.string().min(1) }))
-    .query(async ({ input }) => {
-      const c = await db.query.collections.findFirst({
-        where: (col, { eq }) => eq(col.slug, input.slug),
-        with: {
-          pieces: {
-            orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-            with: { artwork: { with: { images: { orderBy: (i, { asc }) => [asc(i.sortOrder)] } } } },
-          },
-        },
-      });
-      if (!c || !c.published || c.deletedAt) return null;
-      const pieces = c.pieces
-        .map((p) => p.artwork)
-        .filter((a) => a.published && !a.deletedAt)
-        .map((a) => {
-          const primary = a.images.find((i) => i.isPrimary) ?? a.images[0] ?? null;
-          return {
-            slug: a.slug,
-            title: a.title,
-            excerpt: a.excerpt,
-            primaryImage: primary
-              ? { url: collectionCoverUrl(primary.storagePath, null), altText: primary.altText ?? a.title }
-              : null,
-          };
-        });
-      return {
-        slug: c.slug,
-        title: c.title,
-        description: c.description,
-        seoTitle: c.seoTitle,
-        seoDescription: c.seoDescription,
-        coverUrl: c.coverImagePath ? collectionCoverUrl(c.coverImagePath, null) : pieces[0]?.primaryImage?.url ?? null,
-        pieces,
-      };
-    }),
-
-  getFeatured: publicProcedure.query(async () => {
-    const c = await db.query.collections.findFirst({
-      where: (col, { eq, and, isNull }) => and(eq(col.featured, true), eq(col.published, true), isNull(col.deletedAt)),
-      with: {
-        pieces: {
-          orderBy: (ac, { asc }) => [asc(ac.sortOrder)],
-          with: { artwork: { with: { images: { orderBy: (i, { asc }) => [asc(i.sortOrder)] } } } },
-        },
-      },
-    });
-    if (!c) return null;
-    const pieces = c.pieces
-      .map((p) => p.artwork)
-      .filter((a) => a.published && !a.deletedAt)
-      .slice(0, 3)
-      .map((a) => {
-        const primary = a.images.find((i) => i.isPrimary) ?? a.images[0] ?? null;
-        return { slug: a.slug, title: a.title, imageUrl: primary ? collectionCoverUrl(primary.storagePath, null) : null };
-      });
-    return {
-      slug: c.slug,
-      title: c.title,
-      description: c.description,
-      coverUrl: c.coverImagePath ? collectionCoverUrl(c.coverImagePath, null) : pieces[0]?.imageUrl ?? null,
-      pieces,
-    };
-  }),
 });

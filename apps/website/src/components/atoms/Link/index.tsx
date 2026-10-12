@@ -12,8 +12,9 @@ export default function Link({ children, href, ...other }) {
         );
     }
 
+    const external = /^https?:\/\//.test(href);
     return (
-        <a href={href} {...other}>
+        <a href={href} {...(external && { target: '_blank', rel: 'noopener noreferrer' })} {...other}>
             {children}
         </a>
     );

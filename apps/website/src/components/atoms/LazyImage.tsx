@@ -37,7 +37,7 @@ export default function LazyImage({ src, alt, className, imgClassName, loading =
     const srcSet = netlifyImageSrcSet(resolvedSrc, widths) || undefined;
 
     return (
-        <div className={classNames('relative bg-wall overflow-hidden', className)} {...rest}>
+        <div className={classNames('relative overflow-hidden', className)} {...rest}>
             <img
                 ref={imgRef}
                 src={optimizedSrc}

@@ -33,3 +33,5 @@ export {
   type CertificateSnapshot,
   type SnapshotInput,
 } from "./certificates/model";
+export { aspectOf, pieceAltText } from "./services/gallery";
+export type { GalleryPiece, GalleryImage } from "./trpc/routers/gallery";

@@ -6,7 +6,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./trpc": "./src/trpc/root.ts",
-    "./trpc/context": "./src/trpc/context.ts"
+    "./trpc/context": "./src/trpc/context.ts",
+    "./gallery": "./src/services/gallery.ts",
+    "./content-box": "./src/services/content-box.ts"
   },
   "scripts": {
     "migrate": "drizzle-kit migrate",

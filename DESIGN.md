@@ -27,7 +27,7 @@ Tokens are CSS custom properties. Use them through Tailwind (`bg-[var(--bg)]` or
 |---|---|---|---|
 | `--bg` | `#F4F0E9` bone paper | `#151214` night ink | page ground |
 | `--field` | `#FBF9F5` | `#1E1A1D` | input/field fill, sheet surface |
-| `--wall` | `#E9E4DC` | `#1A1618` | ground behind artwork and photographs |
+| `--wall` | `#E9E4DC` | `#1A1618` | ground behind artwork and photographs (studio only) |
 | `--text` | `#1F1A1E` aubergine ink | `#ECE6DF` | body, headings |
 | `--muted` | `#5E565B` | `#ADA4A8` | secondary text, **small labels** |
 | `--faint` | `#8A8186` | `#7F767B` | placeholders, disabled, icons only (see contrast) |
@@ -46,7 +46,7 @@ Tokens are CSS custom properties. Use them through Tailwind (`bg-[var(--bg)]` or
 - **Alpha ramp, not new colours.** Express states as the accent at 100% (action) and 10% (selected wash).
 - **Sold** = `--neg` dot + the word "Sold". The red dot on gallery cards (#37) is this token.
 - **Never** introduce blue/indigo/purple primaries, saturated greens, or neon status colours.
-- **Temporary exception:** the public site uses a white `--bg` until artwork photos are cut out of their white studio backgrounds (cut-out editor, #40); then it returns to bone paper.
+- Public site: pure white `#FFFFFF` background, permanently. Gallery walls are white; the work is the only colour.
 - **Themes:** the studio follows the OS preference. The public site pins `data-theme="light"` (paper) until a dark gallery is deliberately designed. Photography pages may use `--wall` as their ground.
 
 ---
@@ -83,7 +83,7 @@ Two families, both self-hosted with `next/font` (never a render-blocking `@impor
 **Public site**
 - Generous: sections are separated by 96–128px on desktop and 64px on mobile.
 - Containers: full-bleed for hero and featured work; `1200px` for grids; `prose` for text.
-- Images sit on the page or on `--wall` with no frame, border or rounded corners. **Never crop artwork** in gallery or detail views (`object-contain`). Covers that are intentionally cropped (collection 3:2 crop) are the only exception.
+- Images sit directly on the white page, filling their box exactly, with no frame, border or rounded corners. **Never crop artwork** in gallery or detail views (`object-contain`). Covers that are intentionally cropped (collection 3:2 crop) are the only exception.
 - 16px minimum side gutter on mobile; no horizontal scroll.
 
 **Studio**
@@ -121,7 +121,7 @@ Two families, both self-hosted with `next/font` (never a render-blocking `@impor
 
 - **No instant state changes and no bounce.** Use the same curve everywhere; inconsistent motion kills a premium feel faster than slow motion does.
 - **Enter:** opacity 0→1 plus translate 4–8px. **Exit:** faster than enter (~0.75×). **Reorder:** animate position (FLIP), never jump.
-- **Images** fade in from `--wall` once loaded. No spinners over artwork.
+- **Images** fade in from the page once loaded. No spinners over artwork.
 - `prefers-reduced-motion`: the tokens drop to 0ms. Anything driven by JS (scroll reveals, carousels) must check the media query too.
 
 ---

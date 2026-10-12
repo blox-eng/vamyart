@@ -1,10 +1,25 @@
 import { pickOgImage } from '../lib/ogRotation';
 
 const SITE_NAME = 'Maeve Vamy';
+const SITE_FALLBACK_URL = 'https://vamy.art';
 
 export function resolveSiteUrl(site) {
     const raw = site?.env?.URL || process.env.NEXT_PUBLIC_SITE_URL || null;
-    return raw ? raw.replace(/\/+$/, '') : null;
+    return (raw || SITE_FALLBACK_URL).replace(/\/+$/, '');
+}
+
+export function formatTitle(name) {
+    const trimmed = (name || '').trim();
+    return !trimmed || trimmed === SITE_NAME || trimmed.endsWith(`\u2014 ${SITE_NAME}`) ? (trimmed || SITE_NAME) : `${trimmed} \u2014 ${SITE_NAME}`;
+}
+
+export function absoluteUrl(base, pathOrUrl) {
+    if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+    return base.replace(/\/+$/, '') + '/' + pathOrUrl.replace(/^\/+/, '');
+}
+
+export function ogImageUrl(srcUrl, base) {
+    return `${base.replace(/\/+$/, '')}/.netlify/images?url=${encodeURIComponent(srcUrl)}&w=1200&q=80`;
 }
 
 export function normalizeTrailingSlash(path) {
@@ -44,8 +59,6 @@ export function seoGenerateMetaTags(page, site) {
         ...(ogUrl && { 'og:url': ogUrl }),
         ...(ogImage && { 'og:image': ogImage }),
         ...(ogImage && { 'og:image:alt': ogImageAlt }),
-        ...(ogImage && { 'og:image:width': '1200' }),
-        ...(ogImage && { 'og:image:height': '630' }),
         'twitter:card': 'summary_large_image',
         ...(seoTitle && { 'twitter:title': seoTitle }),
         ...(metaDescription && { 'twitter:description': metaDescription }),
@@ -124,11 +137,7 @@ export function seoGenerateOgImage(page, site) {
     if (ogImage && /^https?:\/\//i.test(ogImage)) {
         return ogImage;
     }
-    const domainUrl = site.env?.URL ? site.env.URL : null;
-    if (ogImage && domainUrl) {
-        return domainUrl + ogImage;
-    }
-    return ogImage;
+    return ogImage ? absoluteUrl(resolveSiteUrl(site), ogImage) : ogImage;
 }
 
 function seoGenerateOgUrl(page, site) {
