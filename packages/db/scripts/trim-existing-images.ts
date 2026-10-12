@@ -69,10 +69,11 @@ async function main() {
     try {
       const res = await fetch(`${url}/storage/v1/object/public/${BUCKET}/${row.storagePath}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const { data: oriented, info: full } = await sharp(Buffer.from(await res.arrayBuffer()))
+      const original = Buffer.from(await res.arrayBuffer());
+      const meta = await sharp(original).metadata();
+      const full = meta.autoOrient;
+      const { data: gray, info: small } = await sharp(original)
         .rotate()
-        .toBuffer({ resolveWithObject: true });
-      const { data: gray, info: small } = await sharp(oriented)
         .greyscale()
         .resize(DETECT_EDGE, DETECT_EDGE, { fit: "inside", withoutEnlargement: true })
         .raw()
@@ -82,8 +83,10 @@ async function main() {
         table.push(`${row.title} | skipped (no clear edge) | ${row.storagePath}`);
         continue;
       }
+      // One decode/encode from the original: orient, crop, cap, encode.
       const box = scaleContentBox(found, small.width, small.height, full.width, full.height);
-      const { data: jpeg, info: out } = await sharp(oriented)
+      const { data: jpeg, info: out } = await sharp(original)
+        .rotate()
         .extract(box)
         .resize(MAX_EDGE, MAX_EDGE, { fit: "inside", withoutEnlargement: true })
         .jpeg({ quality: QUALITY })
