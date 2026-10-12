@@ -4,13 +4,15 @@ import { allContent } from '../utils/local-content';
 import { getComponent } from '../components/components-registry';
 import { resolveStaticProps } from '../utils/static-props-resolvers';
 import { resolveStaticPaths } from '../utils/static-paths-resolvers';
-import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl } from '../utils/seo-utils';
+import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl, ogImageUrl } from '../utils/seo-utils';
 import { buildHeroPreload } from '../utils/netlify-image';
 import { buildWebsiteJsonLd, buildPersonJsonLd } from '../utils/structured-data';
 import JsonLd from '../components/atoms/JsonLd';
 import { appRouter } from '@vamy/db/trpc';
+import { aspectOf } from '@vamy/db/gallery';
+import { LANDING_WIDTHS, landingImageSizes } from '../utils/slider-loop';
 
-// Server-side tRPC caller for homepage DB injection (active banner + collections).
+// Server-side tRPC caller for homepage DB injection (active banner + landing pieces).
 const serverTrpc = appRouter.createCaller({ userId: null });
 
 
@@ -28,7 +30,7 @@ function Page(props) {
     const metaTags = seoGenerateMetaTags(page, site);
     const metaDescription = seoGenerateMetaDescription(page, site);
     const canonicalUrl = seoGenerateCanonicalUrl(page, site);
-    const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes }) : null;
+    const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes, widths: page.heroPreload.widths }) : null;
     const isHome = page.__metadata?.urlPath === '/';
     const base = resolveSiteUrl(site);
     const socialLinks = Array.isArray(site.footer?.socialLinks)
@@ -86,7 +88,7 @@ export async function getStaticProps({ params }) {
     const urlPath = '/' + (params.slug || []).join('/');
     const props = await resolveStaticProps(urlPath, data);
 
-    // Homepage: inject the active banner and published collections server-side.
+    // Homepage: inject the active banner and the landing slider's pieces server-side.
     if (urlPath === '/') {
         try {
             const banner = await serverTrpc.banners.getActive({ slug: '' });
@@ -97,23 +99,25 @@ export async function getStaticProps({ params }) {
             // No banner — component handles null gracefully
         }
 
+        const page = props.page;
+        const sections = page.sections ?? [];
+        const landing = sections.find((s) => s?.elementId === 'landing');
+        let pieces = [];
         try {
-            const publishedCollections = await serverTrpc.collections.listPublic();
-            const sections = props.page?.sections ?? [];
-            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
-            if (carouselIdx !== -1) {
-                if (publishedCollections.length) {
-                    sections[carouselIdx].collections = publishedCollections;
-                } else {
-                    // No published collections — drop the placeholder rather than render empty.
-                    sections.splice(carouselIdx, 1);
-                }
-            }
-        } catch {
-            // DB unavailable at build — remove the carousel section so nothing empty renders.
-            const sections = props.page?.sections ?? [];
-            const carouselIdx = sections.findIndex((s) => s?.elementId === 'collections-carousel');
-            if (carouselIdx !== -1) sections.splice(carouselIdx, 1);
+            pieces = await serverTrpc.gallery.landing();
+        } catch (err) {
+            // DB unavailable: the slider still renders its last frame.
+            console.error('[home] gallery.landing failed', err);
+        }
+        if (landing) landing.pieces = pieces;
+        page.hideFooter = true;
+        // The slider renders the page's only h1 ("Maeve Vamy"); drop the layout's sr-only "Home".
+        page.title = null;
+
+        const firstImage = pieces.find((p) => p.image)?.image;
+        if (firstImage) {
+            page.heroPreload = { url: firstImage.url, sizes: landingImageSizes(aspectOf(firstImage)), widths: LANDING_WIDTHS };
+            page.seo = { ...page.seo, socialImage: ogImageUrl(firstImage.url, resolveSiteUrl(props.site)) };
         }
     }
 
