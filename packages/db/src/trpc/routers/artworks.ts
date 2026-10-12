@@ -3,6 +3,7 @@ import { eq, and, ne, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
+import { pieceAltText } from "../../services/gallery";
 import { artworks, products, productVariants, orders, auctions } from "../../schema";
 
 export function slugify(input: string): string {
@@ -227,7 +228,7 @@ export const artworksRouter = router({
         primaryImage: primary
           ? {
               url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-              altText: primary.altText ?? a.title,
+              altText: pieceAltText({ altText: primary.altText, title: a.title, medium: a.medium }),
             }
           : null,
       };
@@ -261,12 +262,12 @@ export const artworksRouter = router({
         primaryImage: primary
           ? {
               url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
-              altText: primary.altText ?? a.title,
+              altText: pieceAltText({ altText: primary.altText, title: a.title, medium: a.medium }),
             }
           : null,
         images: a.images.map((img) => ({
           url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${img.storagePath}`,
-          altText: img.altText ?? a.title,
+          altText: pieceAltText({ altText: img.altText, title: a.title, medium: a.medium }),
         })),
       };
     }),
