@@ -51,17 +51,23 @@ export function toGrayscale(rgba: Uint8ClampedArray): Uint8ClampedArray {
   return gray;
 }
 
+// Trimming is a nicety: any failure here (e.g. a tainted or oversized canvas)
+// falls back to the untrimmed upload.
 function detectCrop(bitmap: ImageBitmap): ContentBox | null {
-  const { width, height } = computeTargetDimensions(bitmap.width, bitmap.height, DETECT_EDGE);
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return null;
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  const gray = toGrayscale(ctx.getImageData(0, 0, width, height).data);
-  const box = findContentBox(gray, width, height);
-  return box && scaleContentBox(box, width, height, bitmap.width, bitmap.height);
+  try {
+    const { width, height } = computeTargetDimensions(bitmap.width, bitmap.height, DETECT_EDGE);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return null;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    const gray = toGrayscale(ctx.getImageData(0, 0, width, height).data);
+    const box = findContentBox(gray, width, height);
+    return box && scaleContentBox(box, width, height, bitmap.width, bitmap.height);
+  } catch {
+    return null;
+  }
 }
 
 // Browser-only. Returns the trimmed/resized Blob (or the original File when
