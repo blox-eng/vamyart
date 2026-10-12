@@ -9,7 +9,7 @@ const serverTrpc = appRouter.createCaller({ userId: null });
 
 export const revalidate = 3600;
 
-const STATIC_ROUTES = ['/', '/about/', '/gallery/', '/gallery/collections/', '/get-a-piece/', '/terms/', '/privacy/'];
+const STATIC_ROUTES = ['/', '/about/', '/gallery/', '/get-a-piece/', '/terms/', '/privacy/'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const staticEntries = STATIC_ROUTES.map((path) => ({
@@ -33,8 +33,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     let collectionEntries: MetadataRoute.Sitemap = [];
     try {
-        const collections = await serverTrpc.collections.listPublic();
-        collectionEntries = collections.map((c: { slug: string }) => ({
+        // The wall's filters are exactly the collection pages that render (not 404).
+        const { filters } = await serverTrpc.gallery.wall({});
+        collectionEntries = filters.map((c) => ({
             url: `${SITE_URL}/gallery/collections/${c.slug}/`,
             changeFrequency: 'monthly' as const,
             priority: 0.7,

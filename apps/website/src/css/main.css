@@ -505,3 +505,133 @@
         padding-block: 72px;
     }
 }
+
+/* Gallery wall: the work in masonry columns on a white wall, nothing else (#44). */
+.wall {
+    padding: 24px 16px 72px;
+    background: var(--bg);
+    color: var(--text);
+}
+.wall-head {
+    margin-bottom: 28px;
+}
+.wall-heading {
+    display: grid;
+    grid-template-columns: minmax(24px, 1fr) minmax(0, max-content) minmax(24px, 1fr);
+    align-items: center;
+    gap: 20px;
+    margin: 0;
+    font-family: theme('fontFamily.serif');
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-wrap: balance;
+}
+.wall-heading::before,
+.wall-heading::after {
+    content: '';
+    height: 1px;
+    background: var(--text);
+}
+.wall-filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 20px;
+    margin-top: 14px;
+}
+.wall-filters a {
+    padding: 8px 0;
+    font-family: theme('fontFamily.serif');
+    font-size: 16px;
+    line-height: 1;
+    text-transform: lowercase;
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    text-decoration-color: transparent;
+    transition: color var(--dur-micro) var(--ease), text-decoration-color var(--dur-micro) var(--ease);
+}
+.wall-filters a:hover {
+    color: var(--text);
+}
+.wall-filters a[aria-current='page'] {
+    color: var(--text);
+    text-decoration-color: currentColor;
+}
+.wall-filters a:focus-visible,
+.wall-tile:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+}
+.wall-grid {
+    display: none;
+    gap: 14px;
+    align-items: flex-start;
+}
+.wall--c2 {
+    display: flex;
+}
+@media (min-width: 640px) {
+    .wall {
+        padding: 32px 28px 96px;
+    }
+}
+@media (min-width: 768px) {
+    .wall--c2 {
+        display: none;
+    }
+    .wall--c3 {
+        display: flex;
+    }
+}
+@media (min-width: 1100px) {
+    .wall--c3 {
+        display: none;
+    }
+    .wall--c4 {
+        display: flex;
+    }
+}
+.wall-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1 1 0;
+    min-width: 0;
+}
+.wall-tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+}
+.wall-tile img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.wall-title {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 28px 12px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--bg);
+    background: linear-gradient(to top, rgb(31 26 30 / 0.55), transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-standard) var(--ease);
+}
+.wall-tile:hover .wall-title,
+.wall-tile:focus-visible .wall-title {
+    opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+    .wall-filters a,
+    .wall-title {
+        transition: none;
+    }
+}

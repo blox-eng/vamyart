@@ -10,6 +10,10 @@ const nextConfig = {
     allowedDevOrigins: [
         '192.168.1.84'
     ],
+    // The collections index was retired: collections are filters on the wall.
+    async redirects() {
+        return [{ source: '/gallery/collections/', destination: '/gallery/', permanent: true }];
+    },
     // Workspace packages expose TypeScript source — transpile through Next.js's SWC pipeline.
     transpilePackages: ['@vamy/ui', '@vamy/db'],
     // Keep Node.js-only packages (postgres driver, resend, stripe) out of the client bundle.
