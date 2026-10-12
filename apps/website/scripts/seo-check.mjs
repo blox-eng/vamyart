@@ -27,7 +27,8 @@ async function checkPage(path) {
     const titles = count(html, /<title[\s>]/g);
     report(titles === 1, `${path} has exactly one title`, `found ${titles}`);
     const title = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/) || [])[1] ?? '';
-    const titleOk = /^(Maeve Vamy|.+ — Maeve Vamy)$/.test(title) && !/ {2}/.test(title);
+    const titleRe = path === '/' ? /^Maeve Vamy( — .+)?$/ : /^(Maeve Vamy|.+ — Maeve Vamy)$/;
+    const titleOk = titleRe.test(title) && !/ {2}/.test(title);
     report(titleOk, `${path} title format`, JSON.stringify(title));
 
     const canonicals = html.match(/<link[^>]*rel="canonical"[^>]*>/g) || [];
