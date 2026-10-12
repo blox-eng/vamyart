@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, ne, sql, isNull, asc } from "drizzle-orm";
+import { eq, and, ne, sql, isNull, asc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createClient } from "@supabase/supabase-js";
 import { router, publicProcedure, protectedProcedure } from "../index";
@@ -48,6 +48,7 @@ export const collectionsRouter = router({
       where: (c, { isNull }) => isNull(c.deletedAt),
       orderBy: (c, { asc }) => [asc(c.sortOrder), asc(c.title)],
       extras: () => ({
+        // Literal on purpose: relational extras render ${collections.id} unqualified, which binds to the inner table.
         pieceCount: sql<number>`(select count(*)::int from ${artworkCollections} ac join ${artworks} a on a.id = ac.artwork_id where ac.collection_id = "collections"."id" and a.deleted_at is null)`.as("piece_count"),
       }),
     });
@@ -133,7 +134,13 @@ export const collectionsRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Duplicate artwork ids in collection." });
       }
       await db.transaction(async (tx) => {
-        await tx.delete(artworkCollections).where(eq(artworkCollections.collectionId, input.collectionId));
+        // Only live pieces are replaced; soft-deleted pieces keep their membership so restore brings them back.
+        await tx.delete(artworkCollections).where(
+          and(
+            eq(artworkCollections.collectionId, input.collectionId),
+            inArray(artworkCollections.artworkId, tx.select({ id: artworks.id }).from(artworks).where(isNull(artworks.deletedAt)))
+          )
+        );
         if (input.artworkIds.length) {
           await tx.insert(artworkCollections).values(
             input.artworkIds.map((artworkId, i) => ({

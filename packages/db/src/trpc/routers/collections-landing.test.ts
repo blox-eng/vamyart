@@ -53,6 +53,24 @@ describe("collections.list pieceCount", () => {
   });
 });
 
+describe("collections.setPieces with soft-deleted pieces", () => {
+  it("keeps deleted pieces' membership so restore brings them back", async () => {
+    const c = await caller.collections.create({ title: `keep-${suffix}` });
+    collIds.push(c.id);
+    const a1 = await caller.artworks.create({ title: `keep-a-${suffix}` });
+    const a2 = await caller.artworks.create({ title: `keep-b-${suffix}` });
+    try {
+      await caller.collections.setPieces({ collectionId: c.id, artworkIds: [a1.id, a2.id] });
+      await caller.artworks.delete({ id: a2.id });
+      await caller.collections.setPieces({ collectionId: c.id, artworkIds: [a1.id] });
+      await caller.artworks.restore({ id: a2.id });
+      expect(await caller.collections.getPieceIds({ collectionId: c.id })).toEqual([a1.id, a2.id]);
+    } finally {
+      await db.delete(artworks).where(inArray(artworks.id, [a1.id, a2.id]));
+    }
+  });
+});
+
 describe("trim on save", () => {
   it("trims collection titles on create and update", async () => {
     const c = await caller.collections.create({ title: `  trim-${suffix}  ` });
