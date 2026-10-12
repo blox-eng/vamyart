@@ -94,6 +94,11 @@ describe("readImageSize", () => {
       expect(readImageSize(withExif(exif(3, true)))).toEqual({ width: 800, height: 600 });
     });
 
+    it("keeps Exif orientation when an XMP APP1 follows", () => {
+      const xmp = [0xff, 0xe1, ...u16be(2 + 29), ...ascii("http://ns.adobe.com/xap/1.0/"), 0];
+      expect(readImageSize(withExif([...exif(6, false), ...xmp]))).toEqual({ width: 600, height: 800 });
+    });
+
     it("ignores a truncated or garbage APP1", () => {
       expect(readImageSize(withExif(exif(6, false).slice(0, 20)))).toBeNull();
       const bad = [0xff, 0xe1, ...u16be(12), ...ascii("Exif"), 0, 0, 1, 2, 3, 4];

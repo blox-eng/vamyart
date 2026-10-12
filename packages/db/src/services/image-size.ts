@@ -18,27 +18,27 @@ function readPng(b: Uint8Array): ImageSize | null {
   return valid(u32be(b, 16), u32be(b, 20));
 }
 
-// EXIF orientation from an APP1 segment body (starting at "Exif\0\0"); 1 when absent or malformed.
-function readExifOrientation(b: Uint8Array, start: number, end: number): number {
-  if (end > b.length || end - start < 14 || !tag(b, start, "Exif") || b[start + 4] !== 0 || b[start + 5] !== 0) return 1;
+// EXIF orientation from an APP1 segment body (starting at "Exif\0\0"); null when not Exif or malformed.
+function readExifOrientation(b: Uint8Array, start: number, end: number): number | null {
+  if (end > b.length || end - start < 14 || !tag(b, start, "Exif") || b[start + 4] !== 0 || b[start + 5] !== 0) return null;
   const t = start + 6;
   const le = b[t] === 0x49 && b[t + 1] === 0x49;
-  if (!le && !(b[t] === 0x4d && b[t + 1] === 0x4d)) return 1;
+  if (!le && !(b[t] === 0x4d && b[t + 1] === 0x4d)) return null;
   const r16 = (i: number) => (le ? u16le(b, i) : u16be(b, i));
   const r32 = (i: number) => (le ? (u16le(b, i) | (u16le(b, i + 2) << 16)) >>> 0 : u32be(b, i));
-  if (r16(t + 2) !== 0x2a) return 1;
+  if (r16(t + 2) !== 0x2a) return null;
   const ifd = t + r32(t + 4);
-  if (ifd + 2 > end) return 1;
+  if (ifd + 2 > end) return null;
   const count = r16(ifd);
   for (let n = 0; n < count; n++) {
     const e = ifd + 2 + n * 12;
-    if (e + 12 > end) return 1;
+    if (e + 12 > end) return null;
     if (r16(e) === 0x0112) {
       const o = r16(e + 8);
-      return o >= 1 && o <= 8 ? o : 1;
+      return o >= 1 && o <= 8 ? o : null;
     }
   }
-  return 1;
+  return null;
 }
 
 function readJpeg(b: Uint8Array): ImageSize | null {
@@ -57,7 +57,7 @@ function readJpeg(b: Uint8Array): ImageSize | null {
     }
     if (marker === 0xd9 || marker === 0xda) return null;
     if (marker === 0xe1) {
-      orientation = readExifOrientation(b, i + 4, Math.min(i + 2 + u16be(b, i + 2), b.length));
+      orientation = readExifOrientation(b, i + 4, Math.min(i + 2 + u16be(b, i + 2), b.length)) ?? orientation;
     }
     const isSof = marker >= 0xc0 && marker <= 0xc2;
     if (isSof) {
