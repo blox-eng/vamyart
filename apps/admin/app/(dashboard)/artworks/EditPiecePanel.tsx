@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { revalidatePaths } from "@/lib/revalidate";
+import { pieceRevalidatePaths } from "@/lib/revalidate-paths";
 
 type Artwork = {
   id: string; slug: string; title: string; year: number | null;
@@ -15,13 +16,15 @@ type Artwork = {
 
 export function EditPiecePanel({ artwork, onChanged, onDeleted }: { artwork: Artwork; onChanged: () => void; onDeleted: () => void; }) {
   const toast = useToast();
+  const { data: collectionList } = trpc.collections.list.useQuery();
+  const collectionSlugs = (collectionList ?? []).map((c) => c.slug);
   const [form, setForm] = useState(artwork);
   const [confirmDelete, setConfirmDelete] = useState(false);
   useEffect(() => { setForm(artwork); setConfirmDelete(false); }, [artwork]);
 
   const update = trpc.artworks.update.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/", "/gallery", `/gallery/${form.slug}`]);
+      await revalidatePaths(pieceRevalidatePaths(form.slug, collectionSlugs));
       toast("Piece updated", "success");
       onChanged();
     },
@@ -29,7 +32,7 @@ export function EditPiecePanel({ artwork, onChanged, onDeleted }: { artwork: Art
   });
   const del = trpc.artworks.delete.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/", "/gallery", `/gallery/${form.slug}`]);
+      await revalidatePaths(pieceRevalidatePaths(form.slug, collectionSlugs));
       toast("Piece deleted", "success");
       onDeleted();
     },

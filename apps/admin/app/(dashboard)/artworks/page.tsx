@@ -5,6 +5,7 @@ import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import { revalidatePaths } from "@/lib/revalidate";
+import { pieceRevalidatePaths } from "@/lib/revalidate-paths";
 import { createClient } from "@/lib/supabase/client";
 import { NewPieceForm } from "./NewPieceForm";
 import { EditPiecePanel } from "./EditPiecePanel";
@@ -32,13 +33,15 @@ type NewProductForm = { artworkId: string; productType: string; name: string; de
 
 export default function ArtworksPage() {
   const toast = useToast();
+  const { data: collectionList } = trpc.collections.list.useQuery();
+  const collectionSlugs = (collectionList ?? []).map((c) => c.slug);
 
   const { data: productList, refetch, isLoading: productsLoading } = trpc.products.listAll.useQuery();
   const { data: artworkList, refetch: refetchArtworks } = trpc.artworks.list.useQuery();
   const { data: shippingMethodsList, isLoading: shippingMethodsLoading } = trpc.shippingMethods.list.useQuery();
   const setFeatured = trpc.products.setFeatured.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/"]);
+      await revalidatePaths(pieceRevalidatePaths(null, collectionSlugs));
       refetch();
       toast("featured updated", "success");
     },
@@ -51,7 +54,7 @@ export default function ArtworksPage() {
   });
 
   const reorder = trpc.artworks.reorder.useMutation({
-    onSuccess: async () => { await revalidatePaths(["/", "/gallery"]); refetchArtworks(); toast("Order updated", "success"); },
+    onSuccess: async () => { await revalidatePaths(pieceRevalidatePaths(null, collectionSlugs)); refetchArtworks(); toast("Order updated", "success"); },
     onError: () => toast("Failed to reorder", "error"),
   });
 
@@ -63,8 +66,7 @@ export default function ArtworksPage() {
         p.variants.some((v: any) => v.id === vars.id)
       );
       const slug = editedProduct?.artwork?.slug;
-      const paths = ["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])];
-      await revalidatePaths(paths);
+      await revalidatePaths(pieceRevalidatePaths(slug ?? null, collectionSlugs));
       refetch();
       toast("variant updated", "success");
     },
@@ -84,7 +86,7 @@ export default function ArtworksPage() {
         p.variants.some((vv: any) => vv.id === v.id)
       );
       const slug = editedProduct?.artwork?.slug;
-      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      await revalidatePaths(pieceRevalidatePaths(slug ?? null, collectionSlugs));
       refetch();
       toast(v.soldAt ? "Marked sold" : "Marked available", "success");
     },
@@ -100,7 +102,7 @@ export default function ArtworksPage() {
   });
   const deleteProduct = trpc.products.deleteProduct.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/", "/gallery"]);
+      await revalidatePaths(pieceRevalidatePaths(null, collectionSlugs));
       refetch();
       toast("product deleted", "success");
     },
@@ -108,7 +110,7 @@ export default function ArtworksPage() {
   });
   const createProduct = trpc.products.createProduct.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/", "/gallery"]);
+      await revalidatePaths(pieceRevalidatePaths(null, collectionSlugs));
       refetch();
       toast("product created", "success");
     },
@@ -137,7 +139,7 @@ export default function ArtworksPage() {
   });
   const restore = trpc.artworks.restore.useMutation({
     onSuccess: async () => {
-      await revalidatePaths(["/", "/gallery"]);
+      await revalidatePaths(pieceRevalidatePaths(null, collectionSlugs));
       refetchArtworks();
       refetchTrashed();
       toast("Piece restored", "success");
@@ -183,7 +185,7 @@ export default function ArtworksPage() {
     onSuccess: async () => {
       imagesList.refetch();
       const slug = selected?.artwork?.slug;
-      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      await revalidatePaths(pieceRevalidatePaths(slug ?? null, collectionSlugs));
       toast("Image uploaded", "success");
     },
     // Errors surface through handleImageUpload's try/catch (single toast).
@@ -194,7 +196,7 @@ export default function ArtworksPage() {
     onSuccess: async () => {
       imagesList.refetch();
       const slug = selected?.artwork?.slug;
-      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      await revalidatePaths(pieceRevalidatePaths(slug ?? null, collectionSlugs));
       toast("Image deleted", "success");
     },
     onError: (e) => toast(e.message, "error"),
@@ -204,7 +206,7 @@ export default function ArtworksPage() {
     onSuccess: async () => {
       imagesList.refetch();
       const slug = selected?.artwork?.slug;
-      await revalidatePaths(["/", "/gallery", ...(slug ? [`/gallery/${slug}`] : [])]);
+      await revalidatePaths(pieceRevalidatePaths(slug ?? null, collectionSlugs));
       toast("Primary image updated", "success");
     },
     onError: (e) => toast(e.message, "error"),
