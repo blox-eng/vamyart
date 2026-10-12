@@ -106,6 +106,7 @@ export async function getStaticProps({ params }) {
         const pieces = await serverTrpc.gallery.landing();
         if (landing) landing.pieces = pieces;
         page.hideFooter = true;
+        page.slimHeader = true;
         // The slider renders the page's only h1 ("Maeve Vamy"); drop the layout's sr-only "Home".
         page.title = null;
 
