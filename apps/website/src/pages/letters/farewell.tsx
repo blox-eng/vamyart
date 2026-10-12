@@ -9,42 +9,42 @@ export default function Farewell() {
                 <meta name="robots" content="noindex" />
             </Head>
 
-            <main className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-6 py-24">
+            <main className="min-h-screen bg-paper text-ink flex items-center justify-center px-6 py-24">
                 <div className="max-w-[520px] w-full text-center font-serif">
                     <h1
                         className="text-4xl font-light mb-12 opacity-0"
-                        style={{ animation: 'letters-fade-dim 1600ms ease-out 200ms forwards' }}
+                        style={{ animation: 'letters-fade-dim 1600ms 200ms forwards' }}
                     >
                         The door&rsquo;s closed.
                     </h1>
 
                     <p
-                        className="text-lg leading-relaxed text-gray-700 mb-8 opacity-0"
-                        style={{ animation: 'letters-fade-dim 1600ms ease-out 1000ms forwards' }}
+                        className="text-lg leading-relaxed text-ink mb-8 opacity-0"
+                        style={{ animation: 'letters-fade-dim 1600ms 1000ms forwards' }}
                     >
                         You won&rsquo;t hear from the studio again. No hard feelings &mdash;
                         the work keeps happening either way.
                     </p>
 
                     <p
-                        className="text-base text-gray-600 mb-16 opacity-0"
-                        style={{ animation: 'letters-fade-dim 1600ms ease-out 1800ms forwards' }}
+                        className="text-base text-muted mb-16 opacity-0"
+                        style={{ animation: 'letters-fade-dim 1600ms 1800ms forwards' }}
                     >
                         If it was an accident, you can sign back up at vamy.art.
                     </p>
 
                     <p
-                        className="text-base text-gray-600 mb-16 opacity-0"
-                        style={{ animation: 'letters-fade-dim 1600ms ease-out 2600ms forwards' }}
+                        className="text-base text-muted mb-16 opacity-0"
+                        style={{ animation: 'letters-fade-dim 1600ms 2600ms forwards' }}
                     >
                         &mdash; Maeve
                     </p>
 
                     <div
-                        className="text-sm text-gray-600 opacity-0"
-                        style={{ animation: 'letters-fade-in 1600ms ease-out 3400ms forwards' }}
+                        className="text-sm text-muted opacity-0"
+                        style={{ animation: 'letters-fade-in 1600ms 3400ms forwards' }}
                     >
-                        <Link href="/" className="hover:text-gray-900 transition-colors">
+                        <Link href="/" className="hover:text-ink transition-colors">
                             &rarr; back to vamy.art
                         </Link>
                     </div>

@@ -46,6 +46,7 @@ Tokens are CSS custom properties. Use them through Tailwind (`bg-[var(--bg)]` or
 - **Alpha ramp, not new colours.** Express states as the accent at 100% (action) and 10% (selected wash).
 - **Sold** = `--neg` dot + the word "Sold". The red dot on gallery cards (#37) is this token.
 - **Never** introduce blue/indigo/purple primaries, saturated greens, or neon status colours.
+- **Temporary exception:** the public site uses a white `--bg` until artwork photos are cut out of their white studio backgrounds (cut-out editor, #40); then it returns to bone paper.
 - **Themes:** the studio follows the OS preference. The public site pins `data-theme="light"` (paper) until a dark gallery is deliberately designed. Photography pages may use `--wall` as their ground.
 
 ---

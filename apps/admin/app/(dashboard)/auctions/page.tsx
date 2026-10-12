@@ -83,7 +83,7 @@ export default function AuctionsPage() {
               })
             }
             disabled={availableArtworks.length === 0}
-            className="text-sm bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="text-sm bg-ink text-paper px-4 py-2 rounded hover:bg-ink/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             New auction
           </button>
@@ -92,14 +92,14 @@ export default function AuctionsPage() {
 
       {/* New auction form */}
       {form && (
-        <form onSubmit={handleOpen} className="bg-white border rounded-lg p-6 mb-8 space-y-4">
+        <form onSubmit={handleOpen} className="bg-field border rounded-lg p-6 mb-8 space-y-4">
           <h2 className="font-medium text-sm">Open new auction</h2>
 
           {/* Artwork selector */}
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Artwork</label>
+            <label className="block text-xs text-muted mb-1">Artwork</label>
             <select
-              className="w-full border px-3 py-2 rounded text-sm bg-white"
+              className="w-full border px-3 py-2 rounded text-sm bg-field"
               value={form.artworkId}
               onChange={(e) => setForm({ ...form, artworkId: e.target.value, productVariantId: "" })}
               required
@@ -119,11 +119,11 @@ export default function AuctionsPage() {
           {/* Variant selector — flattens all variants for the chosen artwork */}
           {form.artworkId && productsByArtwork[form.artworkId]?.length > 0 && (
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
-                Item being auctioned <span className="text-gray-400">(optional)</span>
+              <label className="block text-xs text-muted mb-1">
+                Item being auctioned <span className="text-faint">(optional)</span>
               </label>
               <select
-                className="w-full border px-3 py-2 rounded text-sm bg-white"
+                className="w-full border px-3 py-2 rounded text-sm bg-field"
                 value={form.productVariantId}
                 onChange={(e) => setForm({ ...form, productVariantId: e.target.value })}
               >
@@ -142,7 +142,7 @@ export default function AuctionsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Min bid (€)</label>
+              <label className="block text-xs text-muted mb-1">Min bid (€)</label>
               <input
                 type="number"
                 min="1"
@@ -153,7 +153,7 @@ export default function AuctionsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Min increment (€)</label>
+              <label className="block text-xs text-muted mb-1">Min increment (€)</label>
               <input
                 type="number"
                 min="1"
@@ -164,7 +164,7 @@ export default function AuctionsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Deadline</label>
+              <label className="block text-xs text-muted mb-1">Deadline</label>
               <input
                 type="datetime-local"
                 className="w-full border px-3 py-2 rounded text-sm"
@@ -186,13 +186,13 @@ export default function AuctionsPage() {
             <button
               type="submit"
               disabled={openAuction.isPending || !form.artworkId}
-              className="text-sm bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+              className="text-sm bg-ink text-paper px-4 py-2 rounded disabled:opacity-50"
             >
               {openAuction.isPending ? "Opening…" : "Open auction"}
             </button>
           </div>
           {openAuction.error && (
-            <p className="text-sm text-red-600">{openAuction.error.message}</p>
+            <p className="text-sm text-neg">{openAuction.error.message}</p>
           )}
         </form>
       )}
@@ -202,7 +202,7 @@ export default function AuctionsPage() {
       {!auctionsLoading && (
       <div className="space-y-3">
         {auctionList?.length === 0 && (
-          <p className="text-center text-gray-400 text-sm py-12">No auctions yet.</p>
+          <p className="text-center text-faint text-sm py-12">No auctions yet.</p>
         )}
 
         {auctionList?.map((a) => {
@@ -210,7 +210,7 @@ export default function AuctionsPage() {
           const products = productsByArtwork[a.artworkId] ?? [];
 
           return (
-            <div key={a.id} className="bg-white border rounded-lg overflow-hidden">
+            <div key={a.id} className="bg-field border rounded-lg overflow-hidden">
               {/* Auction row */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4">
                 {/* Artwork name + status */}
@@ -222,24 +222,24 @@ export default function AuctionsPage() {
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-medium ${
                         a.status === "active"
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-accent-wash text-accent"
                           : a.status === "closed"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-accent-wash text-accent"
+                          : "bg-wall text-muted"
                       }`}
                     >
                       {a.status}
                     </span>
                   </div>
                   {a.artwork && (
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-faint mt-0.5">
                       {[a.artwork.medium, a.artwork.dimensions, a.artwork.year]
                         .filter(Boolean)
                         .join(" · ")}
                     </p>
                   )}
                   {a.productVariant && (
-                    <p className="text-xs text-blue-600 mt-0.5">
+                    <p className="text-xs text-accent mt-0.5">
                       {a.productVariant.name} · €{Number(a.productVariant.price).toLocaleString()}
                     </p>
                   )}
@@ -252,17 +252,17 @@ export default function AuctionsPage() {
                       ? `€${Number(a.currentBid).toLocaleString()}`
                       : `€${Number(a.minBid).toLocaleString()} min`}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-faint">
                     {a.bidCount} bid{a.bidCount !== 1 ? "s" : ""}
                   </p>
                 </div>
 
                 {/* Deadline */}
                 <div className="text-left sm:text-right shrink-0 sm:w-32">
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-muted">
                     {formatDistanceToNow(new Date(a.deadline), { addSuffix: true })}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-faint">
                     {format(new Date(a.deadline), "d MMM yyyy HH:mm")}
                   </p>
                 </div>
@@ -271,7 +271,7 @@ export default function AuctionsPage() {
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
                     onClick={() => setExpandedAuction(isExpanded ? null : a.id)}
-                    className="text-xs border px-3 py-1 rounded hover:bg-gray-50"
+                    className="text-xs border px-3 py-1 rounded hover:bg-hover"
                   >
                     {isExpanded ? "Hide" : "Details"}
                   </button>
@@ -282,8 +282,8 @@ export default function AuctionsPage() {
                         disabled={closeAuction.isPending}
                         className={`text-xs px-3 py-1 rounded disabled:opacity-50 ${
                           confirmClose === a.id
-                            ? "bg-red-600 text-white"
-                            : "border text-red-500 hover:bg-red-50"
+                            ? "bg-neg text-paper"
+                            : "border text-neg hover:bg-neg/10"
                         }`}
                       >
                         {confirmClose === a.id ? "Confirm close" : "Close"}
@@ -303,28 +303,28 @@ export default function AuctionsPage() {
 
               {/* Expanded: bids + products */}
               {isExpanded && (
-                <div className="border-t px-5 py-4 space-y-5 bg-gray-50">
+                <div className="border-t px-5 py-4 space-y-5 bg-paper">
                   {/* Related products */}
                   {products.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                      <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
                         Products
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {products.map((p: any) => (
                           <div
                             key={p.id}
-                            className="bg-white border rounded px-3 py-2 text-xs flex items-center gap-2"
+                            className="bg-field border rounded px-3 py-2 text-xs flex items-center gap-2"
                           >
                             <span
                               className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                p.active ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"
+                                p.active ? "bg-accent-wash text-accent" : "bg-hair text-muted"
                               }`}
                             >
                               {p.productType}
                             </span>
                             <span>{p.name}</span>
-                            <span className="text-gray-400">
+                            <span className="text-faint">
                               {p.variants.length}v
                             </span>
                           </div>
@@ -335,16 +335,16 @@ export default function AuctionsPage() {
 
                   {/* Bids */}
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
                       Bids ({a.bids?.length ?? 0})
                     </p>
                     {(a.bids?.length ?? 0) === 0 ? (
-                      <p className="text-xs text-gray-400">No bids yet.</p>
+                      <p className="text-xs text-faint">No bids yet.</p>
                     ) : (
                       <>
                         <table className="hidden sm:table w-full text-xs">
                           <thead>
-                            <tr className="text-left text-gray-400 border-b">
+                            <tr className="text-left text-faint border-b">
                               <th className="pb-1 pr-4 font-normal">Bidder</th>
                               <th className="pb-1 pr-4 font-normal">Amount</th>
                               <th className="pb-1 font-normal">Placed</th>
@@ -357,12 +357,12 @@ export default function AuctionsPage() {
                                   <span className="font-medium">{b.bidderName}</span>
                                   <a
                                     href={`mailto:${b.bidderEmail}`}
-                                    className="ml-2 text-blue-500 hover:underline"
+                                    className="ml-2 text-accent hover:underline"
                                   >
                                     {b.bidderEmail}
                                   </a>
                                   {i === 0 && (
-                                    <span className="ml-2 text-green-600 font-medium">
+                                    <span className="ml-2 text-accent font-medium">
                                       · leading
                                     </span>
                                   )}
@@ -370,7 +370,7 @@ export default function AuctionsPage() {
                                 <td className="py-1.5 pr-4 font-medium">
                                   €{Number(b.amount).toLocaleString()}
                                 </td>
-                                <td className="py-1.5 text-gray-400">
+                                <td className="py-1.5 text-faint">
                                   {formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}
                                 </td>
                               </tr>
@@ -380,17 +380,17 @@ export default function AuctionsPage() {
                         {/* Mobile bid cards */}
                         <div className="sm:hidden space-y-2">
                           {a.bids?.map((b: any, i: number) => (
-                            <div key={b.id} className="border rounded p-2 text-xs bg-white">
+                            <div key={b.id} className="border rounded p-2 text-xs bg-field">
                               <div className="flex justify-between gap-2">
                                 <span className="font-medium">{b.bidderName}</span>
                                 <span className="font-medium">€{Number(b.amount).toLocaleString()}</span>
                               </div>
-                              <a href={`mailto:${b.bidderEmail}`} className="text-blue-500 hover:underline break-all">
+                              <a href={`mailto:${b.bidderEmail}`} className="text-accent hover:underline break-all">
                                 {b.bidderEmail}
                               </a>
-                              <div className="flex justify-between text-gray-400 mt-1">
+                              <div className="flex justify-between text-faint mt-1">
                                 <span>{formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}</span>
-                                {i === 0 && <span className="text-green-600 font-medium">leading</span>}
+                                {i === 0 && <span className="text-accent font-medium">leading</span>}
                               </div>
                             </div>
                           ))}

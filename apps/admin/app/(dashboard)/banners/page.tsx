@@ -101,7 +101,7 @@ export default function BannersPage() {
                   <input className="w-full border px-3 py-2 rounded text-sm" placeholder="Page slug (e.g. gallery)" value={editSlug} onChange={e => setEditSlug(e.target.value)} />
                 )}
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} className="bg-black text-white px-4 py-2 rounded text-sm">Save</button>
+                  <button onClick={saveEdit} className="bg-ink text-paper px-4 py-2 rounded text-sm">Save</button>
                   <button onClick={() => setEditId(null)} className="border px-4 py-2 rounded text-sm">Cancel</button>
                 </div>
               </div>
@@ -109,19 +109,19 @@ export default function BannersPage() {
               <div key={b.id} className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{b.text}</p>
-                  <p className="text-xs text-gray-400">{b.scope === "global" ? "All pages" : `Page: /${b.pageSlug}`}</p>
+                  <p className="text-xs text-faint">{b.scope === "global" ? "All pages" : `Page: /${b.pageSlug}`}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <button
                     onClick={() => toggleActive(b)}
-                    className={`px-3 py-2 rounded text-xs font-medium ${b.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                    className={`px-3 py-2 rounded text-xs font-medium ${b.isActive ? "bg-accent-wash text-accent" : "bg-wall text-muted"}`}
                   >
                     {b.isActive ? "Live" : "Off"}
                   </button>
                   <button onClick={() => startEdit(b)} className="border px-3 py-2 rounded text-xs">Edit</button>
                   <button
                     onClick={() => handleDelete(b.id)}
-                    className={`px-3 py-2 rounded text-xs ${confirmDelete === b.id ? "bg-red-600 text-white" : "border text-red-600"}`}
+                    className={`px-3 py-2 rounded text-xs ${confirmDelete === b.id ? "bg-neg text-paper" : "border text-neg"}`}
                   >
                     {confirmDelete === b.id ? "Confirm" : "Delete"}
                   </button>
@@ -129,7 +129,7 @@ export default function BannersPage() {
               </div>
             )
           )}
-          {(bannerList ?? []).length === 0 && <p className="text-sm text-gray-400">No banners yet.</p>}
+          {(bannerList ?? []).length === 0 && <p className="text-sm text-faint">No banners yet.</p>}
         </div>
       )}
 
@@ -143,7 +143,7 @@ export default function BannersPage() {
         {newScope === "page" && (
           <input className="w-full border px-3 py-2 rounded text-sm" placeholder="Page slug (e.g. gallery)" value={newSlug} onChange={e => setNewSlug(e.target.value)} required />
         )}
-        <button type="submit" disabled={create.isPending} className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50">
+        <button type="submit" disabled={create.isPending} className="bg-ink text-paper px-4 py-2 rounded text-sm disabled:opacity-50">
           {create.isPending ? "Creating…" : "Create banner"}
         </button>
       </form>

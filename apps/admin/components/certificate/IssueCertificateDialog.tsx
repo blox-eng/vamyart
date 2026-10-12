@@ -87,11 +87,11 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-white sm:max-w-lg sm:rounded-lg"
+        className="flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-field sm:max-w-lg sm:rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex-1 space-y-4 overflow-y-auto p-6">
@@ -122,7 +122,7 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
             <label className="block text-sm">This print is #
               <input className="mt-1 w-full border rounded px-2 py-1" value={editionNumber} onChange={(e) => setEditionNumber(e.target.value)} placeholder={nextFree ? String(nextFree) : ""} />
             </label>
-            <p className="col-span-2 text-xs text-gray-500">
+            <p className="col-span-2 text-xs text-muted">
               Already issued: {taken.length ? taken.join(", ") : "none"}. {nextFree ? `Next free: ${nextFree}.` : ""}
             </p>
           </div>
@@ -141,7 +141,7 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
                   key={img.storagePath}
                   type="button"
                   onClick={() => setImagePath(img.storagePath)}
-                  className={`h-16 w-16 rounded overflow-hidden border-2 ${imagePath === img.storagePath ? "border-black" : "border-transparent"}`}
+                  className={`h-16 w-16 rounded overflow-hidden border-2 ${imagePath === img.storagePath ? "border-ink" : "border-transparent"}`}
                 >
                   <img src={certificateImageUrl(img.storagePath) ?? ""} alt="" className="h-full w-full object-cover" />
                 </button>
@@ -155,10 +155,10 @@ export function IssueCertificateDialog({ open, onClose, artwork, images, print }
         </label>
         </div>
 
-        <div className="flex justify-end gap-2 border-t bg-white px-6 py-4">
+        <div className="flex justify-end gap-2 border-t bg-field px-6 py-4">
           <button className="rounded px-4 py-3 text-sm" onClick={onClose} disabled={issue.isPending}>Cancel</button>
           <button
-            className="rounded bg-black px-5 py-3 text-sm text-white disabled:opacity-50"
+            className="rounded bg-ink px-5 py-3 text-sm text-paper disabled:opacity-50"
             onClick={handleGenerate}
             disabled={issue.isPending || !title.trim() || (isPrint && (!editionNumber || !editionSize))}
           >

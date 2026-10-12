@@ -49,10 +49,10 @@ export function BidModal({
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white p-8 max-w-md w-full">
+        <div className="fixed inset-0 bg-ink/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-paper p-8 max-w-md w-full">
                 <h2 className="text-xl font-medium mb-6">Place a Bid</h2>
-                <p className="text-sm text-gray-600 mb-6">Minimum bid: €{minAmount.toLocaleString()}</p>
+                <p className="text-sm text-muted mb-6">Minimum bid: €{minAmount.toLocaleString()}</p>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <input className="w-full border px-3 py-2 text-sm" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} required />
                     <input className="w-full border px-3 py-2 text-sm" type="email" placeholder="Your email" value={email} onChange={e => setEmail(e.target.value)} required />
@@ -66,13 +66,13 @@ export function BidModal({
                         />
                         <span>
                             Email me about new work and studio updates.{' '}
-                            <span className="text-gray-500">Unsubscribe anytime.</span>
+                            <span className="text-muted">Unsubscribe anytime.</span>
                         </span>
                     </label>
-                    {error && <p className="text-sm text-red-600">{error}</p>}
+                    {error && <p className="text-sm text-neg">{error}</p>}
                     <div className="flex gap-3 pt-2">
                         <button type="button" onClick={onClose} className="flex-1 border px-4 py-2 text-sm">Cancel</button>
-                        <button type="submit" disabled={placeBid.isPending} className="flex-1 bg-black text-white px-4 py-2 text-sm disabled:opacity-50">
+                        <button type="submit" disabled={placeBid.isPending} className="flex-1 bg-ink text-paper px-4 py-2 text-sm disabled:opacity-50">
                             {placeBid.isPending ? 'Submitting…' : 'Submit bid'}
                         </button>
                     </div>

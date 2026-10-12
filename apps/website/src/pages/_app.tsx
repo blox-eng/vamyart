@@ -5,6 +5,7 @@ import { httpBatchLink } from '@trpc/client';
 import { trpc } from '../lib/trpc';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
 import { inter, cormorant } from '../lib/fonts';
+import '@vamy/ui/tokens.css';
 import '../css/main.css';
 
 function getBaseUrl() {

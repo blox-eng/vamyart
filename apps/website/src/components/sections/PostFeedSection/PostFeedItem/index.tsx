@@ -118,11 +118,11 @@ function ArtworkCardInfoStatic({ products }: { products: any[] }) {
             {priceParts.length > 0 ? (
                 <p className="text-sm font-light">{priceParts.join(" · ")}</p>
             ) : (
-                <p className="text-xs text-gray-400 italic">Price on request</p>
+                <p className="text-xs text-faint italic">Price on request</p>
             )}
             <p className="text-xs flex items-center gap-1.5">
-                <span className={`inline-block w-1.5 h-1.5 rounded-full ${hasAvailable ? "bg-green-500" : "bg-gray-400"}`} />
-                <span className={hasAvailable ? "text-green-700" : "text-gray-400"}>
+                <span className={`inline-block w-1.5 h-1.5 rounded-full ${hasAvailable ? "bg-accent" : "bg-faint"}`} />
+                <span className={hasAvailable ? "text-accent" : "text-faint"}>
                     {hasAvailable ? "Available" : "Sold"}
                 </span>
             </p>
@@ -174,15 +174,15 @@ function mapCardHoverStyles(hoverEffect: string, colors: string) {
         case 'thick-underline':
             return 'group';
         case 'move-up':
-            return 'transition duration-200 ease-in hover:-translate-y-1.5';
+            return 'transition duration-standard hover:-translate-y-1.5';
         case 'shadow':
             return colors === 'bg-dark-fg-light'
-                ? 'transition duration-200 ease-in hover:shadow-2xl hover:shadow-black/60'
-                : 'transition duration-200 ease-in hover:shadow-2xl';
+                ? 'transition duration-standard hover:shadow-2xl hover:shadow-black/60'
+                : 'transition duration-standard hover:shadow-2xl';
         case 'shadow-plus-move-up':
             return colors === 'bg-dark-fg-light'
-                ? 'transition duration-200 ease-in hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1.5'
-                : 'transition duration-200 ease-in hover:shadow-2xl hover:-translate-y-1.5';
+                ? 'transition duration-standard hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1.5'
+                : 'transition duration-standard hover:shadow-2xl hover:-translate-y-1.5';
         default:
             return null;
     }
@@ -192,12 +192,12 @@ function mapCardTitleHoverStyles(hoverEffect: string, colors: string) {
     switch (hoverEffect) {
         case 'thin-underline':
             return colors === 'bg-dark-fg-light'
-                ? 'bg-left-bottom bg-[length:0_1px] bg-no-repeat bg-gradient-to-r from-light to-light transition-[background-size] duration-300 ease-in-out group-hover:bg-[length:100%_1px]'
-                : 'bg-left-bottom bg-[length:0_1px] bg-no-repeat bg-gradient-to-r from-dark to-dark transition-[background-size] duration-300 ease-in-out group-hover:bg-[length:100%_1px]';
+                ? 'bg-left-bottom bg-[length:0_1px] bg-no-repeat bg-gradient-to-r from-light to-light transition-[background-size] duration-deliberate group-hover:bg-[length:100%_1px]'
+                : 'bg-left-bottom bg-[length:0_1px] bg-no-repeat bg-gradient-to-r from-dark to-dark transition-[background-size] duration-deliberate group-hover:bg-[length:100%_1px]';
         case 'thick-underline':
             return colors === 'bg-dark-fg-light'
-                ? 'bg-left-bottom bg-[length:0_50%] bg-no-repeat bg-gradient-to-r from-light/30 to-light/30 transition-[background-size] duration-300 ease-in-out group-hover:bg-[length:100%_50%]'
-                : 'bg-left-bottom bg-[length:0_50%] bg-no-repeat bg-gradient-to-r from-dark/20 to-dark/20 transition-[background-size] duration-300 ease-in-out group-hover:bg-[length:100%_50%]';
+                ? 'bg-left-bottom bg-[length:0_50%] bg-no-repeat bg-gradient-to-r from-light/30 to-light/30 transition-[background-size] duration-deliberate group-hover:bg-[length:100%_50%]'
+                : 'bg-left-bottom bg-[length:0_50%] bg-no-repeat bg-gradient-to-r from-dark/20 to-dark/20 transition-[background-size] duration-deliberate group-hover:bg-[length:100%_50%]';
         default:
             return null;
     }

@@ -64,17 +64,17 @@ export function CoverCropModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4">
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="crop-cover-title"
         tabIndex={-1}
-        className="bg-white rounded-lg w-full max-w-lg p-4 space-y-4 outline-none max-h-[90vh] overflow-y-auto"
+        className="bg-field rounded-lg w-full max-w-lg p-4 space-y-4 outline-none max-h-[90vh] overflow-y-auto"
       >
         <p id="crop-cover-title" className="text-sm font-medium">Crop cover (3:2)</p>
-        <div className="relative w-full h-72 bg-neutral-100 rounded overflow-hidden">
+        <div className="relative w-full h-72 bg-wall rounded overflow-hidden">
           <Cropper
             image={imageUrl}
             crop={crop}
@@ -85,7 +85,7 @@ export function CoverCropModal({
             onCropComplete={onCropComplete}
           />
         </div>
-        <label className="block text-xs text-gray-500">
+        <label className="block text-xs text-muted">
           Zoom
           <input
             type="range"
@@ -110,7 +110,7 @@ export function CoverCropModal({
             type="button"
             onClick={handleSave}
             disabled={busy || !areaPixels}
-            className="bg-black text-white px-4 py-2 rounded text-sm disabled:opacity-50"
+            className="bg-ink text-paper px-4 py-2 rounded text-sm disabled:opacity-50"
           >
             {busy ? "Processing…" : "Crop & upload"}
           </button>
