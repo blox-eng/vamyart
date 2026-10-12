@@ -57,6 +57,7 @@ describe('seoGenerateMetaTags og:url', () => {
 
 describe('formatTitle', () => {
   it('appends the artist name with an em dash and trims', () => expect(formatTitle('Silence ')).toBe('Silence \u2014 Maeve Vamy'));
+  it('does not double an existing suffix', () => expect(formatTitle('Silence \u2014 Maeve Vamy')).toBe('Silence \u2014 Maeve Vamy'));
   it('does not duplicate the artist name', () => expect(formatTitle('Maeve Vamy')).toBe('Maeve Vamy'));
   it('handles empty input', () => {
     expect(formatTitle('')).toBe('Maeve Vamy');

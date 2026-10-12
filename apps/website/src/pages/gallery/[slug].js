@@ -37,6 +37,8 @@ function Page({ page, site, collection }) {
         description={page.seo.metaDescription || null}
         canonicalPath={canonicalPath}
         ogImage={page.featuredImage ? ogImageUrl(page.featuredImage.url, base) : null}
+        ogType="article"
+        ogImageAlt={page.featuredImage?.altText ?? null}
         jsonLd={[artworkLd, breadcrumbLd]}
         site={site}
       />

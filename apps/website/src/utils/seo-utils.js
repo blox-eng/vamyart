@@ -10,7 +10,7 @@ export function resolveSiteUrl(site) {
 
 export function formatTitle(name) {
     const trimmed = (name || '').trim();
-    return !trimmed || trimmed === SITE_NAME ? SITE_NAME : `${trimmed} \u2014 ${SITE_NAME}`;
+    return !trimmed || trimmed === SITE_NAME || trimmed.endsWith(`\u2014 ${SITE_NAME}`) ? (trimmed || SITE_NAME) : `${trimmed} \u2014 ${SITE_NAME}`;
 }
 
 export function absoluteUrl(base, pathOrUrl) {
