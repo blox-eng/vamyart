@@ -34,6 +34,14 @@ export function buildItemList(base, pieces = []) {
     };
 }
 
+// Wall pieces as JSON-LD list entries: absolute url, name and image. Imageless pieces
+// are skipped, as on the wall itself.
+export function wallItemListPieces(base, pieces = []) {
+    return pieces
+        .filter((p) => p.image?.url)
+        .map((p) => ({ name: p.title, url: `${base}/gallery/${p.slug}/`, image: p.image.url }));
+}
+
 export function buildCollectionJsonLd({ name, description, url, pieces = [] }) {
     return {
         '@context': 'https://schema.org',

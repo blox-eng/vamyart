@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildItemList, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd,
+  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildItemList, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd, wallItemListPieces,
 } from './structured-data';
 
 const ARTIST = 'Maeve Vamy';
@@ -71,6 +71,29 @@ describe('buildItemList / collection mainEntity', () => {
     expect(out.mainEntity['@type']).toBe('ItemList');
     expect(out.mainEntity.itemListElement[0].position).toBe(1);
     expect(out.mainEntity.itemListElement[0].image).toBe('https://a.co/n.jpg');
+  });
+});
+
+describe('wallItemListPieces', () => {
+  const pieces = [
+    { title: 'Never', slug: 'never', image: { url: 'https://s.co/never.jpg' } },
+    { title: 'No image', slug: 'blank', image: null },
+    { title: 'Tide', slug: 'tide', image: { url: 'https://s.co/tide.jpg' } },
+  ];
+  it('gives each entry an absolute url, name and image, skipping imageless pieces', () => {
+    expect(wallItemListPieces('https://a.co', pieces)).toEqual([
+      { name: 'Never', url: 'https://a.co/gallery/never/', image: 'https://s.co/never.jpg' },
+      { name: 'Tide', url: 'https://a.co/gallery/tide/', image: 'https://s.co/tide.jpg' },
+    ]);
+  });
+  it('feeds an ItemList whose every entry has url, name and image', () => {
+    const out = buildCollectionJsonLd({ name: 'S', url: 'https://a.co/gallery/', pieces: wallItemListPieces('https://a.co', pieces) });
+    for (const el of out.mainEntity.itemListElement) {
+      expect(el.url).toMatch(/^https:\/\/a\.co\/gallery\//);
+      expect(el.name).toBeTruthy();
+      expect(el.image).toMatch(/^https:\/\/s\.co\//);
+    }
+    expect(out.mainEntity.itemListElement.map((e) => e.position)).toEqual([1, 2]);
   });
 });
 

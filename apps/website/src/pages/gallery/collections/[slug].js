@@ -4,7 +4,7 @@ import DefaultBaseLayout from '../../../components/layouts/DefaultBaseLayout';
 import PageHead from '../../../components/atoms/PageHead';
 import GalleryWall from '../../../components/gallery/GalleryWall';
 import { ogImageUrl, resolveSiteUrl } from '../../../utils/seo-utils';
-import { buildBreadcrumbJsonLd, buildCollectionJsonLd } from '../../../utils/structured-data';
+import { buildBreadcrumbJsonLd, buildCollectionJsonLd, wallItemListPieces } from '../../../utils/structured-data';
 import { appRouter } from '@vamy/db/trpc';
 
 const serverTrpc = appRouter.createCaller({ userId: null });
@@ -22,7 +22,7 @@ function Page({ site, pieces, filters, collection }) {
             name: collection.title,
             description,
             url: `${base}${path}`,
-            pieces: pieces.map((p) => ({ name: p.title, url: `${base}/gallery/${p.slug}/` })),
+            pieces: wallItemListPieces(base, pieces),
         }),
         buildBreadcrumbJsonLd(base, [
             { name: 'on the wall', path: '/gallery/' },
