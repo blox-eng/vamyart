@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeTargetDimensions } from "./resize";
+import { computeTargetDimensions, planOutput, toGrayscale } from "./resize";
 
 describe("computeTargetDimensions", () => {
   it("leaves images already within the cap untouched", () => {
@@ -49,5 +49,36 @@ describe("computeTargetDimensions", () => {
       height: 600,
       resized: false,
     });
+  });
+});
+
+describe("planOutput", () => {
+  it("uploads the original when there is nothing to trim or shrink", () => {
+    expect(planOutput(2000, 1500, null, 2560)).toBeNull();
+  });
+
+  it("downscales an untrimmed image past the cap", () => {
+    expect(planOutput(4000, 2000, null, 2560)).toEqual({
+      source: { left: 0, top: 0, width: 4000, height: 2000 },
+      width: 2560,
+      height: 1280,
+    });
+  });
+
+  it("re-encodes a trimmed image even when it is within the cap", () => {
+    const crop = { left: 100, top: 150, width: 1200, height: 900 };
+    expect(planOutput(1600, 1600, crop, 2560)).toEqual({ source: crop, width: 1200, height: 900 });
+  });
+
+  it("caps the trimmed region, not the whole photo", () => {
+    const crop = { left: 500, top: 800, width: 3000, height: 2400 };
+    expect(planOutput(4000, 4000, crop, 2560)).toEqual({ source: crop, width: 2560, height: 2048 });
+  });
+});
+
+describe("toGrayscale", () => {
+  it("collapses RGBA to luma", () => {
+    const rgba = new Uint8ClampedArray([255, 255, 255, 255, 0, 0, 0, 255, 255, 0, 0, 255]);
+    expect(Array.from(toGrayscale(rgba))).toEqual([255, 0, 76]);
   });
 });
