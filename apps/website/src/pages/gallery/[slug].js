@@ -116,8 +116,8 @@ export async function getStaticProps({ params }) {
     prevPost,
     nextPost,
     seo: {
-      metaTitle: artwork.seoTitle ?? artwork.title,
-      metaDescription: artwork.seoDescription ?? artwork.excerpt ?? '',
+      metaTitle: artwork.seoTitle || artwork.title,
+      metaDescription: artwork.seoDescription || artwork.excerpt || '',
       socialImage: artwork.primaryImage?.url ?? null,
       type: 'Seo',
     },
