@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd,
+  buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildItemList, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd,
 } from './structured-data';
 
 const ARTIST = 'Maeve Vamy';
@@ -49,6 +49,28 @@ describe('buildCollectionJsonLd', () => {
     const out = buildCollectionJsonLd({ name: 'Empty', url: 'https://a.co/gallery/collections/empty/', pieces: [] });
     expect(out).not.toHaveProperty('description');
     expect(out.hasPart).toEqual([]);
+  });
+});
+
+describe('buildItemList / collection mainEntity', () => {
+  const pieces = [
+    { name: 'Never', slug: 'never', image: 'https://a.co/never.jpg' },
+    { name: 'Tide', slug: 'tide' },
+  ];
+  it('builds a positioned ItemList with absolute urls and images', () => {
+    const out = buildItemList('https://a.co', pieces);
+    expect(out['@type']).toBe('ItemList');
+    expect(out.itemListElement[0]).toEqual({
+      '@type': 'ListItem', position: 1, url: 'https://a.co/gallery/never/', name: 'Never', image: 'https://a.co/never.jpg',
+    });
+    expect(out.itemListElement[1].position).toBe(2);
+    expect(out.itemListElement[1]).not.toHaveProperty('image');
+  });
+  it('buildCollectionJsonLd includes the ItemList as mainEntity', () => {
+    const out = buildCollectionJsonLd({ name: 'S', url: 'https://a.co/gallery/collections/s/', pieces: [{ name: 'Never', url: 'https://a.co/gallery/never/', image: 'https://a.co/n.jpg' }] });
+    expect(out.mainEntity['@type']).toBe('ItemList');
+    expect(out.mainEntity.itemListElement[0].position).toBe(1);
+    expect(out.mainEntity.itemListElement[0].image).toBe('https://a.co/n.jpg');
   });
 });
 
