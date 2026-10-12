@@ -40,6 +40,7 @@ async function loadGallery() {
     deleted: c.deletedAt != null,
     onLanding: c.onLanding,
     sortOrder: c.sortOrder,
+    updatedAt: c.updatedAt,
     pieceIds: c.pieces.map((ac) => ac.artworkId),
   }));
   const orderPieces: OrderPiece[] = pieceRows.map((a) => ({
@@ -48,6 +49,7 @@ async function loadGallery() {
     deleted: a.deletedAt != null,
     sortOrder: a.sortOrder,
     title: a.title,
+    updatedAt: a.updatedAt,
   }));
 
   const piecesById = new Map(

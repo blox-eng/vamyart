@@ -37,6 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const { filters } = await serverTrpc.gallery.wall({});
         collectionEntries = filters.map((c) => ({
             url: `${SITE_URL}/gallery/collections/${c.slug}/`,
+            lastModified: new Date(c.updatedAt),
             changeFrequency: 'monthly' as const,
             priority: 0.7,
         }));

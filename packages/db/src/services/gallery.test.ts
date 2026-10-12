@@ -15,6 +15,7 @@ const piece = (id: string, o: Partial<OrderPiece> = {}): OrderPiece => ({
   deleted: false,
   sortOrder: 0,
   title: id,
+  updatedAt: new Date("2026-01-01T00:00:00Z"),
   ...o,
 });
 const col = (id: string, pieceIds: string[], o: Partial<OrderCollection> = {}): OrderCollection => ({
@@ -26,6 +27,7 @@ const col = (id: string, pieceIds: string[], o: Partial<OrderCollection> = {}): 
   onLanding: true,
   sortOrder: 0,
   pieceIds,
+  updatedAt: new Date("2026-01-01T00:00:00Z"),
   ...o,
 });
 
@@ -33,7 +35,22 @@ describe("publicFilters", () => {
   it("excludes a published collection whose only piece is unpublished, and excludes drafts", () => {
     const pieces = [piece("a", { published: false }), piece("b")];
     const cols = [col("empty", ["a"]), col("draft", ["b"], { published: false }), col("ok", ["b"])];
-    expect(publicFilters(cols, pieces)).toEqual([{ slug: "ok", title: "ok" }]);
+    expect(publicFilters(cols, pieces)).toEqual([{ slug: "ok", title: "ok", updatedAt: "2026-01-01T00:00:00.000Z" }]);
+  });
+
+  it("dates a filter by the newest of the collection and its visible pieces", () => {
+    const pieces = [
+      piece("new", { updatedAt: new Date("2026-03-01T00:00:00Z") }),
+      piece("hidden-newer", { published: false, updatedAt: new Date("2026-09-01T00:00:00Z") }),
+      piece("old", { updatedAt: new Date("2026-02-01T00:00:00Z") }),
+    ];
+    const cols = [
+      col("a", ["old", "new", "hidden-newer"], { updatedAt: new Date("2026-02-15T00:00:00Z") }),
+      col("b", ["old"], { updatedAt: new Date("2026-04-01T00:00:00Z") }),
+    ];
+    const [a, b] = publicFilters(cols, pieces);
+    expect(a.updatedAt).toBe("2026-03-01T00:00:00.000Z");
+    expect(b.updatedAt).toBe("2026-04-01T00:00:00.000Z");
   });
 });
 

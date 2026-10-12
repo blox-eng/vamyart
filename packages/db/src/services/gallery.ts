@@ -7,6 +7,7 @@ export type OrderCollection = {
   onLanding: boolean;
   sortOrder: number;
   pieceIds: string[];
+  updatedAt: Date;
 };
 
 export type OrderPiece = {
@@ -15,6 +16,7 @@ export type OrderPiece = {
   deleted: boolean;
   sortOrder: number;
   title: string;
+  updatedAt: Date;
 };
 
 const FALLBACK_ASPECT = 0.8;
@@ -38,8 +40,15 @@ function publicCollections(cols: OrderCollection[], pieces: OrderPiece[]): Order
     .sort(bySortThenTitle);
 }
 
-export function publicFilters(cols: OrderCollection[], pieces: OrderPiece[]): Array<{ slug: string; title: string }> {
-  return publicCollections(cols, pieces).map(({ slug, title }) => ({ slug, title }));
+export function publicFilters(
+  cols: OrderCollection[],
+  pieces: OrderPiece[]
+): Array<{ slug: string; title: string; updatedAt: string }> {
+  const updatedById = new Map(pieces.map((p) => [p.id, p.updatedAt.getTime()]));
+  return publicCollections(cols, pieces).map((c) => {
+    const newest = Math.max(c.updatedAt.getTime(), ...collectionOrder(c, pieces).map((id) => updatedById.get(id)!));
+    return { slug: c.slug, title: c.title, updatedAt: new Date(newest).toISOString() };
+  });
 }
 
 function dedupedPieceIds(cols: OrderCollection[], pieces: OrderPiece[]): string[] {
