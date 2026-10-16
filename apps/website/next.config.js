@@ -25,6 +25,12 @@ const nextConfig = {
     outputFileTracingIncludes: {
         '**': ['./content/**/*'],
     },
+    // Every gallery page queries Supabase at build time. The default (8 pages at once, no
+    // retries) overloads the pooler and it drops connections mid-build (CONNECTION_CLOSED).
+    experimental: {
+        staticGenerationMaxConcurrency: 2,
+        staticGenerationRetryCount: 2,
+    },
     // Type-checking is run separately via `tsc --noEmit` in CI.
     typescript: {
         ignoreBuildErrors: true,
