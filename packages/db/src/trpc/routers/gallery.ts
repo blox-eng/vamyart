@@ -12,6 +12,7 @@ import {
   type OrderCollection,
   type OrderPiece,
 } from "../../services/gallery";
+import { isPieceSold, pieceSoldAt } from "../../services/variant-sold";
 
 export type GalleryImage = { url: string; width: number | null; height: number | null; alt: string };
 export type GalleryPiece = {
@@ -19,6 +20,8 @@ export type GalleryPiece = {
   title: string;
   excerpt: string | null;
   medium: string | null;
+  sold: boolean;
+  soldAt: string | null;
   image: GalleryImage | null;
 };
 
@@ -28,7 +31,10 @@ async function loadGallery() {
       with: { pieces: { orderBy: (ac, { asc }) => [asc(ac.sortOrder)] } },
     }),
     db.query.artworks.findMany({
-      with: { images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] } },
+      with: {
+        images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] },
+        product: { with: { variants: true } },
+      },
     }),
   ]);
 
@@ -56,6 +62,7 @@ async function loadGallery() {
     pieceRows.map((a): [string, GalleryPiece] => {
       const img = a.images.find((i) => i.isPrimary) ?? a.images[0] ?? null;
       const url = img ? collectionCoverUrl(img.storagePath, null) : null;
+      const variants = a.product.flatMap((p) => p.variants);
       return [
         a.id,
         {
@@ -63,6 +70,8 @@ async function loadGallery() {
           title: a.title.trim(),
           excerpt: a.excerpt,
           medium: a.medium,
+          sold: isPieceSold(a.status, variants),
+          soldAt: pieceSoldAt(variants)?.toISOString() ?? null,
           image:
             img && url
               ? {

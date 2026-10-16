@@ -13,7 +13,7 @@ The rules are adapted from the Blox design system (`blox-eng/blox` → `blox-web
 1. **The work is the only colour.** The UI is near-monochrome paper and ink. Colour belongs to the paintings and photographs. If you're reaching for a colour, the answer is almost always a neutral.
 2. **Sea glass is the only accent.** It's used rarely and only where it carries meaning: the primary action, active/selected, focus, text selection, and an occasional hairline. Scarcity is the point.
 3. **Cardless.** No boxed widgets, drop shadows or rounded containers around groups. Structure comes from whitespace, hairlines, small labels and alignment. The artwork is the only "object" on the page.
-4. **Status is never hue alone.** Pair it with a glyph and a label (`● Sold`, `▲ Low stock`). Normal is neutral, not green.
+4. **Status is never hue alone.** Pair it with a glyph and a label (`● Sold`, `▲ Low stock`). Normal is neutral, not green. The one exception is the public site's sold dot (§1), a gallery convention whose label is spoken to screen readers and shown on hover.
 5. **Warm, never pure.** No `#000`, no `#FFF`. Every neutral shares the paper/ink undertone so the UI reads as one material.
 6. **One motion system.** Same curve everywhere, slow enough to read as calm, never bouncy. Reduced-motion users get instant state changes.
 
@@ -44,7 +44,7 @@ Tokens are CSS custom properties. Use them through Tailwind (`bg-[var(--bg)]` or
 **Rules**
 - The accent appears **only** on: the primary action, active/selected state, focus rings, text selection, and the occasional signature hairline. More than a few accent elements on one screen means it's overused.
 - **Alpha ramp, not new colours.** Express states as the accent at 100% (action) and 10% (selected wash).
-- **Sold** = `--neg` dot + the word "Sold". The red dot on gallery cards (#37) is this token.
+- **Sold** = `--neg` dot. In the studio, and in other dense UI, it goes with the word "Sold". On the public site the dot stands alone, like the sticker beside a sold painting in a gallery (#37). It sits on the wall just outside the painting's bottom-right corner and never covers the work. Hover, focus or tap reveals when it sold ("Sold in March 2026"), and on the piece page a quiet "Commission a piece like this" link. Screen readers hear the same label.
 - **Never** introduce blue/indigo/purple primaries, saturated greens, or neon status colours.
 - Public site: pure white `#FFFFFF` background, permanently. Gallery walls are white; the work is the only colour.
 - **Themes:** the studio follows the OS preference. The public site pins `data-theme="light"` (paper) until a dark gallery is deliberately designed. Photography pages may use `--wall` as their ground.

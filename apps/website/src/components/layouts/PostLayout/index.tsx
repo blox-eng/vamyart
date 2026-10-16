@@ -7,6 +7,7 @@ import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
 import LazyImage from '../../atoms/LazyImage';
 import { formatPrice } from '../../../lib/formatPrice';
+import { SoldMark } from '../../gallery/SoldDot';
 
 // Loaded client-side only — they use tRPC hooks and Supabase realtime
 const ProductSelector = dynamic(
@@ -22,7 +23,7 @@ export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, markdown_content, bottomSections = [], medium, dimensions, price, pieceId, prevPost, nextPost } = page;
+    const { title, markdown_content, bottomSections = [], medium, dimensions, price, pieceId, prevPost, nextPost, sold, soldAt } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
@@ -49,6 +50,9 @@ export default function PostLayout(props) {
                                     sizes="(min-width: 1024px) 50vw, 100vw"
                                     {...(enableAnnotations && { 'data-sb-field-path': 'featuredImage.url' })}
                                 />
+                                {sold && artworkSlug && (
+                                    <SoldMark soldAt={soldAt ?? null} commissionHref={`/get-a-piece?piece=${artworkSlug}`} />
+                                )}
                             </div>
                         )}
 
@@ -81,7 +85,7 @@ export default function PostLayout(props) {
                                 </dl>
                             )}
 
-                            {artworkSlug && (
+                            {artworkSlug && !sold && (
                                 <Link
                                     href={`/get-a-piece?piece=${artworkSlug}`}
                                     className="inline-block text-sm font-medium uppercase tracking-wide underline underline-offset-4 hover:text-muted"
@@ -105,14 +109,16 @@ export default function PostLayout(props) {
                                 <div className="space-y-4">
                                     <BidWidget artworkSlug={artworkSlug} />
                                     <ProductSelector artworkSlug={artworkSlug} />
-                                    <div className="pt-2 text-center">
-                                        <Link
-                                            href={`/get-a-piece?piece=${artworkSlug}`}
-                                            className="inline-block text-sm font-medium underline underline-offset-4 hover:text-muted"
-                                        >
-                                            Or inquire about this piece
-                                        </Link>
-                                    </div>
+                                    {!sold && (
+                                        <div className="pt-2 text-center">
+                                            <Link
+                                                href={`/get-a-piece?piece=${artworkSlug}`}
+                                                className="inline-block text-sm font-medium underline underline-offset-4 hover:text-muted"
+                                            >
+                                                Or inquire about this piece
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

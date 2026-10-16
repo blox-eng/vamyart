@@ -7,7 +7,7 @@ export function escapeJsonLd(json) {
     return json.replace(/</g, '\\u003c');
 }
 
-export function buildArtworkJsonLd({ title, description, year, medium, image, url }) {
+export function buildArtworkJsonLd({ title, description, year, medium, image, url, sold = false }) {
     return {
         '@context': 'https://schema.org',
         '@type': 'VisualArtwork',
@@ -18,6 +18,7 @@ export function buildArtworkJsonLd({ title, description, year, medium, image, ur
         ...(year ? { dateCreated: String(year) } : {}),
         ...(medium ? { artMedium: medium } : {}),
         ...(image ? { image } : {}),
+        ...(sold ? { offers: { '@type': 'Offer', availability: 'https://schema.org/SoldOut' } } : {}),
     };
 }
 

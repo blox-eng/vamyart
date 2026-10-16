@@ -3,6 +3,7 @@ import type { GalleryPiece } from '@vamy/db';
 import { aspectOf } from '@vamy/db/gallery';
 import { netlifyImage, netlifyImageSrcSet } from '../../utils/netlify-image';
 import { LANDING_WIDTHS, centerScroll, landingImageSizes, planMove, shouldLoop } from '../../utils/slider-loop';
+import { SoldTag } from './SoldDot';
 
 type Props = { pieces: GalleryPiece[]; contactEmail: string };
 
@@ -172,7 +173,11 @@ function Piece({ piece, first, tabIndex }: { piece: GalleryPiece; first: boolean
     const srcSet = netlifyImageSrcSet(image.url, LANDING_WIDTHS);
     const excerpt = piece.excerpt?.trim();
     return (
-        <a href={`/gallery/${piece.slug}/`} className="landing-piece" tabIndex={tabIndex}>
+        <a
+            href={`/gallery/${piece.slug}/`}
+            className={piece.sold ? 'landing-piece landing-piece--sold' : 'landing-piece'}
+            tabIndex={tabIndex}
+        >
             <img
                 src={netlifyImage(image.url, { width: LANDING_WIDTHS[LANDING_WIDTHS.length - 1] })}
                 srcSet={srcSet || undefined}
@@ -185,6 +190,7 @@ function Piece({ piece, first, tabIndex }: { piece: GalleryPiece; first: boolean
                 style={{ aspectRatio: aspect, objectFit: known ? undefined : 'contain' }}
             />
             <span className="landing-title">{piece.title}</span>
+            {piece.sold && <SoldTag soldAt={piece.soldAt} />}
             {excerpt && <span className="landing-excerpt">{excerpt}</span>}
         </a>
     );
