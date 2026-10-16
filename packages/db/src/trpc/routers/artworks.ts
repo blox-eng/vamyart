@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { pieceAltText } from "../../services/gallery";
+import { isPieceSold, pieceSoldAt } from "../../services/variant-sold";
 import { artworks, products, productVariants, orders, auctions } from "../../schema";
 
 export function slugify(input: string): string {
@@ -242,6 +243,7 @@ export const artworksRouter = router({
         where: (art, { eq }) => eq(art.slug, input.slug),
         with: {
           images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] },
+          product: { with: { variants: true } },
         },
       });
       if (!a || !a.published || a.deletedAt) return null;
@@ -254,6 +256,8 @@ export const artworksRouter = router({
         medium: a.medium,
         dimensions: a.dimensions,
         status: a.status,
+        sold: isPieceSold(a.status, a.product.flatMap((p) => p.variants)),
+        soldAt: pieceSoldAt(a.product.flatMap((p) => p.variants))?.toISOString() ?? null,
         published: a.published,
         excerpt: a.excerpt,
         description: a.description,

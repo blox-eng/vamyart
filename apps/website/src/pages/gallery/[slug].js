@@ -23,7 +23,7 @@ function Page({ page, site, collection }) {
     : null;
   const artworkLd = buildArtworkJsonLd({
     title: page.title, description: page.excerpt, year: page.year, medium: page.medium,
-    image: page.featuredImage?.url, url: absoluteUrl(base, canonicalPath),
+    image: page.featuredImage?.url, url: absoluteUrl(base, canonicalPath), sold: page.sold,
   });
   const breadcrumbLd = buildBreadcrumbJsonLd(base, [
     { name: 'on the wall', path: '/gallery/' },
@@ -109,6 +109,8 @@ export async function getStaticProps({ params }) {
     medium: artwork.medium ?? null,
     dimensions: artwork.dimensions ?? null,
     year: artwork.year ?? null,
+    sold: artwork.sold,
+    soldAt: artwork.soldAt ?? null,
     featuredImage: artwork.primaryImage
       ? { url: artwork.primaryImage.url, altText: artwork.primaryImage.altText, type: 'ImageBlock' }
       : null,

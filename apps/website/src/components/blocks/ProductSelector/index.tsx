@@ -73,20 +73,8 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     );
     if (variants.length === 0) return null;
 
-    // Every buyable variant is gone → show a graceful sold state instead of an empty picker.
-    if (variants.every(isVariantSold)) {
-        return (
-            <div className="border border-ink p-6 mt-4">
-                <h3 className="text-xs uppercase tracking-widest mb-2">This piece has sold</h3>
-                <p className="text-sm text-muted mb-3">
-                    This original has found its home. Maeve can create something in the same spirit for you.
-                </p>
-                <a href="/get-a-piece" className="text-sm underline underline-offset-2 hover:no-underline">
-                    Inquire about a commission or a similar piece
-                </a>
-            </div>
-        );
-    }
+    // Nothing left to buy: the sold dot by the painting and the commission link say it all.
+    if (variants.every(isVariantSold)) return null;
 
     const selectedVariant = variants.find(v => v.id === selectedVariantId) ?? null;
     const priceLabel = selectedVariant ? `€${Number(selectedVariant.price).toLocaleString()}` : '';
@@ -165,9 +153,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                                 </div>
                                 <div className="text-right flex items-center gap-3">
                                     {sold ? (
-                                        <div>
-                                            <p className="text-sm text-muted">Sold</p>
-                                        </div>
+                                        <span className="sold-dot" role="img" aria-label="Sold" title="Sold" />
                                     ) : (
                                         <div>
                                             <p className="text-sm">€{Number(v.price).toLocaleString()}</p>

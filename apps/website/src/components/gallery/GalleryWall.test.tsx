@@ -5,9 +5,9 @@ import type { GalleryPiece } from '@vamy/db';
 import GalleryWall from './GalleryWall';
 
 const pieces: GalleryPiece[] = [
-    { slug: 'silence', title: 'Silence', excerpt: null, medium: 'Oil', image: { url: 'https://cdn.test/a.jpg', width: 1600, height: 2000, alt: 'Silence, Oil, by Maeve Vamy' } },
-    { slug: 'tide', title: 'Tide', excerpt: null, medium: null, image: { url: 'https://cdn.test/b.jpg', width: null, height: null, alt: 'Tide, by Maeve Vamy' } },
-    { slug: 'unseen', title: 'Unseen', excerpt: null, medium: null, image: null },
+    { slug: 'silence', title: 'Silence', sold: false, soldAt: null, excerpt: null, medium: 'Oil', image: { url: 'https://cdn.test/a.jpg', width: 1600, height: 2000, alt: 'Silence, Oil, by Maeve Vamy' } },
+    { slug: 'tide', title: 'Tide', sold: true, soldAt: '2026-03-14T10:00:00.000Z', excerpt: null, medium: null, image: { url: 'https://cdn.test/b.jpg', width: null, height: null, alt: 'Tide, by Maeve Vamy' } },
+    { slug: 'unseen', title: 'Unseen', sold: false, soldAt: null, excerpt: null, medium: null, image: null },
 ];
 const filters = [
     { slug: 'seascapes', title: 'Seascapes' },
@@ -56,5 +56,13 @@ describe('GalleryWall server render', () => {
 
     it('drops the filter row when there are no collections', () => {
         expect(render({ filters: [] })).not.toContain('<nav');
+    });
+
+    it('marks only sold pieces with a labelled red dot', () => {
+        const html = render();
+        const dots = html.match(/<span class="sold-dot sold-dot--wall"[^>]*>/g) ?? [];
+        expect(dots).toHaveLength(3);
+        expect(dots[0]).toContain('aria-label="Sold in March 2026"');
+        expect(html.match(/<span class="wall-sold">Sold in March 2026<\/span>/g)).toHaveLength(3);
     });
 });

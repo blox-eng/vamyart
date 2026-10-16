@@ -23,6 +23,12 @@ describe('buildArtworkJsonLd', () => {
     expect(out).not.toHaveProperty('artMedium');
     expect(out).not.toHaveProperty('dateCreated');
     expect(out).not.toHaveProperty('image');
+    expect(out).not.toHaveProperty('offers');
+  });
+
+  it('marks a sold piece as sold out', () => {
+    const out = buildArtworkJsonLd({ title: 'X', url: 'https://a.co/gallery/x/', sold: true });
+    expect(out.offers).toEqual({ '@type': 'Offer', availability: 'https://schema.org/SoldOut' });
   });
 });
 

@@ -5,9 +5,9 @@ import type { GalleryPiece } from '@vamy/db';
 import LandingSlider from './LandingSlider';
 
 const pieces: GalleryPiece[] = [
-    { slug: 'silence', title: 'Silence', excerpt: 'A bone sky over aubergine land', medium: 'Oil', image: { url: 'https://cdn.test/a.jpg', width: 1600, height: 2000, alt: 'Silence, Oil, by Maeve Vamy' } },
-    { slug: 'tide', title: 'Tide', excerpt: '  ', medium: null, image: { url: 'https://cdn.test/b.jpg', width: null, height: null, alt: 'Tide, by Maeve Vamy' } },
-    { slug: 'unseen', title: 'Unseen', excerpt: null, medium: null, image: null },
+    { slug: 'silence', title: 'Silence', sold: false, soldAt: null, excerpt: 'A bone sky over aubergine land', medium: 'Oil', image: { url: 'https://cdn.test/a.jpg', width: 1600, height: 2000, alt: 'Silence, Oil, by Maeve Vamy' } },
+    { slug: 'tide', title: 'Tide', sold: true, soldAt: '2026-03-14T10:00:00.000Z', excerpt: '  ', medium: null, image: { url: 'https://cdn.test/b.jpg', width: null, height: null, alt: 'Tide, by Maeve Vamy' } },
+    { slug: 'unseen', title: 'Unseen', sold: false, soldAt: null, excerpt: null, medium: null, image: null },
 ];
 
 const render = (p: GalleryPiece[]) => renderToString(<LandingSlider pieces={p} contactEmail="maeve@vamy.art" />);
@@ -19,6 +19,13 @@ describe('LandingSlider server render', () => {
         expect(html.match(/href="\/gallery\//g)).toHaveLength(2);
         expect(html).not.toContain('/gallery/unseen/');
         expect(html).not.toContain('aria-hidden');
+    });
+
+    it('marks only sold pieces with a labelled red dot', () => {
+        const tags = html.match(/<span class="sold-tag"[^>]*>/g) ?? [];
+        expect(tags).toHaveLength(1);
+        expect(tags[0]).toContain('aria-label="Sold in March 2026"');
+        expect(html).toContain('class="landing-piece landing-piece--sold"');
     });
 
     it('loads the first image eagerly at high priority and the rest lazily', () => {

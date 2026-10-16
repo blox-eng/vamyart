@@ -4,6 +4,7 @@ import type { GalleryPiece } from '@vamy/db';
 import { aspectOf } from '@vamy/db/gallery';
 import { DEFAULT_WIDTHS, netlifyImage, netlifyImageSrcSet } from '../../utils/netlify-image';
 import { distributeColumns } from '../../utils/masonry';
+import { SoldDot, soldLabel } from './SoldDot';
 
 type Filter = { slug: string; title: string };
 type Props = { pieces: GalleryPiece[]; filters: Filter[]; activeSlug: string | null };
@@ -80,7 +81,9 @@ function Tile({ piece, aspect, sizes }: { piece: GalleryPiece; aspect: number; s
             />
             <span className="wall-title" aria-hidden="true">
                 {piece.title}
+                {piece.sold && <span className="wall-sold">{soldLabel(piece.soldAt)}</span>}
             </span>
+            {piece.sold && <SoldDot soldAt={piece.soldAt} className="sold-dot--wall" />}
         </a>
     );
 }
