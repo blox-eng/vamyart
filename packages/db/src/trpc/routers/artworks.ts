@@ -5,6 +5,8 @@ import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { pieceAltText } from "../../services/gallery";
 import { isPieceSold, pieceSoldAt } from "../../services/variant-sold";
+import { orientationOf, parseDimensionsCm } from "../../services/dimensions";
+import { publicProducts } from "../../services/public-products";
 import { artworks, products, productVariants, orders, auctions } from "../../schema";
 
 export function slugify(input: string): string {
@@ -243,11 +245,14 @@ export const artworksRouter = router({
         where: (art, { eq }) => eq(art.slug, input.slug),
         with: {
           images: { orderBy: (img, { asc }) => [asc(img.sortOrder)] },
-          product: { with: { variants: true } },
+          product: { with: { variants: true, shippingMethod: true } },
+          auction: true,
         },
       });
       if (!a || !a.published || a.deletedAt) return null;
       const primary = a.images.find((img) => img.isPrimary) ?? a.images[0] ?? null;
+      const imageUrl = (storagePath: string) =>
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${storagePath}`;
       return {
         id: a.id,
         slug: a.slug,
@@ -255,6 +260,7 @@ export const artworksRouter = router({
         year: a.year,
         medium: a.medium,
         dimensions: a.dimensions,
+        dimensionsCm: parseDimensionsCm(a.dimensions, orientationOf(primary?.width, primary?.height)),
         status: a.status,
         sold: isPieceSold(a.status, a.product.flatMap((p) => p.variants)),
         soldAt: pieceSoldAt(a.product.flatMap((p) => p.variants))?.toISOString() ?? null,
@@ -263,16 +269,24 @@ export const artworksRouter = router({
         description: a.description,
         seoTitle: a.seoTitle,
         seoDescription: a.seoDescription,
+        updatedAt: a.updatedAt.toISOString(),
         primaryImage: primary
           ? {
-              url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${primary.storagePath}`,
+              url: imageUrl(primary.storagePath),
               altText: pieceAltText({ altText: primary.altText, title: a.title, medium: a.medium }),
+              width: primary.width,
+              height: primary.height,
             }
           : null,
         images: a.images.map((img) => ({
-          url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${img.storagePath}`,
+          url: imageUrl(img.storagePath),
           altText: pieceAltText({ altText: img.altText, title: a.title, medium: a.medium }),
+          width: img.width,
+          height: img.height,
         })),
+        products: publicProducts(a.product),
+        activeAuction:
+          a.auction?.status === "active" ? { productVariantId: a.auction.productVariantId } : null,
       };
     }),
 });

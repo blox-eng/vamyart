@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { eq, and, isNull } from "drizzle-orm";
 import { detectRestockTransition, notifyWaitlistForVariant } from "../../services/restock-notify";
+import { publicProducts } from "../../services/public-products";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { products, productVariants, artworks, orders, auctions, certificates } from "../../schema";
@@ -75,18 +76,15 @@ export const productsRouter = router({
       });
       if (!artwork) return [];
 
-      return db.query.products.findMany({
-        where: and(
-          eq(products.artworkId, artwork.id),
-          eq(products.active, true)
-        ),
-        with: {
-          variants: {
-            where: eq(productVariants.available, true),
+      return publicProducts(
+        await db.query.products.findMany({
+          where: and(eq(products.artworkId, artwork.id), eq(products.active, true)),
+          with: {
+            variants: { where: eq(productVariants.available, true) },
+            shippingMethod: true,
           },
-          shippingMethod: true,
-        },
-      });
+        }),
+      );
     }),
 
   listAll: protectedProcedure.query(async () => {
