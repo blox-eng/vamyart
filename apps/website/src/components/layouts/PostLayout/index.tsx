@@ -6,14 +6,11 @@ import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
 import LazyImage from '../../atoms/LazyImage';
-import { formatPrice } from '../../../lib/formatPrice';
 import { SoldMark } from '../../gallery/SoldDot';
+import { ProductSelector } from '../../blocks/ProductSelector';
 
-// Loaded client-side only — they use tRPC hooks and Supabase realtime
-const ProductSelector = dynamic(
-    () => import('../../blocks/ProductSelector').then((m) => ({ default: m.ProductSelector })),
-    { ssr: false }
-);
+// Client-side only: Supabase realtime. ProductSelector renders on the server from
+// the page's products, so prices are in the HTML crawlers read.
 const BidWidget = dynamic(
     () => import('../../blocks/BidWidget').then((m) => ({ default: m.BidWidget })),
     { ssr: false }
@@ -23,7 +20,7 @@ export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, markdown_content, bottomSections = [], medium, dimensions, price, pieceId, prevPost, nextPost, sold, soldAt } = page;
+    const { title, markdown_content, bottomSections = [], medium, dimensions, prevPost, nextPost, sold, soldAt, products } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
@@ -48,6 +45,8 @@ export default function PostLayout(props) {
                                     loading="eager"
                                     fetchPriority="high"
                                     sizes="(min-width: 1024px) 50vw, 100vw"
+                                    width={page.featuredImage?.width}
+                                    height={page.featuredImage?.height}
                                     {...(enableAnnotations && { 'data-sb-field-path': 'featuredImage.url' })}
                                 />
                                 {sold && artworkSlug && (
@@ -65,22 +64,13 @@ export default function PostLayout(props) {
                                 <span aria-hidden="true">←</span> Back to gallery
                             </Link>
                             <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
-                            {pieceId && (
-                                <p className="text-xs uppercase tracking-widest text-faint -mt-4">
-                                    {pieceId}
-                                </p>
-                            )}
-
-                            {(medium || dimensions || price) && (
+                            {(medium || dimensions) && (
                                 <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-muted mb-8">
                                     {medium && (
                                         <div><dt className="sr-only">Medium</dt><dd>{medium}</dd></div>
                                     )}
                                     {dimensions && (
                                         <div><dt className="sr-only">Dimensions</dt><dd>{dimensions}</dd></div>
-                                    )}
-                                    {price && formatPrice(price) && (
-                                        <div><dt className="sr-only">Price</dt><dd>{formatPrice(price)}</dd></div>
                                     )}
                                 </dl>
                             )}
@@ -108,7 +98,7 @@ export default function PostLayout(props) {
                             {artworkSlug && (
                                 <div className="space-y-4">
                                     <BidWidget artworkSlug={artworkSlug} />
-                                    <ProductSelector artworkSlug={artworkSlug} />
+                                    <ProductSelector artworkSlug={artworkSlug} initialProducts={products} />
                                     {!sold && (
                                         <div className="pt-2 text-center">
                                             <Link

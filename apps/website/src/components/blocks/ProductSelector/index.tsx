@@ -1,8 +1,13 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { trpc } from '../../../lib/trpc';
+import { trpc, type RouterOutputs } from '../../../lib/trpc';
 import { isVariantSold } from '../../../utils/variant-sold';
 
-export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
+// Fixed locale so the server-rendered price matches the browser's (no hydration mismatch).
+const price = (value: string | number) => `€${Number(value).toLocaleString('en-IE')}`;
+
+type PieceProducts = RouterOutputs['products']['listByArtworkSlug'];
+
+export function ProductSelector({ artworkSlug, initialProducts }: { artworkSlug: string; initialProducts?: PieceProducts }) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
     const [isRedirecting, setIsRedirecting] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -25,6 +30,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     const productsQuery = trpc.products.listByArtworkSlug.useQuery(
         { slug: artworkSlug },
         {
+            initialData: initialProducts,
             retry: false,
             staleTime: 10_000,
             refetchOnWindowFocus: true,
@@ -77,7 +83,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
     if (variants.every(isVariantSold)) return null;
 
     const selectedVariant = variants.find(v => v.id === selectedVariantId) ?? null;
-    const priceLabel = selectedVariant ? `€${Number(selectedVariant.price).toLocaleString()}` : '';
+    const priceLabel = selectedVariant ? price(selectedVariant.price) : '';
 
     const shippingMethod = productList?.[0]?.shippingMethod;
     const shippingDisplay = shippingMethod?.displayText ?? null;
@@ -156,7 +162,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                                         <span className="sold-dot" role="img" aria-label="Sold" title="Sold" />
                                     ) : (
                                         <div>
-                                            <p className="text-sm">€{Number(v.price).toLocaleString()}</p>
+                                            <p className="text-sm">{price(v.price)}</p>
                                             <p className={`text-xs ${v.stockQuantity > 0 ? 'text-accent' : 'text-neg'}`}>
                                                 {v.stockQuantity > 0 ? 'In stock' : 'Out of stock'}
                                             </p>
@@ -230,7 +236,7 @@ export function ProductSelector({ artworkSlug }: { artworkSlug: string }) {
                 </span>
             </label>
             <p className="text-xs text-muted mb-3 leading-relaxed">
-                Prices include VAT where applicable. You have a 14-day right of withdrawal after delivery —{' '}
+                Final price · shipping at checkout. You have a 14-day right of withdrawal after delivery —{' '}
                 <a href="/terms#withdrawal" className="underline hover:no-underline" target="_blank" rel="noreferrer">
                     details
                 </a>.

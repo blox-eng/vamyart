@@ -13,10 +13,13 @@ type LazyImageProps = {
     fetchPriority?: 'high' | 'low' | 'auto';
     widths?: number[];
     sizes?: string;
+    // Intrinsic pixel size: lets the browser reserve the box before the image loads.
+    width?: number | null;
+    height?: number | null;
     onLoad?: () => void;
 } & Omit<React.HTMLAttributes<HTMLDivElement>, 'className' | 'onLoad'>;
 
-export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', fetchPriority, widths = DEFAULT_WIDTHS, sizes = '100vw', onLoad, ...rest }: LazyImageProps) {
+export default function LazyImage({ src, alt, className, imgClassName, loading = 'lazy', fetchPriority, widths = DEFAULT_WIDTHS, sizes = '100vw', width, height, onLoad, ...rest }: LazyImageProps) {
     const imgRef = React.useRef<HTMLImageElement>(null);
     const [loaded, setLoaded] = React.useState(false);
     const [errored, setErrored] = React.useState(false);
@@ -44,6 +47,8 @@ export default function LazyImage({ src, alt, className, imgClassName, loading =
                 srcSet={srcSet}
                 sizes={srcSet ? sizes : undefined}
                 alt={alt}
+                width={width ?? undefined}
+                height={height ?? undefined}
                 loading={loading}
                 fetchPriority={fetchPriority}
                 onLoad={() => { setLoaded(true); onLoad?.(); }}

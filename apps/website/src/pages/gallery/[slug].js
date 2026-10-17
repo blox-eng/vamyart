@@ -5,7 +5,7 @@ import { getComponent } from '../../components/components-registry';
 import { absoluteUrl, ogImageUrl, resolveSiteUrl } from '../../utils/seo-utils';
 import { buildHeroPreload } from '../../utils/netlify-image';
 import { buildBreadcrumbJsonLd } from '../../utils/structured-data';
-import { buildPieceJsonLd } from '../../utils/structured-data-piece';
+import { buildPieceJsonLd, pieceOgProductTags } from '../../utils/structured-data-piece';
 import PageHead from '../../components/atoms/PageHead';
 import { appRouter } from '@vamy/db/trpc';
 
@@ -13,6 +13,13 @@ const serverTrpc = appRouter.createCaller({ userId: null });
 
 function toJson(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+const OG_WIDTH = 1200; // ogImageUrl asks the image CDN for this width
+
+function ogImageSize(image) {
+  if (!image?.width || !image?.height) return {};
+  return { ogImageWidth: OG_WIDTH, ogImageHeight: Math.round((OG_WIDTH * image.height) / image.width) };
 }
 
 function Page({ page, site, collection }) {
@@ -42,6 +49,8 @@ function Page({ page, site, collection }) {
         ogImage={page.featuredImage ? ogImageUrl(page.featuredImage.url, base) : null}
         ogType="article"
         ogImageAlt={page.featuredImage?.altText ?? null}
+        {...ogImageSize(page.featuredImage)}
+        ogProduct={pieceOgProductTags(page.products, page.activeAuction)}
         jsonLd={[artworkLd, breadcrumbLd]}
         site={site}
       />
@@ -111,11 +120,20 @@ export async function getStaticProps({ params }) {
     markdown_content: artwork.description ?? '',
     medium: artwork.medium ?? null,
     dimensions: artwork.dimensions ?? null,
+    dimensionsCm: artwork.dimensionsCm ?? null,
+    products: artwork.products ?? [],
+    activeAuction: artwork.activeAuction ?? null,
     year: artwork.year ?? null,
     sold: artwork.sold,
     soldAt: artwork.soldAt ?? null,
     featuredImage: artwork.primaryImage
-      ? { url: artwork.primaryImage.url, altText: artwork.primaryImage.altText, type: 'ImageBlock' }
+      ? {
+          url: artwork.primaryImage.url,
+          altText: artwork.primaryImage.altText,
+          width: artwork.primaryImage.width ?? null,
+          height: artwork.primaryImage.height ?? null,
+          type: 'ImageBlock',
+        }
       : null,
     bottomSections: [],
     prevPost,
