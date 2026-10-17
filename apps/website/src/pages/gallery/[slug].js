@@ -4,7 +4,8 @@ import { allContent } from '../../utils/local-content';
 import { getComponent } from '../../components/components-registry';
 import { absoluteUrl, ogImageUrl, resolveSiteUrl } from '../../utils/seo-utils';
 import { buildHeroPreload } from '../../utils/netlify-image';
-import { buildArtworkJsonLd, buildBreadcrumbJsonLd } from '../../utils/structured-data';
+import { buildBreadcrumbJsonLd } from '../../utils/structured-data';
+import { buildPieceJsonLd, pieceOgProductTags } from '../../utils/structured-data-piece';
 import PageHead from '../../components/atoms/PageHead';
 import { appRouter } from '@vamy/db/trpc';
 
@@ -14,6 +15,13 @@ function toJson(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+const OG_WIDTH = 1200; // ogImageUrl asks the image CDN for this width
+
+function ogImageSize(image) {
+  if (!image?.width || !image?.height) return {};
+  return { ogImageWidth: OG_WIDTH, ogImageHeight: Math.round((OG_WIDTH * image.height) / image.width) };
+}
+
 function Page({ page, site, collection }) {
   const PageLayout = getComponent('PostLayout');
   const base = resolveSiteUrl(site);
@@ -21,9 +29,11 @@ function Page({ page, site, collection }) {
   const heroPreload = page.featuredImage?.url
     ? buildHeroPreload(page.featuredImage.url, { sizes: '(min-width: 1024px) 50vw, 100vw' })
     : null;
-  const artworkLd = buildArtworkJsonLd({
-    title: page.title, description: page.excerpt, year: page.year, medium: page.medium,
-    image: page.featuredImage?.url, url: absoluteUrl(base, canonicalPath), sold: page.sold,
+  const artworkLd = buildPieceJsonLd(base, {
+    url: absoluteUrl(base, canonicalPath), slug: page.artworkSlug, title: page.title, description: page.excerpt,
+    year: page.year, medium: page.medium, dimensionsCm: page.dimensionsCm,
+    image: page.featuredImage && { ...page.featuredImage, alt: page.featuredImage.altText },
+    products: page.products, activeAuction: page.activeAuction, sold: page.sold,
   });
   const breadcrumbLd = buildBreadcrumbJsonLd(base, [
     { name: 'on the wall', path: '/gallery/' },
@@ -39,6 +49,8 @@ function Page({ page, site, collection }) {
         ogImage={page.featuredImage ? ogImageUrl(page.featuredImage.url, base) : null}
         ogType="article"
         ogImageAlt={page.featuredImage?.altText ?? null}
+        {...ogImageSize(page.featuredImage)}
+        ogProduct={pieceOgProductTags(page.products, page.activeAuction)}
         jsonLd={[artworkLd, breadcrumbLd]}
         site={site}
       />
@@ -108,11 +120,20 @@ export async function getStaticProps({ params }) {
     markdown_content: artwork.description ?? '',
     medium: artwork.medium ?? null,
     dimensions: artwork.dimensions ?? null,
+    dimensionsCm: artwork.dimensionsCm ?? null,
+    products: artwork.products ?? [],
+    activeAuction: artwork.activeAuction ?? null,
     year: artwork.year ?? null,
     sold: artwork.sold,
     soldAt: artwork.soldAt ?? null,
     featuredImage: artwork.primaryImage
-      ? { url: artwork.primaryImage.url, altText: artwork.primaryImage.altText, type: 'ImageBlock' }
+      ? {
+          url: artwork.primaryImage.url,
+          altText: artwork.primaryImage.altText,
+          width: artwork.primaryImage.width ?? null,
+          height: artwork.primaryImage.height ?? null,
+          type: 'ImageBlock',
+        }
       : null,
     bottomSections: [],
     prevPost,

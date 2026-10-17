@@ -19,6 +19,7 @@ function Page({ site, pieces, filters, collection }) {
     const ogSource = collection.coverUrl ?? pieces.find((p) => p.image)?.image.url ?? null;
     const jsonLd = [
         buildCollectionJsonLd({
+            base,
             name: collection.title,
             description,
             url: `${base}${path}`,

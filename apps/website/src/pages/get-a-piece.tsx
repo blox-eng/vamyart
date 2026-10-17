@@ -6,7 +6,9 @@ import Footer from '../components/sections/Footer';
 import { trpc } from '../lib/trpc';
 import { COMMISSION_OPTION, OTHER_OPTION } from '../lib/artworks';
 import LazyImage from '../components/atoms/LazyImage';
-import { resolveSiteUrl } from '../utils/seo-utils';
+import { absoluteUrl, resolveSiteUrl } from '../utils/seo-utils';
+import { buildCommissionServiceJsonLd } from '../utils/structured-data';
+import JsonLd from '../components/atoms/JsonLd';
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
@@ -76,7 +78,7 @@ export default function GetAPiece({ site }: { site: any }) {
                 <meta name="description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
                 <meta property="og:title" content="Inquire about a piece — Maeve Vamy" />
                 <meta property="og:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
-                <meta property="og:image" content="/images/whispers.jpg" />
+                <meta property="og:image" content={absoluteUrl(base, '/images/whispers.jpg')} />
                 <meta property="og:image:alt" content="Whispers — oil painting by Maeve Vamy" />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
@@ -85,7 +87,8 @@ export default function GetAPiece({ site }: { site: any }) {
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="Inquire about a piece — Maeve Vamy" />
                 <meta name="twitter:description" content="Interested in owning an original? Get in touch and Maeve will get back to you personally." />
-                <meta name="twitter:image" content="/images/whispers.jpg" />
+                <meta name="twitter:image" content={absoluteUrl(base, '/images/whispers.jpg')} />
+                {base && <JsonLd data={buildCommissionServiceJsonLd(base)} />}
             </Head>
 
             <div className="sb-page">

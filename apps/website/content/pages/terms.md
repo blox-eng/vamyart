@@ -49,7 +49,7 @@ sections:
       *   Detailed photographs
 
 
-      *   Price in EUR (prices do not include VAT; applicable VAT, duties and taxes are determined by the customer's location and are the buyer's responsibility)
+      *   Price in EUR. The price shown is the final price you pay for the piece; no VAT or tax is added at checkout. Shipping is shown at checkout. Import duties outside the EU may apply and are the buyer's responsibility.
 
 
       *   Authenticity guarantee
@@ -162,6 +162,8 @@ sections:
 
       artists generally do not require special export permits, but we maintain
        proper documentation for all international shipments.
+
+      <a id="copyright"></a>
 
       ## **Intellectual Property**
 

@@ -12,20 +12,16 @@ export const revalidate = 3600;
 const STATIC_ROUTES = ['/', '/about/', '/gallery/', '/get-a-piece/', '/terms/', '/privacy/'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const staticEntries = STATIC_ROUTES.map((path) => ({
-        url: `${SITE_URL}${path}`,
-        changeFrequency: 'weekly' as const,
-        priority: path === '/' ? 1 : 0.7,
-    }));
+    // No lastModified for static pages: Google trusts lastmod only when it is accurate.
+    const staticEntries = STATIC_ROUTES.map((path) => ({ url: `${SITE_URL}${path}` }));
 
     let galleryEntries: MetadataRoute.Sitemap = [];
     try {
         const pieces = await serverTrpc.artworks.listPublic();
-        galleryEntries = pieces.map((a: { slug: string; updatedAt?: string | Date }) => ({
+        galleryEntries = pieces.map((a: { slug: string; updatedAt?: string | Date; images: string[] }) => ({
             url: `${SITE_URL}/gallery/${a.slug}/`,
             lastModified: a.updatedAt ? new Date(a.updatedAt) : undefined,
-            changeFrequency: 'monthly' as const,
-            priority: 0.8,
+            images: a.images,
         }));
     } catch {
         // DB unavailable — return static routes only rather than 500 the sitemap.
@@ -38,8 +34,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         collectionEntries = filters.map((c) => ({
             url: `${SITE_URL}/gallery/collections/${c.slug}/`,
             lastModified: new Date(c.updatedAt),
-            changeFrequency: 'monthly' as const,
-            priority: 0.7,
         }));
     } catch {
         // DB unavailable — return static routes only rather than 500 the sitemap.

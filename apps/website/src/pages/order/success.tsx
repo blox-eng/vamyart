@@ -6,7 +6,7 @@ export default function OrderSuccess() {
         <>
             <Head>
                 <title>Order confirmed — vamy</title>
-                <meta name="robots" content="noindex" />
+                <meta key="robots" name="robots" content="noindex" />
             </Head>
             <main className="min-h-screen flex items-center justify-center px-4 bg-paper">
                 <div className="max-w-md text-center">

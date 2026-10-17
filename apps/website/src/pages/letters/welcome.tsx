@@ -8,7 +8,7 @@ export default function Welcome() {
         <>
             <Head>
                 <title>You're in — vamy</title>
-                <meta name="robots" content="noindex" />
+                <meta key="robots" name="robots" content="noindex" />
             </Head>
 
             <main className="min-h-screen bg-paper text-ink flex items-center justify-center px-6 py-24">

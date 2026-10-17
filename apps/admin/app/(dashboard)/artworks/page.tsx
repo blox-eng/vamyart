@@ -423,6 +423,9 @@ export default function ArtworksPage() {
       {selected?.artwork && selectedKey !== "none" && (
         <EditPiecePanel
           artwork={selected.artwork}
+          primaryImageAlt={
+            imagesList.data?.length ? (imagesList.data.find((i) => i.isPrimary) ?? imagesList.data[0]).altText : undefined
+          }
           onChanged={() => { refetchArtworks(); refetch(); }}
           onDeleted={() => { setSelectedArtworkId(null); refetchArtworks(); refetch(); }}
         />

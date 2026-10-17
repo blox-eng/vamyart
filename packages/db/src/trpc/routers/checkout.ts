@@ -6,6 +6,8 @@ import { router, publicProcedure } from "../index";
 import { db } from "../../client";
 import { productVariants, shippingMethods } from "../../schema";
 import { isVariantSold } from "../../services/variant-sold";
+import { resolveShipping } from "../../services/shipping";
+import { CHECKOUT_COUNTRIES } from "../../services/checkout-countries";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -34,27 +36,11 @@ export const checkoutRouter = router({
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: "OUT_OF_STOCK" });
       }
 
-      // Resolve shipping: product's assigned method, or fall back to global default
-      let shippingType: "free" | "paid" | "custom" = "custom";
-      let shippingCost: number | null = null;
-      let shippingDisplayText = "Shipping arranged by artist";
-
       const method = variant.product.shippingMethod;
-      if (method) {
-        shippingType = method.type as "free" | "paid" | "custom";
-        shippingCost = method.cost ? Number(method.cost) : null;
-        shippingDisplayText = method.displayText;
-      } else {
-        // Fall back to global default
-        const defaultMethod = await db.query.shippingMethods.findFirst({
-          where: eq(shippingMethods.isDefault, true),
-        });
-        if (defaultMethod) {
-          shippingType = defaultMethod.type as "free" | "paid" | "custom";
-          shippingCost = defaultMethod.cost ? Number(defaultMethod.cost) : null;
-          shippingDisplayText = defaultMethod.displayText;
-        }
-      }
+      const defaultMethod = method
+        ? null
+        : await db.query.shippingMethods.findFirst({ where: eq(shippingMethods.isDefault, true) });
+      const shipping = resolveShipping(method, defaultMethod);
 
       const sessionParams: Stripe.Checkout.SessionCreateParams = {
         mode: "payment",
@@ -72,7 +58,7 @@ export const checkoutRouter = router({
           },
         ],
         shipping_address_collection: {
-          allowed_countries: ["DE", "AT", "CH", "GB", "US", "BG", "FR", "NL", "BE"],
+          allowed_countries: [...CHECKOUT_COUNTRIES],
         },
         metadata: { variantId: variant.id },
         consent_collection: { promotions: "auto" },
@@ -80,13 +66,13 @@ export const checkoutRouter = router({
         cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}`,
       };
 
-      if (shippingType === "paid" && shippingCost != null) {
+      if (shipping.type === "paid" && shipping.cost != null) {
         sessionParams.shipping_options = [
           {
             shipping_rate_data: {
               type: "fixed_amount",
-              fixed_amount: { amount: Math.round(shippingCost * 100), currency: "eur" },
-              display_name: shippingDisplayText,
+              fixed_amount: { amount: Math.round(shipping.cost * 100), currency: "eur" },
+              display_name: shipping.displayText,
             },
           },
         ];

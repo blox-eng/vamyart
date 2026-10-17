@@ -7,7 +7,10 @@ import { inter, cormorant } from '../lib/fonts';
 export default function Document() {
     return (
         <Html lang="en" data-theme="light" className={`${inter.variable} ${cormorant.variable}`}>
-            <Head />
+            <Head>
+                <link rel="manifest" href="/site.webmanifest" />
+                <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+            </Head>
             <body>
                 <Main />
                 <NextScript />

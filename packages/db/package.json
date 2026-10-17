@@ -8,7 +8,10 @@
     "./trpc": "./src/trpc/root.ts",
     "./trpc/context": "./src/trpc/context.ts",
     "./gallery": "./src/services/gallery.ts",
-    "./content-box": "./src/services/content-box.ts"
+    "./content-box": "./src/services/content-box.ts",
+    "./dimensions": "./src/services/dimensions.ts",
+    "./shipping": "./src/services/shipping.ts",
+    "./checkout-countries": "./src/services/checkout-countries.ts"
   },
   "scripts": {
     "migrate": "drizzle-kit migrate",
