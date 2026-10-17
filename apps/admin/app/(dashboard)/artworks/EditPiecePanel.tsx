@@ -5,6 +5,7 @@ import { trpc } from "../../../lib/trpc";
 import { useToast } from "@/components/ui/toast";
 import { revalidatePaths } from "@/lib/revalidate";
 import { pieceRevalidatePaths } from "@/lib/revalidate-paths";
+import { seoHints } from "@/lib/seo-hints";
 
 type Artwork = {
   id: string; slug: string; title: string; year: number | null;
@@ -14,7 +15,9 @@ type Artwork = {
   published: boolean;
 };
 
-export function EditPiecePanel({ artwork, onChanged, onDeleted }: { artwork: Artwork; onChanged: () => void; onDeleted: () => void; }) {
+export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted }: {
+  artwork: Artwork; primaryImageAlt: string | null | undefined; onChanged: () => void; onDeleted: () => void;
+}) {
   const toast = useToast();
   const { data: collectionList } = trpc.collections.list.useQuery();
   const collectionSlugs = (collectionList ?? []).map((c) => c.slug);
@@ -38,6 +41,8 @@ export function EditPiecePanel({ artwork, onChanged, onDeleted }: { artwork: Art
     },
     onError: (e) => toast(e.message || "Failed to delete", "error"),
   });
+
+  const hints = seoHints({ altText: primaryImageAlt, seoDescription: form.seoDescription, excerpt: form.excerpt, dimensions: form.dimensions });
 
   return (
     <div className="bg-field border rounded-lg p-6 space-y-3 mb-8">
@@ -106,6 +111,11 @@ export function EditPiecePanel({ artwork, onChanged, onDeleted }: { artwork: Art
             value={form.seoDescription ?? ""} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} />
         </div>
       </details>
+      {hints.length > 0 && (
+        <ul className="text-xs text-muted space-y-1">
+          {hints.map((h) => <li key={h}>{h}</li>)}
+        </ul>
+      )}
       <div className="flex gap-2">
         <button
           onClick={() => update.mutate({
