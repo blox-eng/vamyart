@@ -1,8 +1,8 @@
 import Head from 'next/head';
 import Header from '../components/sections/Header';
 import Footer from '../components/sections/Footer';
-import { resolveSiteUrl } from '../utils/seo-utils';
-import { buildPersonJsonLd } from '../utils/structured-data';
+import { absoluteUrl, resolveSiteUrl } from '../utils/seo-utils';
+import { buildProfilePageJsonLd, siteSameAs } from '../utils/structured-data';
 import JsonLd from '../components/atoms/JsonLd';
 
 export default function About({ site }: { site: any }) {
@@ -15,7 +15,7 @@ export default function About({ site }: { site: any }) {
                 <meta name="description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />
                 <meta property="og:title" content="About — Maeve Vamy" />
                 <meta property="og:description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />
-                <meta property="og:image" content="/images/on-the-horizon.jpg" />
+                <meta property="og:image" content={absoluteUrl(base, '/images/on-the-horizon.jpg')} />
                 <meta property="og:image:alt" content="On the Horizon — oil painting by Maeve Vamy" />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
@@ -24,8 +24,8 @@ export default function About({ site }: { site: any }) {
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="About — Maeve Vamy" />
                 <meta name="twitter:description" content="Bulgarian fine artist working between realism and abstraction, painting from her studio in Stara Zagora." />
-                <meta name="twitter:image" content="/images/on-the-horizon.jpg" />
-                {base && <JsonLd data={buildPersonJsonLd(base, [])} />}
+                <meta name="twitter:image" content={absoluteUrl(base, '/images/on-the-horizon.jpg')} />
+                {base && <JsonLd data={buildProfilePageJsonLd(base, siteSameAs(site))} />}
             </Head>
 
             <div className="sb-page">

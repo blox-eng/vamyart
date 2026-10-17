@@ -6,7 +6,7 @@ import { resolveStaticProps } from '../utils/static-props-resolvers';
 import { resolveStaticPaths } from '../utils/static-paths-resolvers';
 import { seoGenerateTitle, seoGenerateMetaTags, seoGenerateMetaDescription, seoGenerateCanonicalUrl, resolveSiteUrl, ogImageUrl } from '../utils/seo-utils';
 import { buildHeroPreload } from '../utils/netlify-image';
-import { buildWebsiteJsonLd, buildPersonJsonLd } from '../utils/structured-data';
+import { buildWebsiteJsonLd, buildPersonJsonLd, buildStoreJsonLd, siteSameAs } from '../utils/structured-data';
 import JsonLd from '../components/atoms/JsonLd';
 import { appRouter } from '@vamy/db/trpc';
 import { aspectOf } from '@vamy/db/gallery';
@@ -33,9 +33,6 @@ function Page(props) {
     const heroPreload = page.heroPreload ? buildHeroPreload(page.heroPreload.url, { sizes: page.heroPreload.sizes, widths: page.heroPreload.widths }) : null;
     const isHome = page.__metadata?.urlPath === '/';
     const base = resolveSiteUrl(site);
-    const socialLinks = Array.isArray(site.footer?.socialLinks)
-        ? site.footer.socialLinks.map((l) => l.url).filter((u) => /^https?:\/\//.test(u))
-        : [];
     return (
         <>
             <Head>
@@ -64,7 +61,8 @@ function Page(props) {
                 {isHome && base && (
                     <>
                         <JsonLd data={buildWebsiteJsonLd(base)} />
-                        <JsonLd data={buildPersonJsonLd(base, socialLinks)} />
+                        <JsonLd data={buildPersonJsonLd(base, siteSameAs(site))} />
+                        <JsonLd data={buildStoreJsonLd(base)} />
                     </>
                 )}
             </Head>

@@ -163,6 +163,8 @@ sections:
       artists generally do not require special export permits, but we maintain
        proper documentation for all international shipments.
 
+      <a id="copyright"></a>
+
       ## **Intellectual Property**
 
 

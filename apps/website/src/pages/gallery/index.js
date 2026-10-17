@@ -19,6 +19,7 @@ function Page({ site, pieces, filters }) {
     const firstImage = pieces.find((p) => p.image)?.image;
     const jsonLd = [
         buildCollectionJsonLd({
+            base,
             name: TITLE,
             description: DESCRIPTION,
             url,

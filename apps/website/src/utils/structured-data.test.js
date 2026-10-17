@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { CHECKOUT_COUNTRIES, EU_CHECKOUT_COUNTRIES } from '@vamy/db/checkout-countries';
 import {
   buildArtworkJsonLd, buildBreadcrumbJsonLd, buildCollectionJsonLd, buildItemList, buildPersonJsonLd, buildWebsiteJsonLd, escapeJsonLd, wallItemListPieces,
+  buildProfilePageJsonLd, buildStoreJsonLd, buildCommissionServiceJsonLd, personId, storeId, siteSameAs,
 } from './structured-data';
 
 const ARTIST = 'Maeve Vamy';
@@ -150,5 +152,52 @@ describe('escapeJsonLd', () => {
   it('leaves ordinary JSON untouched', () => {
     const json = JSON.stringify({ name: 'Never', year: 2024 });
     expect(escapeJsonLd(json)).toBe(json);
+  });
+});
+
+describe('artist and store entities', () => {
+  const base = 'https://a.co';
+  it('Person carries the shared @id, Stara Zagora and sameAs', () => {
+    const out = buildPersonJsonLd(base, ['https://instagram.com/vamy']);
+    expect(out['@id']).toBe('https://a.co/about/#maeve');
+    expect(out.alternateName).toBe('Vamy');
+    expect(out.homeLocation.address).toMatchObject({ addressLocality: 'Stara Zagora', addressCountry: 'BG' });
+    expect(out.sameAs).toEqual(['https://instagram.com/vamy']);
+  });
+  it('ProfilePage puts Maeve as its main entity', () => {
+    expect(buildProfilePageJsonLd(base, [])['mainEntity']['@id']).toBe(personId(base));
+  });
+  it('WebSite is published by the store', () => {
+    expect(buildWebsiteJsonLd(base).publisher).toEqual({ '@id': storeId(base) });
+  });
+  it('EU returns: 14 days, exactly the EU checkout countries', () => {
+    const eu = buildStoreJsonLd(base).hasMerchantReturnPolicy.find((p) => p['@id'].endsWith('#returns-eu'));
+    expect(eu.applicableCountry).toEqual([...EU_CHECKOUT_COUNTRIES]);
+    expect(eu.merchantReturnDays).toBe(14);
+    expect(eu.returnPolicyCategory).toBe('https://schema.org/MerchantReturnFiniteReturnWindow');
+  });
+  it('non-EU returns are not offered', () => {
+    const non = buildStoreJsonLd(base).hasMerchantReturnPolicy.find((p) => p['@id'].endsWith('#returns-non-eu'));
+    expect(non.applicableCountry).toEqual(['CH', 'GB', 'US']);
+    expect(non.returnPolicyCategory).toBe('https://schema.org/MerchantReturnNotPermitted');
+  });
+  it('store advertises no country checkout refuses', () => {
+    const countries = JSON.stringify(buildStoreJsonLd(base)).match(/"(?:addressCountry|applicableCountry)":(\[[^\]]*\]|"[A-Z]{2}")/g) ?? [];
+    for (const c of countries.join(',').match(/[A-Z]{2}/g)) expect(CHECKOUT_COUNTRIES).toContain(c);
+  });
+  it('store names the company and its founder', () => {
+    const out = buildStoreJsonLd(base);
+    expect(out).toMatchObject({ '@type': 'OnlineStore', legalName: 'Мейв Вами ЕООД', taxID: '208627302', founder: { '@id': personId(base) } });
+  });
+  it('commissions are a service Maeve provides', () => {
+    expect(buildCommissionServiceJsonLd(base)).toMatchObject({ '@type': 'Service', provider: { '@id': personId(base) }, url: 'https://a.co/get-a-piece/' });
+  });
+  it('collection parts credit Maeve', () => {
+    const out = buildCollectionJsonLd({ base, name: 'S', url: 'https://a.co/gallery/', pieces: [{ name: 'Never', url: 'https://a.co/gallery/never/' }] });
+    expect(out.hasPart[0].creator).toEqual({ '@id': personId(base) });
+  });
+  it('siteSameAs keeps web profiles once, drops mailto', () => {
+    const site = { footer: { socialLinks: [{ url: 'https://instagram.com/x' }, { url: 'mailto:a@b.c' }] }, sameAs: ['https://instagram.com/x', 'https://artsy.net/x'] };
+    expect(siteSameAs(site)).toEqual(['https://instagram.com/x', 'https://artsy.net/x']);
   });
 });
