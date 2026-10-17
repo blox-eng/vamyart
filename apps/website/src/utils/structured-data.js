@@ -15,21 +15,6 @@ export function escapeJsonLd(json) {
     return json.replace(/</g, '\\u003c');
 }
 
-export function buildArtworkJsonLd({ title, description, year, medium, image, url, sold = false }) {
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'VisualArtwork',
-        name: title,
-        url,
-        creator: { '@type': 'Person', name: ARTIST_NAME },
-        ...(description ? { description } : {}),
-        ...(year ? { dateCreated: String(year) } : {}),
-        ...(medium ? { artMedium: medium } : {}),
-        ...(image ? { image } : {}),
-        ...(sold ? { offers: { '@type': 'Offer', availability: 'https://schema.org/SoldOut' } } : {}),
-    };
-}
-
 export function buildItemList(base, pieces = []) {
     return {
         '@type': 'ItemList',

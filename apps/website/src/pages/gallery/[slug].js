@@ -4,7 +4,8 @@ import { allContent } from '../../utils/local-content';
 import { getComponent } from '../../components/components-registry';
 import { absoluteUrl, ogImageUrl, resolveSiteUrl } from '../../utils/seo-utils';
 import { buildHeroPreload } from '../../utils/netlify-image';
-import { buildArtworkJsonLd, buildBreadcrumbJsonLd } from '../../utils/structured-data';
+import { buildBreadcrumbJsonLd } from '../../utils/structured-data';
+import { buildPieceJsonLd } from '../../utils/structured-data-piece';
 import PageHead from '../../components/atoms/PageHead';
 import { appRouter } from '@vamy/db/trpc';
 
@@ -21,9 +22,11 @@ function Page({ page, site, collection }) {
   const heroPreload = page.featuredImage?.url
     ? buildHeroPreload(page.featuredImage.url, { sizes: '(min-width: 1024px) 50vw, 100vw' })
     : null;
-  const artworkLd = buildArtworkJsonLd({
-    title: page.title, description: page.excerpt, year: page.year, medium: page.medium,
-    image: page.featuredImage?.url, url: absoluteUrl(base, canonicalPath), sold: page.sold,
+  const artworkLd = buildPieceJsonLd(base, {
+    url: absoluteUrl(base, canonicalPath), slug: page.artworkSlug, title: page.title, description: page.excerpt,
+    year: page.year, medium: page.medium, dimensionsCm: page.dimensionsCm,
+    image: page.featuredImage && { ...page.featuredImage, alt: page.featuredImage.altText },
+    products: page.products, activeAuction: page.activeAuction, sold: page.sold,
   });
   const breadcrumbLd = buildBreadcrumbJsonLd(base, [
     { name: 'on the wall', path: '/gallery/' },
