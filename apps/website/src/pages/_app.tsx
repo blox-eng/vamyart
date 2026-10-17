@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from '../lib/trpc';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
+import SiteMeta from '../components/atoms/SiteMeta';
 import { inter, cormorant } from '../lib/fonts';
 import '@vamy/ui/tokens.css';
 import '../css/main.css';
@@ -43,6 +44,8 @@ export default function MyApp({ Component, pageProps }) {
     return (
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
             <QueryClientProvider client={queryClient}>
+                {/* Before the page so a page's keyed <meta> (e.g. robots noindex) wins. */}
+                <SiteMeta />
                 <AppInner Component={Component} pageProps={pageProps} />
                 {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
                     <Script

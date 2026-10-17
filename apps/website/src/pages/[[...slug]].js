@@ -85,6 +85,7 @@ export async function getStaticProps({ params }) {
     const data = allContent();
     const urlPath = '/' + (params.slug || []).join('/');
     const props = await resolveStaticProps(urlPath, data);
+    if (!props) return { notFound: true, revalidate: 3600 };
 
     // Homepage: inject the active banner and the landing slider's pieces server-side.
     if (urlPath === '/') {

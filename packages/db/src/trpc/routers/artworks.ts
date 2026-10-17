@@ -224,6 +224,9 @@ export const artworksRouter = router({
         dimensions: a.dimensions,
         sortOrder: a.sortOrder,
         updatedAt: a.updatedAt,
+        images: a.images.map(
+          (img) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/artwork-images/${img.storagePath}`,
+        ),
         collectionSlugs: a.collections
           .map((ac) => ac.collection)
           .filter((c) => c && c.published && !c.deletedAt)

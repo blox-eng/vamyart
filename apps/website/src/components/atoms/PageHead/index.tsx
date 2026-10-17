@@ -31,6 +31,7 @@ export default function PageHead({ title, description, canonicalPath, ogImage, o
             <title key="title">{fullTitle}</title>
             <meta key="viewport" name="viewport" content="width=device-width, initial-scale=1" />
             {description && <meta key="description" name="description" content={description} />}
+
             <link key="canonical" rel="canonical" href={canonical} />
             <meta key="og:title" property="og:title" content={fullTitle} />
             {description && <meta key="og:description" property="og:description" content={description} />}
