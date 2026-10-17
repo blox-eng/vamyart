@@ -36,7 +36,8 @@ describe('buildPieceJsonLd', () => {
     const ld = buildPieceJsonLd(BASE, piece({ products: [product([original('1200')])] }));
     expect(types(ld)).toEqual(['VisualArtwork', 'Product']);
     expect(ld.offers).toMatchObject({ '@type': 'Offer', price: '1200.00', priceCurrency: 'EUR', availability: 'https://schema.org/InStock' });
-    expect(ld.offers.seller).toEqual({ '@id': storeId(BASE) });
+    expect(ld.offers.seller).toEqual({ '@type': 'OnlineStore', '@id': storeId(BASE), name: 'Vamy' });
+    expect(ld.offers).not.toHaveProperty('hasMerchantReturnPolicy');
     expect(JSON.stringify(ld)).not.toMatch(/priceSpecification|valueAddedTax/);
   });
   it('groups an original with prints', () => {
@@ -248,6 +249,7 @@ describe('artist and store entities', () => {
     expect(eu.applicableCountry).toEqual([...EU_CHECKOUT_COUNTRIES]);
     expect(eu.merchantReturnDays).toBe(14);
     expect(eu.returnPolicyCategory).toBe('https://schema.org/MerchantReturnFiniteReturnWindow');
+    expect(eu.returnFees).toBe('https://schema.org/ReturnFeesCustomerResponsibility');
   });
   it('non-EU returns are not offered', () => {
     const non = buildStoreJsonLd(base).hasMerchantReturnPolicy.find((p) => p['@id'].endsWith('#returns-non-eu'));

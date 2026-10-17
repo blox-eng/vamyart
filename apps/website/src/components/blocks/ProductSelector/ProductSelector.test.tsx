@@ -13,8 +13,7 @@ const print = {
 const products = [{ id: 'p', name: 'Never', active: true, variants: [print], shippingMethod: null }];
 
 // Server render only: whatever shows here is in the HTML crawlers get.
-function serverRender() {
-    const queryClient = new QueryClient();
+function serverRender(queryClient = new QueryClient()) {
     const client = trpc.createClient({ links: [httpBatchLink({ url: 'http://localhost/never-called' })] });
     return renderToString(
         <trpc.Provider client={client} queryClient={queryClient}>
@@ -26,6 +25,12 @@ function serverRender() {
 }
 
 describe('ProductSelector on the server', () => {
+    it('treats the page\'s products as old, so the browser checks live stock on load', () => {
+        const queryClient = new QueryClient();
+        serverRender(queryClient);
+        const [query] = queryClient.getQueryCache().getAll();
+        expect(query.state.dataUpdatedAt).toBe(0);
+    });
     it('renders prices into the first HTML, without a loading skeleton', () => {
         const html = serverRender();
         expect(html).toContain('1,200');

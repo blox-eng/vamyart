@@ -1,7 +1,7 @@
 import { CHECKOUT_COUNTRIES } from '@vamy/db/checkout-countries';
 import { resolveShipping } from '@vamy/db/shipping';
 import { isVariantSold } from './variant-sold';
-import { personId, returnPolicyIds, storeId } from './structured-data';
+import { personId, storeId } from './structured-data';
 
 const SCHEMA = 'https://schema.org/';
 const ARTIST_NAME = 'Maeve Vamy';
@@ -57,8 +57,9 @@ function offerFor(base, url, variant) {
         availability: `${SCHEMA}InStock`,
         itemCondition: `${SCHEMA}NewCondition`,
         url,
-        seller: { '@id': storeId(base) },
-        hasMerchantReturnPolicy: returnPolicyIds(base).map((id) => ({ '@id': id })),
+        // Google doesn't follow @id across pages: name the seller here; the return
+        // policies live on the store node (home page), which Google applies site-wide.
+        seller: { '@type': 'OnlineStore', '@id': storeId(base), name: 'Vamy' },
         ...(shipping ? { shippingDetails: shipping } : {}),
     };
 }

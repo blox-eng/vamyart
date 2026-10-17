@@ -31,6 +31,9 @@ export function ProductSelector({ artworkSlug, initialProducts }: { artworkSlug:
         { slug: artworkSlug },
         {
             initialData: initialProducts,
+            // The page's products may be up to an hour old (ISR): show them at once,
+            // but count them as stale so stock is checked live on load.
+            initialDataUpdatedAt: 0,
             retry: false,
             staleTime: 10_000,
             refetchOnWindowFocus: true,
