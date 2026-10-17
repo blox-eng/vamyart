@@ -18,6 +18,9 @@ async function handler(req: Request) {
     headers: {
       ...Object.fromEntries(response.headers.entries()),
       "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      // Netlify's CDN ignores the query string unless told otherwise, and tRPC
+      // puts the procedure's input there: without this every piece shared one answer.
+      "Netlify-Vary": "query",
     },
   });
 }
