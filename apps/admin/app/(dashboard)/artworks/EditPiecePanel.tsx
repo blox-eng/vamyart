@@ -25,7 +25,6 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
   const [form, setForm] = useState(artwork);
   const [confirmDelete, setConfirmDelete] = useState(false);
   // Reset only when another piece is picked: a refetch after a collection toggle must not wipe unsaved edits.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setForm(artwork); setConfirmDelete(false); }, [artwork.id]);
 
   const update = trpc.artworks.update.useMutation({
@@ -52,9 +51,16 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
       toast(vars.member ? "Added to collection" : "Removed from collection", "success");
       onChanged();
     },
-    onError: (e) => toast(e.message || "Failed to update collections", "error"),
+    onError: (e, vars) => {
+      setToggling(({ [vars.collectionId]: _, ...rest }) => rest);
+      toast(e.message || "Failed to update collections", "error");
+    },
   });
   const memberOf = new Set(artwork.collectionIds ?? []);
+  // Optimistic chip state per collection, held until the refetched piece carries the change.
+  const [toggling, setToggling] = useState<Record<string, boolean>>({});
+  const collectionIdsKey = (artwork.collectionIds ?? []).join();
+  useEffect(() => setToggling({}), [collectionIdsKey, artwork.id]);
 
   const hints = seoHints({ altText: primaryImageAlt, seoDescription: form.seoDescription, excerpt: form.excerpt, dimensions: form.dimensions });
 
@@ -113,21 +119,26 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
       </div>
       {collectionList && collectionList.length > 0 && (
         <div>
-          <p className="block text-xs text-muted mb-1">Collections</p>
-          <div className="flex gap-2 flex-wrap">
+          <p id="piece-collections-label" className="block text-xs text-muted mb-1">Collections</p>
+          <div role="group" aria-labelledby="piece-collections-label" className="flex gap-2 flex-wrap">
             {collectionList.map((c) => {
-              const member = memberOf.has(c.id);
+              const member = toggling[c.id] ?? memberOf.has(c.id);
               return (
                 <button
                   key={c.id}
                   type="button"
                   aria-pressed={member}
-                  disabled={membership.isPending}
-                  onClick={() => membership.mutate({ collectionId: c.id, artworkId: artwork.id, member: !member })}
-                  className={`text-xs px-3 min-h-9 rounded-full border disabled:opacity-50 ${member ? "bg-ink text-paper border-ink" : "text-muted hover:bg-hover"}`}
+                  aria-busy={c.id in toggling}
+                  disabled={c.id in toggling}
+                  onClick={() => {
+                    setToggling((t) => ({ ...t, [c.id]: !member }));
+                    membership.mutate({ collectionId: c.id, artworkId: artwork.id, member: !member });
+                  }}
+                  className={`text-xs px-3 min-h-10 rounded-xs border transition-colors disabled:opacity-60 ${member ? "bg-accent-wash text-accent border-accent" : "text-muted hover:bg-hover"}`}
                 >
+                  {member && <span aria-hidden className="mr-1">✓</span>}
                   {c.title.trim()}
-                  {!c.published && <span className="ml-1 opacity-70">(draft)</span>}
+                  {!c.published && <span className="ml-1">(draft)</span>}
                 </button>
               );
             })}
