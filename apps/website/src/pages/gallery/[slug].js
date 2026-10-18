@@ -110,7 +110,8 @@ export async function getStaticProps({ params }) {
   const nextPost = idx >= 0 && idx < pieces.length - 1 ? toNav(pieces[idx + 1]) : null;
 
   const memberOf = listing.find((a) => a.slug === artwork.slug)?.collectionSlugs ?? [];
-  const collection = filters.find((f) => memberOf.includes(f.slug)) ?? null;
+  const collections = filters.filter((f) => memberOf.includes(f.slug)).map(({ slug, title }) => ({ slug, title }));
+  const collection = collections[0] ?? null;
 
   const page = {
     __metadata: { modelName: 'PostLayout', urlPath: `/gallery/${artwork.slug}`, id: artwork.id },
@@ -121,6 +122,7 @@ export async function getStaticProps({ params }) {
     medium: artwork.medium ?? null,
     dimensions: artwork.dimensions ?? null,
     dimensionsCm: artwork.dimensionsCm ?? null,
+    collections,
     products: artwork.products ?? [],
     activeAuction: artwork.activeAuction ?? null,
     year: artwork.year ?? null,

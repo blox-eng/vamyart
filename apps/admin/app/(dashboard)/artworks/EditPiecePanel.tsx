@@ -13,6 +13,7 @@ type Artwork = {
   excerpt: string | null; description: string | null;
   seoTitle: string | null; seoDescription: string | null;
   published: boolean;
+  collectionIds?: string[];
 };
 
 export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted }: {
@@ -23,7 +24,9 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
   const collectionSlugs = (collectionList ?? []).map((c) => c.slug);
   const [form, setForm] = useState(artwork);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  useEffect(() => { setForm(artwork); setConfirmDelete(false); }, [artwork]);
+  // Reset only when another piece is picked: a refetch after a collection toggle must not wipe unsaved edits.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setForm(artwork); setConfirmDelete(false); }, [artwork.id]);
 
   const update = trpc.artworks.update.useMutation({
     onSuccess: async () => {
@@ -41,6 +44,17 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
     },
     onError: (e) => toast(e.message || "Failed to delete", "error"),
   });
+
+  const membership = trpc.collections.setMembership.useMutation({
+    onSuccess: async (_data, vars) => {
+      const slug = collectionList?.find((c) => c.id === vars.collectionId)?.slug;
+      await revalidatePaths(pieceRevalidatePaths(artwork.slug, slug ? [slug] : []));
+      toast(vars.member ? "Added to collection" : "Removed from collection", "success");
+      onChanged();
+    },
+    onError: (e) => toast(e.message || "Failed to update collections", "error"),
+  });
+  const memberOf = new Set(artwork.collectionIds ?? []);
 
   const hints = seoHints({ altText: primaryImageAlt, seoDescription: form.seoDescription, excerpt: form.excerpt, dimensions: form.dimensions });
 
@@ -97,6 +111,29 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
         <textarea className="border px-2 py-1 rounded text-sm w-full max-w-md" rows={4} value={form.description ?? ""}
           onChange={(e) => setForm({ ...form, description: e.target.value })} />
       </div>
+      {collectionList && collectionList.length > 0 && (
+        <div>
+          <p className="block text-xs text-muted mb-1">Collections</p>
+          <div className="flex gap-2 flex-wrap">
+            {collectionList.map((c) => {
+              const member = memberOf.has(c.id);
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-pressed={member}
+                  disabled={membership.isPending}
+                  onClick={() => membership.mutate({ collectionId: c.id, artworkId: artwork.id, member: !member })}
+                  className={`text-xs px-3 min-h-9 rounded-full border disabled:opacity-50 ${member ? "bg-ink text-paper border-ink" : "text-muted hover:bg-hover"}`}
+                >
+                  {c.title.trim()}
+                  {!c.published && <span className="ml-1 opacity-70">(draft)</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
         <input type="checkbox" checked={form.published}
           onChange={(e) => setForm({ ...form, published: e.target.checked })} />

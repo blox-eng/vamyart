@@ -6,6 +6,7 @@ import { getBaseLayoutComponent } from '../../../utils/base-layout';
 import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
 import LazyImage from '../../atoms/LazyImage';
+import { CollectionLinks } from '../../gallery/CollectionLinks';
 import { SoldMark } from '../../gallery/SoldDot';
 import { ProductSelector } from '../../blocks/ProductSelector';
 
@@ -20,7 +21,7 @@ export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, markdown_content, bottomSections = [], medium, dimensions, prevPost, nextPost, sold, soldAt, products } = page;
+    const { title, markdown_content, bottomSections = [], medium, dimensions, prevPost, nextPost, sold, soldAt, products, collections = [] } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
@@ -64,7 +65,7 @@ export default function PostLayout(props) {
                                 <span aria-hidden="true">←</span> Back to gallery
                             </Link>
                             <h1 {...(enableAnnotations && { 'data-sb-field-path': 'title' })}>{title}</h1>
-                            {(medium || dimensions) && (
+                            {(medium || dimensions || collections.length > 0) && (
                                 <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm text-muted mb-8">
                                     {medium && (
                                         <div><dt className="sr-only">Medium</dt><dd>{medium}</dd></div>
@@ -72,6 +73,7 @@ export default function PostLayout(props) {
                                     {dimensions && (
                                         <div><dt className="sr-only">Dimensions</dt><dd>{dimensions}</dd></div>
                                     )}
+                                    <CollectionLinks collections={collections} />
                                 </dl>
                             )}
 
