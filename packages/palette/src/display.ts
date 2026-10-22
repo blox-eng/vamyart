@@ -1,3 +1,5 @@
+import type { Recipe } from "./types";
+
 const POINTS = 10;
 
 function hash(seed: string): number {
@@ -26,4 +28,8 @@ export function splashPath(seed: string, r: number): string {
     d += `C${f(c1[0])} ${f(c1[1])} ${f(c2[0])} ${f(c2[1])} ${f(p2[0])} ${f(p2[1])}`;
   }
   return d + "Z";
+}
+
+export function recipeText(recipe: Recipe): string {
+  return recipe.parts.map((p) => `${p.name} ${p.parts}`).join(" : ");
 }

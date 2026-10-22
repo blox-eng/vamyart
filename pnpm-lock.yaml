@@ -51,6 +51,9 @@ importers:
       '@vamy/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@vamy/palette':
+        specifier: workspace:*
+        version: link:../../packages/palette
       '@vamy/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -121,6 +124,9 @@ importers:
       '@vamy/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@vamy/palette':
+        specifier: workspace:*
+        version: link:../../packages/palette
       '@vamy/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -206,6 +212,9 @@ importers:
       '@trpc/server':
         specifier: ^11.16.0
         version: 11.16.0(typescript@5.9.3)
+      '@vamy/palette':
+        specifier: workspace:*
+        version: link:../palette
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(gel@2.2.0)(postgres@3.4.9)

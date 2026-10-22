@@ -4,7 +4,11 @@
   "private": true,
   "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./display": "./src/display.ts"
+  },
+  "typesVersions": {
+    "*": { "display": ["./src/display.ts"] }
   },
   "scripts": {
     "test": "vitest run"

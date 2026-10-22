@@ -1,3 +1,4 @@
+/// <reference path="./spectral.d.ts" />
 import { Color, mix } from "spectral.js";
 import { deltaE } from "./color";
 import type { Paint, Recipe } from "./types";

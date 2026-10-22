@@ -19,6 +19,7 @@
     "@trpc/server": "^11.16.0",
     "@vamy/db": "workspace:*",
     "@vamy/i18n": "workspace:*",
+    "@vamy/palette": "workspace:*",
     "@vamy/ui": "workspace:*",
     "algoliasearch": "^4.27.0",
     "classnames": "^2.5.1",
