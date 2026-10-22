@@ -1,0 +1,21 @@
+{
+  "name": "@vamy/palette",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "culori": "4.0.2",
+    "spectral.js": "3.0.0"
+  }
+}
