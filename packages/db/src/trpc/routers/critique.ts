@@ -31,13 +31,16 @@ const paletteSchema = z.object({
 });
 
 // Background function on Netlify (a run outlives a normal request); inline in local dev.
-async function dispatch(runId: string, origin: string | undefined) {
+// The function's address comes from Netlify's own site URL, never from the request,
+// so a forged Host header can't redirect the bearer secret.
+async function dispatch(runId: string) {
   const secret = process.env.CRITIQUE_FN_SECRET;
-  if (!secret || !origin) {
+  const base = process.env.URL;
+  if (!secret || !base) {
     void runCritique(runId);
     return;
   }
-  const res = await fetch(`${origin}/.netlify/functions/critique-run-background`, {
+  const res = await fetch(`${base}/.netlify/functions/critique-run-background`, {
     method: "POST",
     headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
     body: JSON.stringify({ runId }),
@@ -66,7 +69,7 @@ export const critiqueRouter = router({
       artworkId: z.string().uuid().nullable(),
       model: z.enum(CRITIQUE_MODELS).nullable(),
     }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const [run] = await db
         .insert(critiqueRuns)
         .values({
@@ -78,7 +81,7 @@ export const critiqueRouter = router({
           palette: { swatches: input.swatches.map((s) => ({ ...s, name: "", recipe: null })) },
         })
         .returning({ id: critiqueRuns.id });
-      await dispatch(run.id, ctx.origin);
+      await dispatch(run.id);
       return run;
     }),
 

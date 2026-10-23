@@ -26,7 +26,7 @@ async function createAdminContext({ req }: { req: Request }) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  return { db, userId: user?.id ?? null, origin: new URL(req.url).origin };
+  return { db, userId: user?.id ?? null };
 }
 
 const handler = (req: Request) =>
