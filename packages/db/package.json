@@ -11,7 +11,8 @@
     "./content-box": "./src/services/content-box.ts",
     "./dimensions": "./src/services/dimensions.ts",
     "./shipping": "./src/services/shipping.ts",
-    "./checkout-countries": "./src/services/checkout-countries.ts"
+    "./checkout-countries": "./src/services/checkout-countries.ts",
+    "./critique-run": "./src/services/critique-run.ts"
   },
   "scripts": {
     "migrate": "drizzle-kit migrate",
@@ -22,6 +23,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.103.3",
     "@trpc/server": "^11.16.0",
+    "@vamy/palette": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.9",
     "resend": "^6.12.0",

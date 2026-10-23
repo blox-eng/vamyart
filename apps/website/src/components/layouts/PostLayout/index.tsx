@@ -7,6 +7,7 @@ import { getComponent } from '../../components-registry';
 import Link from '../../atoms/Link';
 import LazyImage from '../../atoms/LazyImage';
 import { SoldMark } from '../../gallery/SoldDot';
+import { PaintSplashes } from '../../gallery/PaintSplashes';
 import { ProductSelector } from '../../blocks/ProductSelector';
 
 // Client-side only: Supabase realtime. ProductSelector renders on the server from
@@ -20,7 +21,7 @@ export default function PostLayout(props) {
     const { page, site } = props;
     const BaseLayout = getBaseLayoutComponent(page.baseLayout, site.baseLayout);
     const { enableAnnotations = true } = site;
-    const { title, markdown_content, bottomSections = [], medium, dimensions, prevPost, nextPost, sold, soldAt, products } = page;
+    const { title, markdown_content, bottomSections = [], medium, dimensions, prevPost, nextPost, sold, soldAt, products, palette } = page;
 
     // Extract artwork slug from URL path — e.g. /gallery/whispers → whispers
     const urlPath = page.__metadata?.urlPath ?? '';
@@ -52,6 +53,7 @@ export default function PostLayout(props) {
                                 {sold && artworkSlug && (
                                     <SoldMark soldAt={soldAt ?? null} commissionHref={`/get-a-piece?piece=${artworkSlug}`} />
                                 )}
+                                {palette?.swatches?.length > 0 && <PaintSplashes palette={palette} />}
                             </div>
                         )}
 

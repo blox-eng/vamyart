@@ -126,6 +126,7 @@ export async function getStaticProps({ params }) {
     year: artwork.year ?? null,
     sold: artwork.sold,
     soldAt: artwork.soldAt ?? null,
+    palette: artwork.palette ?? null,
     featuredImage: artwork.primaryImage
       ? {
           url: artwork.primaryImage.url,

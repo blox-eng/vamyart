@@ -43,6 +43,7 @@ const contentFields = {
   excerpt: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   published: z.boolean().optional(),
+  showPalette: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
   seoTitle: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),
@@ -272,6 +273,7 @@ export const artworksRouter = router({
         description: a.description,
         seoTitle: a.seoTitle,
         seoDescription: a.seoDescription,
+        palette: a.showPalette ? a.palette : null,
         updatedAt: a.updatedAt.toISOString(),
         primaryImage: primary
           ? {

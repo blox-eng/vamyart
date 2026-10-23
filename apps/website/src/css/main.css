@@ -704,7 +704,41 @@
     opacity: 1;
     pointer-events: auto;
 }
+/* Palette: the piece's colours as dabs of paint under the painting (#59). */
+.paint-splashes {
+    margin-top: 20px;
+}
+.paint-splashes-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+.paint-splash {
+    display: grid;
+    place-items: center;
+    min-width: 24px;
+    min-height: 24px;
+    cursor: pointer;
+    transition: transform var(--dur-standard) var(--ease);
+}
+.paint-splash:hover,
+.paint-splash:focus-visible {
+    transform: scale(1.08);
+}
+.paint-splash:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+}
+.paint-splash-note {
+    min-height: 1.5em;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--muted);
+}
 @media (prefers-reduced-motion: reduce) {
+    .paint-splash,
     .sold-note,
     .sold-tag-label,
     .wall-filters a,

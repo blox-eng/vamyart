@@ -14,6 +14,7 @@ import {
   primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
+import type { Palette } from "@vamy/palette";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export const shippingMethodType = pgEnum("shipping_method_type", ["free", "paid", "custom"]);
@@ -36,6 +37,8 @@ export const artworks = pgTable("artworks", {
   sortOrder: integer("sort_order").notNull().default(0),
   seoTitle: text("seo_title"),
   seoDescription: text("seo_description"),
+  palette: jsonb("palette").$type<Palette>(),
+  showPalette: boolean("show_palette").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -56,6 +59,45 @@ export const artworkImages = pgTable("artwork_images", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+// ─── Critique ────────────────────────────────────────────────────────────────
+// Tube colours the recipe solver mixes from. `owned` marks the artist's own tubes.
+export const paints = pgTable("paints", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  brand: text("brand").notNull(),
+  name: text("name").notNull(),
+  medium: text("medium").notNull().default("oil"),
+  pigments: text("pigments").array().notNull(),
+  hex: text("hex").notNull(),
+  opacity: text("opacity"), // opaque | semi-opaque | semi-transparent | transparent
+  source: text("source").notNull(),
+  owned: boolean("owned").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => ({ brandName: unique().on(t.brand, t.name, t.medium) }));
+
+export const critiqueRuns = pgTable("critique_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  artworkId: uuid("artwork_id").references(() => artworks.id, { onDelete: "set null" }),
+  storagePath: text("storage_path").notNull(),
+  prompt: text("prompt"),
+  whiteBalance: jsonb("white_balance").$type<[number, number, number]>(),
+  palette: jsonb("palette").$type<Palette>().notNull(),
+  status: text("status").notNull().default("queued"), // queued | running | done | failed
+  model: text("model"),
+  result: jsonb("result").$type<CritiqueRead>(),
+  error: text("error"),
+  costUsd: numeric("cost_usd", { precision: 10, scale: 6 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type CritiqueRead = {
+  answer: string;
+  swatchNames: string[];
+  colour: string;
+  value: string;
+  composition: string;
+};
 
 // ─── Collections ─────────────────────────────────────────────────────────────
 export const collections = pgTable("collections", {
