@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/toast";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import { revalidatePaths } from "@/lib/revalidate";
 import { pieceRevalidatePaths } from "@/lib/revalidate-paths";
+import { pieceLabel } from "@/lib/piece-label";
 import { createClient } from "@/lib/supabase/client";
 import { NewPieceForm } from "./NewPieceForm";
 import { EditPiecePanel } from "./EditPiecePanel";
@@ -411,7 +412,9 @@ export default function ArtworksPage() {
           >
             {artworkEntries.map(([key, { artwork }]) => (
               <option key={key} value={key}>
-                {artwork?.title ?? artwork?.slug ?? key.slice(0, 8)}
+                {artwork
+                  ? pieceLabel(artwork.title ?? artwork.slug, artwork.collectionIds ?? [], collectionList ?? [])
+                  : key.slice(0, 8)}
               </option>
             ))}
           </select>

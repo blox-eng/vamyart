@@ -154,6 +154,28 @@ export const collectionsRouter = router({
       return { ok: true };
     }),
 
+  // Adds a piece to the end of one collection, or takes it out, without touching the rest of the order.
+  setMembership: protectedProcedure
+    .input(z.object({ collectionId: z.string().uuid(), artworkId: z.string().uuid(), member: z.boolean() }))
+    .mutation(async ({ input }) => {
+      const { collectionId, artworkId } = input;
+      if (!input.member) {
+        await db
+          .delete(artworkCollections)
+          .where(and(eq(artworkCollections.collectionId, collectionId), eq(artworkCollections.artworkId, artworkId)));
+        return { ok: true };
+      }
+      await db
+        .insert(artworkCollections)
+        .values({
+          collectionId,
+          artworkId,
+          sortOrder: sql`(select coalesce(max(${artworkCollections.sortOrder}) + 1, 0) from ${artworkCollections} where ${artworkCollections.collectionId} = ${collectionId})`,
+        })
+        .onConflictDoNothing();
+      return { ok: true };
+    }),
+
   getPieceIds: protectedProcedure
     .input(z.object({ collectionId: z.string().uuid() }))
     .query(async ({ input }) => {
