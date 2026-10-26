@@ -5,7 +5,7 @@ import { router, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { artworks, critiqueRuns } from "../../schema";
 import { getStorageClient } from "../../services/storage";
-import { CRITIQUE_BUCKET, CRITIQUE_MODELS, runCritique } from "../../services/critique-run";
+import { CRITIQUE_BUCKET, CRITIQUE_MODELS, runCritique, STALE_RUN_MS } from "../../services/critique-run";
 import { extForContentType } from "./artworkImages";
 
 const hex = z.string().regex(/^#[0-9a-f]{6}$/);
@@ -45,7 +45,11 @@ async function dispatch(runId: string) {
     headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
     body: JSON.stringify({ runId }),
   });
-  if (!res.ok) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Could not start critique (${res.status})` });
+  if (!res.ok) {
+    const error = `Could not start critique (${res.status})`;
+    await db.update(critiqueRuns).set({ status: "failed", error, updatedAt: new Date() }).where(eq(critiqueRuns.id, runId));
+    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error });
+  }
 }
 
 export const critiqueRouter = router({
@@ -90,8 +94,15 @@ export const critiqueRouter = router({
   get: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ input }) => {
-      const [run] = await db.select().from(critiqueRuns).where(eq(critiqueRuns.id, input.id));
+      let [run] = await db.select().from(critiqueRuns).where(eq(critiqueRuns.id, input.id));
       if (!run) throw new TRPCError({ code: "NOT_FOUND", message: "Critique not found" });
+      if ((run.status === "queued" || run.status === "running") && Date.now() - run.updatedAt.getTime() > STALE_RUN_MS) {
+        [run] = await db
+          .update(critiqueRuns)
+          .set({ status: "failed", error: "The critique stopped before finishing. Run it again.", updatedAt: new Date() })
+          .where(eq(critiqueRuns.id, run.id))
+          .returning();
+      }
       const { data } = await getStorageClient().storage.from(CRITIQUE_BUCKET).createSignedUrl(run.storagePath, 3600);
       return { ...run, imageUrl: data?.signedUrl ?? null };
     }),

@@ -31,8 +31,9 @@ describe("requestCritique", () => {
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer key");
     const body = JSON.parse(init.body as string);
     expect(body.model).toBe("google/gemini-3.8-flash");
-    expect(body.temperature).toBe(0);
+    expect(body).not.toHaveProperty("temperature");
     expect(body.response_format.json_schema.strict).toBe(true);
+    expect(body.provider.require_parameters).toBe(true);
     const user = body.messages.find((m: { role: string }) => m.role === "user");
     expect(JSON.stringify(user.content)).toContain("https://signed.example/photo.jpg");
     expect(JSON.stringify(user.content)).toContain("what's off about the shadows?");
@@ -47,6 +48,19 @@ describe("requestCritique", () => {
   it("asks for one name per swatch, in order", async () => {
     const fetchImpl = fakeFetch({ choices: [{ message: { content: JSON.stringify({ ...read, swatchNames: ["only one"] }) } }] });
     await expect(requestCritique({ ...input, fetchImpl })).rejects.toThrow(/swatch names/);
+  });
+
+  it("accepts JSON wrapped in a markdown fence", async () => {
+    const fetchImpl = fakeFetch({ choices: [{ message: { content: "```json\n" + JSON.stringify(read) + "\n```" } }] });
+    expect((await requestCritique({ ...input, fetchImpl })).read).toEqual(read);
+  });
+
+  it("says plainly when the model returns no usable JSON", async () => {
+    await expect(requestCritique({ ...input, fetchImpl: fakeFetch({ choices: [] }) })).rejects.toThrow(/no reply/);
+    const prose = fakeFetch({ choices: [{ message: { content: "Lovely painting!" } }] });
+    await expect(requestCritique({ ...input, fetchImpl: prose })).rejects.toThrow(/not valid JSON.*Lovely painting/);
+    const partial = fakeFetch({ choices: [{ message: { content: JSON.stringify({ ...read, colour: undefined }) } }] });
+    await expect(requestCritique({ ...input, fetchImpl: partial })).rejects.toThrow(/missing colour/);
   });
 
   it("surfaces provider errors", async () => {

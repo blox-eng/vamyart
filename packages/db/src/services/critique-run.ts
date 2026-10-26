@@ -4,23 +4,26 @@ import { critiqueRuns, type CritiqueRead } from "../schema";
 import { getStorageClient } from "./storage";
 
 export const CRITIQUE_BUCKET = "critique-uploads";
-// Vision models with strict JSON output on OpenRouter, one per vendor, for the
-// model spike. The first is the default.
+// Vision models with strict JSON output on OpenRouter. The first is the default.
+// The spike (scripts/critique-spike.ts) dropped Qwen3-VL and GLM-5.3-flash:
+// they misnamed swatches and ignored the length limit.
 export const CRITIQUE_MODELS = [
   "google/gemini-3.8-flash",
   "google/gemini-4-argon",
   "openai/gpt-5.6-terra",
   "anthropic/claude-sonnet-5.5",
-  "qwen/qwen3-vl-235b-a22b-instruct",
-  "z-ai/glm-5.3-flash",
 ] as const;
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const REQUEST_TIMEOUT_MS = 180_000;
+// A run older than this is dead: the background function has a 15-minute ceiling.
+export const STALE_RUN_MS = 16 * 60_000;
 
 const SYSTEM_PROMPT = `You are a studio mentor giving a painter honest, specific feedback on a photo of their painting.
 Describe before you judge: ground every remark in what is visible in the image and in the measured palette you are given.
 Answer the painter's question first, if they asked one. No flattery, no generic art-school phrases, no hedging filler.
 Name each measured swatch the way a painter would say it out loud ("cool grey-violet shadow", "warm ochre light"), in the order given.
+Refer to colours by those names and to places by what is there ("the tree line", "upper left"); never by hex codes or pixel coordinates.
 Keep each section to a few sentences.`;
 
 const RESPONSE_SCHEMA = {
@@ -37,6 +40,23 @@ const RESPONSE_SCHEMA = {
 };
 
 type Swatch = { hex: string; area: number };
+
+const TEXT_FIELDS = ["answer", "colour", "value", "composition"] as const;
+
+function parseRead(body: { choices?: { message?: { content?: unknown } }[] } | null): CritiqueRead {
+  const content = body?.choices?.[0]?.message?.content;
+  if (typeof content !== "string") throw new Error("Model sent no reply");
+  let read: CritiqueRead;
+  try {
+    read = JSON.parse(content.trim().replace(/^```(?:json)?\s*|\s*```$/g, ""));
+  } catch {
+    throw new Error(`Model reply is not valid JSON: ${content.slice(0, 160)}`);
+  }
+  for (const field of TEXT_FIELDS) {
+    if (typeof read?.[field] !== "string") throw new Error(`Model reply is missing ${field}`);
+  }
+  return read;
+}
 
 export async function requestCritique({
   apiKey,
@@ -59,8 +79,10 @@ export async function requestCritique({
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
-      temperature: 0,
       usage: { include: true },
+      // Route only to providers that honour the strict schema below. No
+      // temperature: reasoning models reject it, which this flag turns into a 404.
+      provider: { require_parameters: true },
       response_format: { type: "json_schema", json_schema: { name: "critique", strict: true, schema: RESPONSE_SCHEMA } },
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
@@ -73,13 +95,14 @@ export async function requestCritique({
         },
       ],
     }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
   const body = await res.json().catch(() => null);
   if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${body?.error?.message ?? res.statusText}`);
 
-  const read = JSON.parse(body.choices[0].message.content) as CritiqueRead;
-  if (read.swatchNames?.length !== swatches.length) {
+  const read = parseRead(body);
+  if (!Array.isArray(read.swatchNames) || read.swatchNames.length !== swatches.length) {
     throw new Error(`Model returned ${read.swatchNames?.length ?? 0} swatch names for ${swatches.length} swatches`);
   }
   return { read, costUsd: body.usage?.cost ?? null };
