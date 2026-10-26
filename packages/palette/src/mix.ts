@@ -3,10 +3,13 @@ import { Color, mix } from "spectral.js";
 import { deltaE } from "./color";
 import type { Paint, Recipe } from "./types";
 
-// An extra tube must buy at least this much ΔE to be worth mixing in.
-const PAINT_PENALTY = 0.75;
-const MAX_PARTS = 8;
+// Recipes are measured out by hand, so they stay simple: pair ratios up to 4:4,
+// and each extra tube or extra part has to buy a visible ΔE improvement.
+const PAINT_PENALTY = 1.2;
+const PART_PENALTY = 0.08;
+const MAX_PARTS = 4;
 const TRIPLE_BEAM = 8;
+const TRIPLE_SCALES = [2, 3];
 
 const colorCache = new Map<string, Color>();
 function spectralColor(hex: string): Color {
@@ -31,7 +34,8 @@ type Candidate = { parts: [Paint, number][]; hex: string; deltaE: number; score:
 function candidate(target: string, parts: [Paint, number][]): Candidate {
   const hex = mixParts(parts);
   const dE = deltaE(target, hex);
-  return { parts, hex, deltaE: dE, score: dE + PAINT_PENALTY * (parts.length - 1) };
+  const size = parts.reduce((sum, [, n]) => sum + n, 0);
+  return { parts, hex, deltaE: dE, score: dE + PAINT_PENALTY * (parts.length - 1) + PART_PENALTY * size };
 }
 
 // Best 1–3 tube recipe for a target colour, predicted with Kubelka–Munk mixing.
@@ -52,7 +56,7 @@ export function solveRecipe(target: string, paints: Paint[]): Recipe | null {
     const used = new Set(pair.parts.map(([p]) => p.id));
     for (const third of paints) {
       if (used.has(third.id)) continue;
-      for (const scale of [2, 3, 4])
+      for (const scale of TRIPLE_SCALES)
         all.push(candidate(target, [...pair.parts.map(([p, n]) => [p, n * scale] as [Paint, number]), [third, 1]]));
     }
   }

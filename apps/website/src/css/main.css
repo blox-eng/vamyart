@@ -704,26 +704,95 @@
     opacity: 1;
     pointer-events: auto;
 }
-/* Palette: the piece's colours as dabs of paint under the painting (#59). */
+/* Palette: the piece's colours as knife smears under the painting, folded
+   behind a quiet "Palette" line until a visitor opens it (#59). */
+.paint-palette {
+    margin-top: 18px;
+}
+.paint-palette-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color var(--dur-standard) var(--ease);
+}
+.paint-palette-toggle:hover {
+    color: var(--text);
+}
+.paint-palette-toggle:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+}
+.paint-palette-dots {
+    display: inline-flex;
+    gap: 4px;
+    transition: opacity var(--dur-standard) var(--ease);
+}
+.paint-palette-dots i {
+    width: 7px;
+    height: 7px;
+    border: 1px solid;
+    border-radius: 50%;
+}
+.paint-palette-toggle[aria-expanded='true'] .paint-palette-dots {
+    opacity: 0;
+}
+.paint-palette-sign {
+    position: relative;
+    width: 9px;
+    height: 9px;
+}
+.paint-palette-sign::before,
+.paint-palette-sign::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 0;
+    width: 9px;
+    height: 1px;
+    background: currentColor;
+    transition: transform var(--dur-standard) var(--ease);
+}
+.paint-palette-sign::after {
+    transform: rotate(90deg);
+}
+.paint-palette-toggle[aria-expanded='true'] .paint-palette-sign::after {
+    transform: none;
+}
 .paint-splashes {
-    margin-top: 20px;
+    margin-top: 4px;
+}
+.paint-splashes:not([hidden]) {
+    animation: paint-palette-in 320ms var(--ease) both;
+}
+@keyframes paint-palette-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
 }
 .paint-splashes-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 .paint-splash {
     display: grid;
     place-items: center;
-    min-width: 24px;
-    min-height: 24px;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
     transition: transform var(--dur-standard) var(--ease);
 }
 .paint-splash:hover,
-.paint-splash:focus-visible {
+.paint-splash:focus-visible,
+.paint-splash[aria-pressed='true'] {
     transform: scale(1.08);
 }
 .paint-splash:focus-visible {
@@ -731,13 +800,28 @@
     outline-offset: 2px;
 }
 .paint-splash-note {
-    min-height: 1.5em;
-    margin-top: 6px;
+    min-height: 3.2em;
+    margin-top: 8px;
     font-size: 12px;
     line-height: 1.5;
     color: var(--muted);
 }
+.paint-splash-note b {
+    display: block;
+    font-family: theme('fontFamily.serif');
+    font-style: italic;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1.25;
+    color: var(--text);
+}
 @media (prefers-reduced-motion: reduce) {
+    .paint-splashes:not([hidden]) {
+        animation: none;
+    }
+    .paint-palette-toggle,
+    .paint-palette-dots,
+    .paint-palette-sign::after,
     .paint-splash,
     .sold-note,
     .sold-tag-label,

@@ -135,7 +135,7 @@ export function PaletteEditor({ initial, artworkId: initialArtworkId }: { initia
         </select>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
-          Show on the piece page
+          Show the palette on vamy.art
         </label>
         <button
           type="button"
@@ -146,6 +146,11 @@ export function PaletteEditor({ initial, artworkId: initialArtworkId }: { initia
           {save.isPending ? "Saving…" : "Save palette to piece"}
         </button>
       </div>
+      <p className="text-xs text-muted">
+        {show
+          ? "Visitors see a small “Palette” line under the painting and open it if they want."
+          : "Hidden: nothing about the palette appears on the piece page."}
+      </p>
     </section>
   );
 }

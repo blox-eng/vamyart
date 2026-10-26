@@ -29,6 +29,13 @@ describe("solveRecipe", () => {
     expect(solveRecipe(target, paints)!.parts).toHaveLength(2);
   });
 
+  it("keeps ratios a painter can measure out", () => {
+    const target = mixParts([[paints[1], 7], [paints[0], 6]]);
+    const r = solveRecipe(target, paints)!;
+    expect(Math.max(...r.parts.map((p) => p.parts))).toBeLessThanOrEqual(4);
+    expect(r.deltaE).toBeLessThan(4);
+  });
+
   it("returns null with no paints to mix from", () => {
     expect(solveRecipe("#123456", [])).toBeNull();
   });

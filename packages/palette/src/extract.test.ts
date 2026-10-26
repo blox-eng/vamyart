@@ -30,6 +30,19 @@ describe("extractPalette", () => {
     expect(extractPalette(rgba, { k: 2 })).toHaveLength(1);
   });
 
+  it("keeps a small saturated accent as its own colour", () => {
+    const rgba = image([["#808080", 600], ["#303030", 380], ["#d9601c", 20]]);
+    const swatches = extractPalette(rgba, { k: 2 });
+    const accent = swatches.find((s) => s.accent);
+    expect(accent?.hex).toBe("#d9601c");
+    expect(swatches.filter((s) => !s.accent).map((s) => s.hex)).toEqual(["#808080", "#303030"]);
+  });
+
+  it("drops the accent rule when asked", () => {
+    const rgba = image([["#808080", 600], ["#303030", 380], ["#d9601c", 20]]);
+    expect(extractPalette(rgba, { k: 2, keepAccent: false }).some((s) => s.accent)).toBe(false);
+  });
+
   it("ignores transparent pixels", () => {
     const rgba = image([["#ff0000", 10]]);
     rgba[3] = 0;

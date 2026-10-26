@@ -1,10 +1,16 @@
 import { deltaE, linearToSrgb, oklab, srgbToLinear, toHex } from "./color";
 
-export type ExtractedSwatch = { hex: string; area: number };
+export type ExtractedSwatch = { hex: string; area: number; accent: boolean };
 
 const MAX_SAMPLES = 40_000;
 const ITERATIONS = 20;
 const MERGE_DELTA_E = 3;
+// The accent: the most saturated sliver of the canvas. If no cluster carries
+// its chroma, k-means has averaged it away and it gets a swatch of its own.
+const ACCENT_SHARE = 0.015;
+const ACCENT_MIN_SAMPLES = 20;
+const ACCENT_MIN_CHROMA = 0.04;
+const ACCENT_CHROMA_GAP = 0.02;
 
 function mulberry32(seed: number) {
   return () => {
@@ -51,9 +57,25 @@ function seedCentroids(samples: Sample[], k: number, random: () => number): numb
   return centroids;
 }
 
+function nearest(lab: number[], centroids: number[][]): number {
+  let best = 0;
+  for (let c = 1; c < centroids.length; c++) if (dist2(lab, centroids[c]) < dist2(lab, centroids[best])) best = c;
+  return best;
+}
+
+const chroma = (lab: number[]) => Math.hypot(lab[1], lab[2]);
+
+function accentCentroid(samples: Sample[], centroids: number[][]): number[] | null {
+  const count = Math.max(ACCENT_MIN_SAMPLES, Math.floor(samples.length * ACCENT_SHARE));
+  const top = samples.slice().sort((a, b) => chroma(b.lab) - chroma(a.lab)).slice(0, count);
+  const mean = [0, 1, 2].map((j) => top.reduce((sum, s) => sum + s.lab[j], 0) / top.length);
+  const clusterChroma = Math.max(...centroids.map(chroma));
+  return chroma(mean) > ACCENT_MIN_CHROMA && chroma(mean) > clusterChroma + ACCENT_CHROMA_GAP ? mean : null;
+}
+
 // k-means++ in OKLab. Each swatch reports the real sampled colour closest to
 // its cluster centre, so the palette only contains colours present in the work.
-export function extractPalette(rgba: Uint8ClampedArray, { k = 6 } = {}): ExtractedSwatch[] {
+export function extractPalette(rgba: Uint8ClampedArray, { k = 6, keepAccent = true } = {}): ExtractedSwatch[] {
   const samples = sample(rgba);
   if (samples.length === 0) return [];
   const centroids = seedCentroids(samples, k, mulberry32(1));
@@ -62,10 +84,7 @@ export function extractPalette(rgba: Uint8ClampedArray, { k = 6 } = {}): Extract
   for (let iter = 0; iter < ITERATIONS; iter++) {
     let moved = false;
     samples.forEach((s, i) => {
-      let best = 0;
-      for (let c = 1; c < centroids.length; c++) {
-        if (dist2(s.lab, centroids[c]) < dist2(s.lab, centroids[best])) best = c;
-      }
+      const best = nearest(s.lab, centroids);
       if (assign[i] !== best) moved = true;
       assign[i] = best;
     });
@@ -80,7 +99,15 @@ export function extractPalette(rgba: Uint8ClampedArray, { k = 6 } = {}): Extract
     if (!moved && iter > 0) break;
   }
 
-  const clusters = centroids.map((centroid) => ({ centroid, count: 0, rep: null as Sample | null, repDist: Infinity }));
+  const accent = keepAccent ? accentCentroid(samples, centroids) : null;
+  if (accent) {
+    centroids.push(accent);
+    samples.forEach((s, i) => (assign[i] = nearest(s.lab, centroids)));
+  }
+
+  const clusters = centroids.map((centroid, c) => ({
+    centroid, accent: accent !== null && c === centroids.length - 1, count: 0, rep: null as Sample | null, repDist: Infinity,
+  }));
   samples.forEach((s, i) => {
     const cl = clusters[assign[i]];
     cl.count++;
@@ -91,11 +118,11 @@ export function extractPalette(rgba: Uint8ClampedArray, { k = 6 } = {}): Extract
   const swatches = clusters
     .filter((cl) => cl.count > 0)
     .sort((a, b) => b.count - a.count)
-    .map((cl) => ({ hex: toHex(...cl.rep!.rgb), area: cl.count / samples.length }));
+    .map((cl) => ({ hex: toHex(...cl.rep!.rgb), area: cl.count / samples.length, accent: cl.accent }));
 
   const merged: ExtractedSwatch[] = [];
   for (const s of swatches) {
-    const twin = merged.find((m) => deltaE(m.hex, s.hex) < MERGE_DELTA_E);
+    const twin = !s.accent && merged.find((m) => !m.accent && deltaE(m.hex, s.hex) < MERGE_DELTA_E);
     if (twin) twin.area += s.area;
     else merged.push({ ...s });
   }
