@@ -40,6 +40,13 @@ describe("requestCritique", () => {
     expect(JSON.stringify(user.content)).toContain("#1f2b7a 60%");
   });
 
+  it("adds the measurements to the message when given", async () => {
+    const fetchImpl = fakeFetch({ choices: [{ message: { content: JSON.stringify(read) } }] });
+    await requestCritique({ ...input, measurements: "Value: low key.", fetchImpl });
+    const body = JSON.parse((fetchImpl.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+    expect(JSON.stringify(body.messages[1].content)).toContain("Measurements:\\nValue: low key.");
+  });
+
   it("returns the parsed read and the reported cost", async () => {
     const fetchImpl = fakeFetch({ choices: [{ message: { content: JSON.stringify(read) } }], usage: { cost: 0.0012 } });
     expect(await requestCritique({ ...input, fetchImpl })).toEqual({ read, costUsd: 0.0012 });

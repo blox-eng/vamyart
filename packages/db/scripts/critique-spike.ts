@@ -4,13 +4,16 @@
  * what each returned, how long it took and what it cost. Nothing is written to
  * the database or Storage: images go inline as data URLs.
  *
- * Run with: cd packages/db && OPENROUTER_API_KEY=... pnpm dlx tsx scripts/critique-spike.ts [--out results.json] [image ...]
+ * --compare runs each model twice per painting, without and with the measured
+ * value/chroma/temperature facts, to see whether grounding changes the read.
+ *
+ * Run with: cd packages/db && OPENROUTER_API_KEY=... pnpm dlx tsx scripts/critique-spike.ts [--compare] [--out results.json] [image ...]
  */
 import { createRequire } from "module";
 import { writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, basename, resolve } from "path";
-import { extractPalette } from "@vamy/palette";
+import { describeMeasurements, extractPalette, measure } from "@vamy/palette";
 import { CRITIQUE_MODELS, requestCritique } from "../src/services/critique-run";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -28,6 +31,8 @@ const DEFAULT_IMAGES = ["first-contact.jpg", "on-the-horizon.jpg", "whispers.jpg
 const args = process.argv.slice(2);
 const outIndex = args.indexOf("--out");
 const out = outIndex >= 0 ? args.splice(outIndex, 2)[1] : null;
+const compareIndex = args.indexOf("--compare");
+const arms = compareIndex >= 0 && args.splice(compareIndex, 1) ? [false, true] : [true];
 const images = args.length ? args : DEFAULT_IMAGES;
 
 const apiKey = process.env.OPENROUTER_API_KEY;
@@ -35,28 +40,35 @@ if (!apiKey) throw new Error("Set OPENROUTER_API_KEY");
 
 async function prepare(path: string) {
   const jpeg = await sharp(path).rotate().resize(SEND_EDGE, SEND_EDGE, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
-  const { data } = await sharp(path).rotate().resize(ANALYSIS_EDGE, ANALYSIS_EDGE, { fit: "inside" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  const swatches = extractPalette(new Uint8ClampedArray(data), { k: 6 }).map(({ hex, area }) => ({ hex, area }));
-  return { name: basename(path), imageUrl: `data:image/jpeg;base64,${jpeg.toString("base64")}`, swatches };
+  const { data, info } = await sharp(path).rotate().resize(ANALYSIS_EDGE, ANALYSIS_EDGE, { fit: "inside" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const rgba = new Uint8ClampedArray(data);
+  const swatches = extractPalette(rgba, { k: 6 }).map(({ hex, area }) => ({ hex, area }));
+  const measurements = describeMeasurements(measure(rgba, info.width));
+  return { name: basename(path), imageUrl: `data:image/jpeg;base64,${jpeg.toString("base64")}`, swatches, measurements };
 }
 
 async function main() {
   const paintings = await Promise.all(images.map(prepare));
   const results = await Promise.all(
     CRITIQUE_MODELS.flatMap((model) =>
-      paintings.map(async (p) => {
-        const started = Date.now();
-        try {
-          const { read, costUsd } = await requestCritique({ apiKey, model, imageUrl: p.imageUrl, prompt: PROMPT, swatches: p.swatches });
-          return { model, painting: p.name, ok: true, seconds: (Date.now() - started) / 1000, costUsd, read, swatches: p.swatches };
-        } catch (err) {
-          return { model, painting: p.name, ok: false, seconds: (Date.now() - started) / 1000, error: err instanceof Error ? err.message : String(err) };
-        }
-      })
+      arms.flatMap((measured) =>
+        paintings.map(async (p) => {
+          const started = Date.now();
+          const base = { model: measured ? model : `${model} (photo only)`, painting: p.name, measured };
+          try {
+            const { read, costUsd } = await requestCritique({
+              apiKey, model, imageUrl: p.imageUrl, prompt: PROMPT, swatches: p.swatches, measurements: measured ? p.measurements : null,
+            });
+            return { ...base, ok: true, seconds: (Date.now() - started) / 1000, costUsd, read, swatches: p.swatches, measurements: p.measurements };
+          } catch (err) {
+            return { ...base, ok: false, seconds: (Date.now() - started) / 1000, error: err instanceof Error ? err.message : String(err) };
+          }
+        })
+      )
     )
   );
 
-  for (const model of CRITIQUE_MODELS) {
+  for (const model of [...new Set(results.map((r) => r.model))]) {
     const rows = results.filter((r) => r.model === model);
     const ok = rows.filter((r) => r.ok);
     const cost = ok.reduce((sum, r) => sum + ("costUsd" in r ? r.costUsd ?? 0 : 0), 0);

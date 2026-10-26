@@ -14,7 +14,7 @@ import {
   primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import type { Palette } from "@vamy/palette";
+import type { Measurements, Palette } from "@vamy/palette";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export const shippingMethodType = pgEnum("shipping_method_type", ["free", "paid", "custom"]);
@@ -82,6 +82,7 @@ export const critiqueRuns = pgTable("critique_runs", {
   prompt: text("prompt"),
   whiteBalance: jsonb("white_balance").$type<[number, number, number]>(),
   palette: jsonb("palette").$type<Palette>().notNull(),
+  measurements: jsonb("measurements").$type<Measurements>(),
   status: text("status").notNull().default("queued"), // queued | running | done | failed
   model: text("model"),
   result: jsonb("result").$type<CritiqueRead>(),

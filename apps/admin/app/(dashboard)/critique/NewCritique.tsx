@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { inferRouterInputs } from "@trpc/server";
 import type { AppRouter } from "@vamy/db/trpc";
-import { extractPalette, whiteBalanceGains } from "@vamy/palette";
+import { extractPalette, measure, whiteBalanceGains } from "@vamy/palette";
 import { trpc } from "@/lib/trpc";
 import { createClient } from "@/lib/supabase/client";
 import { resizeImageForUpload } from "@/lib/image/resize";
@@ -45,10 +45,8 @@ export function NewCritique({ onCreated }: { onCreated: (id: string) => void }) 
 
   useEffect(() => () => { if (upload) URL.revokeObjectURL(upload.url); }, [upload]);
 
-  const swatches = useMemo(
-    () => (pixels ? extractPalette(withWhiteBalance(pixels, gains).data, { k: SWATCHES }) : []),
-    [pixels, gains]
-  );
+  const balanced = useMemo(() => (pixels ? withWhiteBalance(pixels, gains) : null), [pixels, gains]);
+  const swatches = useMemo(() => (balanced ? extractPalette(balanced.data, { k: SWATCHES }) : []), [balanced]);
 
   async function choose(file: File | undefined) {
     if (!file) return;
@@ -82,7 +80,8 @@ export function NewCritique({ onCreated }: { onCreated: (id: string) => void }) 
         storagePath: path,
         prompt: prompt.trim() || null,
         whiteBalance: gains,
-        swatches,
+        swatches: swatches.map(({ hex, area }) => ({ hex, area })),
+        measurements: balanced && measure(balanced.data, balanced.width),
         artworkId: artworkId || null,
         model: (model || null) as CreateInput["model"],
       });

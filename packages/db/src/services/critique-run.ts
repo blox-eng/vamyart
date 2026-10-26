@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../client";
 import { critiqueRuns, type CritiqueRead } from "../schema";
+import { describeMeasurements } from "@vamy/palette";
 import { getStorageClient } from "./storage";
 
 export const CRITIQUE_BUCKET = "critique-uploads";
@@ -23,6 +24,7 @@ const SYSTEM_PROMPT = `You are a studio mentor giving a painter honest, specific
 Describe before you judge: ground every remark in what is visible in the image and in the measured palette you are given.
 Answer the painter's question first, if they asked one. No flattery, no generic art-school phrases, no hedging filler.
 Name each measured swatch the way a painter would say it out loud ("cool grey-violet shadow", "warm ochre light"), in the order given.
+Measurements of the photo may follow the palette. They are exact where your eye on a phone photo is not: when they disagree with your impression, trust them, and translate them into a painter's terms rather than quoting the numbers.
 Refer to colours by those names and to places by what is there ("the tree line", "upper left"); never by hex codes or pixel coordinates.
 Keep each section to a few sentences.`;
 
@@ -64,6 +66,7 @@ export async function requestCritique({
   imageUrl,
   prompt,
   swatches,
+  measurements = null,
   fetchImpl = fetch,
 }: {
   apiKey: string;
@@ -71,6 +74,7 @@ export async function requestCritique({
   imageUrl: string;
   prompt: string | null;
   swatches: Swatch[];
+  measurements?: string | null;
   fetchImpl?: typeof fetch;
 }): Promise<{ read: CritiqueRead; costUsd: number | null }> {
   const palette = swatches.map((s) => `${s.hex} ${Math.round(s.area * 100)}%`).join(", ");
@@ -89,7 +93,14 @@ export async function requestCritique({
         {
           role: "user",
           content: [
-            { type: "text", text: `Painter's question: ${prompt?.trim() || "(none)"}\nMeasured palette (hex, share of the canvas): ${palette}` },
+            {
+              type: "text",
+              text: [
+                `Painter's question: ${prompt?.trim() || "(none)"}`,
+                `Measured palette (hex, share of the canvas): ${palette}`,
+                measurements && `Measurements:\n${measurements}`,
+              ].filter(Boolean).join("\n"),
+            },
             { type: "image_url", image_url: { url: imageUrl } },
           ],
         },
@@ -127,6 +138,7 @@ export async function runCritique(runId: string): Promise<void> {
       imageUrl: data.signedUrl,
       prompt: run.prompt,
       swatches: run.palette.swatches,
+      measurements: run.measurements && describeMeasurements(run.measurements),
     });
     await db
       .update(critiqueRuns)

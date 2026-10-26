@@ -7,6 +7,7 @@ import { artworks, critiqueRuns } from "../../schema";
 import { getStorageClient } from "../../services/storage";
 import { CRITIQUE_BUCKET, CRITIQUE_MODELS, runCritique, STALE_RUN_MS } from "../../services/critique-run";
 import { extForContentType } from "./artworkImages";
+import { MAP, PLACES } from "@vamy/palette";
 
 const hex = z.string().regex(/^#[0-9a-f]{6}$/);
 
@@ -28,6 +29,26 @@ const paletteSchema = z.object({
     area: z.number().min(0).max(1),
     recipe: recipeSchema.nullable(),
   })).min(1).max(12),
+});
+
+const share = z.number().min(0).max(1);
+const place = z.enum(PLACES as [string, ...string[]]);
+export const measurementsSchema = z.object({
+  value: z.object({
+    mean: share,
+    low: share,
+    high: share,
+    shares: z.tuple([share, share, share]),
+    grid: z.array(z.array(z.number().int().min(0).max(100)).length(MAP)).length(MAP),
+    contrastAt: place,
+  }),
+  chroma: z.object({ mean: z.number().min(0).max(0.5), neutralShare: share, strongestAt: place.nullable() }),
+  temperature: z.object({
+    warmShare: share.nullable(),
+    warmestAt: place.nullable(),
+    coolestAt: place.nullable(),
+    lightsVsDarks: z.enum(["warmer", "cooler", "same"]),
+  }),
 });
 
 // Background function on Netlify (a run outlives a normal request); inline in local dev.
@@ -70,6 +91,7 @@ export const critiqueRouter = router({
       prompt: z.string().trim().max(2000).nullable(),
       whiteBalance: z.tuple([z.number(), z.number(), z.number()]).nullable(),
       swatches: z.array(z.object({ hex, area: z.number().min(0).max(1) })).min(1).max(12),
+      measurements: measurementsSchema.nullable(),
       artworkId: z.string().uuid().nullable(),
       model: z.enum(CRITIQUE_MODELS).nullable(),
     }))
@@ -82,6 +104,7 @@ export const critiqueRouter = router({
           whiteBalance: input.whiteBalance,
           artworkId: input.artworkId,
           model: input.model,
+          measurements: input.measurements,
           palette: { swatches: input.swatches.map((s) => ({ ...s, name: "", recipe: null })) },
         })
         .returning({ id: critiqueRuns.id });
