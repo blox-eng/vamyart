@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { onRevalidateFailed } from "@/lib/revalidate";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -27,6 +28,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             setToasts((prev) => prev.filter((t) => t.id !== id));
         }, 3500);
     }, []);
+
+    React.useEffect(
+        () => onRevalidateFailed(() => toast("Saved, but vamy.art didn't refresh. It will catch up within the hour.", "error")),
+        [toast]
+    );
 
     return (
         <ToastContext.Provider value={{ toast }}>
