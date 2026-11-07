@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../client";
 import { critiqueRuns, type CritiqueRead } from "../schema";
 import { describeMeasurements } from "@vamy/palette";
@@ -44,6 +44,8 @@ const RESPONSE_SCHEMA = {
 type Swatch = { hex: string; area: number };
 
 const TEXT_FIELDS = ["answer", "colour", "value", "composition"] as const;
+// The palette editor saves names up to this length (paletteSchema in the critique router).
+const SWATCH_NAME_MAX = 80;
 
 function parseRead(body: { choices?: { message?: { content?: unknown } }[] } | null): CritiqueRead {
   const content = body?.choices?.[0]?.message?.content;
@@ -113,20 +115,24 @@ export async function requestCritique({
   if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${body?.error?.message ?? res.statusText}`);
 
   const read = parseRead(body);
-  if (!Array.isArray(read.swatchNames) || read.swatchNames.length !== swatches.length) {
-    throw new Error(`Model returned ${read.swatchNames?.length ?? 0} swatch names for ${swatches.length} swatches`);
-  }
+  // The schema can't pin the array length; a miscount shouldn't throw away a paid read.
+  // Missing names stay empty, and the artist names them in the editor.
+  const names: unknown[] = Array.isArray(read.swatchNames) ? read.swatchNames : [];
+  read.swatchNames = swatches.map((_, i) => (typeof names[i] === "string" ? names[i].trim().slice(0, SWATCH_NAME_MAX) : ""));
   return { read, costUsd: body.usage?.cost ?? null };
 }
 
 export async function runCritique(runId: string): Promise<void> {
-  const [run] = await db.select().from(critiqueRuns).where(eq(critiqueRuns.id, runId));
-  if (!run || run.status !== "queued") return;
-
-  const model = run.model || process.env.CRITIQUE_MODEL || CRITIQUE_MODELS[0];
-  await db.update(critiqueRuns).set({ status: "running", model, updatedAt: new Date() }).where(eq(critiqueRuns.id, runId));
-
   try {
+    // Claim the run in one statement so a duplicate invocation can't pay for it twice.
+    const [run] = await db
+      .update(critiqueRuns)
+      .set({ status: "running", updatedAt: new Date() })
+      .where(and(eq(critiqueRuns.id, runId), eq(critiqueRuns.status, "queued")))
+      .returning();
+    if (!run) return;
+    const model = run.model || process.env.CRITIQUE_MODEL || CRITIQUE_MODELS[0];
+
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
     const { data, error } = await getStorageClient().storage.from(CRITIQUE_BUCKET).createSignedUrl(run.storagePath, 600);
@@ -142,7 +148,7 @@ export async function runCritique(runId: string): Promise<void> {
     });
     await db
       .update(critiqueRuns)
-      .set({ status: "done", result: read, costUsd: costUsd?.toString() ?? null, updatedAt: new Date() })
+      .set({ status: "done", model, result: read, costUsd: costUsd?.toString() ?? null, updatedAt: new Date() })
       .where(eq(critiqueRuns.id, runId));
   } catch (err) {
     await db

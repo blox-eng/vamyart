@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { inferRouterInputs } from "@trpc/server";
 import type { AppRouter } from "@vamy/db/trpc";
 import { extractPalette, measure, whiteBalanceGains } from "@vamy/palette";
@@ -34,6 +34,7 @@ export function NewCritique({ onCreated }: { onCreated: (id: string) => void }) 
   const { data: models } = trpc.critique.models.useQuery();
   const createUploadUrl = trpc.critique.createUploadUrl.useMutation();
   const create = trpc.critique.create.useMutation();
+  const utils = trpc.useUtils();
 
   const [upload, setUpload] = useState<{ blob: Blob; url: string } | null>(null);
   const [pixels, setPixels] = useState<Pixels | null>(null);
@@ -48,15 +49,21 @@ export function NewCritique({ onCreated }: { onCreated: (id: string) => void }) 
   const balanced = useMemo(() => (pixels ? withWhiteBalance(pixels, gains) : null), [pixels, gains]);
   const swatches = useMemo(() => (balanced ? extractPalette(balanced.data, { k: SWATCHES }) : []), [balanced]);
 
+  // A second pick can finish decoding before the first; only the latest one counts.
+  const latestPick = useRef(0);
+
   async function choose(file: File | undefined) {
     if (!file) return;
+    const pick = ++latestPick.current;
     setGains(null);
     try {
       const { blob } = await resizeImageForUpload(file);
+      const px = await loadPixels(blob);
+      if (pick !== latestPick.current) return;
       setUpload({ blob, url: URL.createObjectURL(blob) });
-      setPixels(await loadPixels(blob));
+      setPixels(px);
     } catch {
-      toast("Could not read that image", "error");
+      if (pick === latestPick.current) toast("Could not read that image", "error");
     }
   }
 
@@ -90,6 +97,8 @@ export function NewCritique({ onCreated }: { onCreated: (id: string) => void }) 
       setPrompt("");
       onCreated(id);
     } catch (e) {
+      // The run row may exist and be marked failed; show it in the list.
+      utils.critique.list.invalidate();
       toast(e instanceof Error ? e.message : "Could not start the critique", "error");
     } finally {
       setBusy(false);
@@ -126,7 +135,7 @@ export function NewCritique({ onCreated }: { onCreated: (id: string) => void }) 
               </button>
             )}
           </p>
-          <div className="flex h-8 overflow-hidden rounded" aria-label="Measured palette">
+          <div className="flex h-8 overflow-hidden rounded" aria-hidden>
             {swatches.map((s) => (
               <div key={s.hex} title={s.hex} style={{ background: s.hex, flexGrow: s.area }} />
             ))}

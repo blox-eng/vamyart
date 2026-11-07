@@ -59,6 +59,23 @@ describe("white balance", () => {
   });
 });
 
+describe("white balance limits", () => {
+  it("keeps gains within a believable colour cast", () => {
+    for (const g of whiteBalanceGains([200, 2, 2])) {
+      expect(g).toBeGreaterThanOrEqual(0.5);
+      expect(g).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("stays finite for a black reference", () => {
+    expect(whiteBalanceGains([0, 0, 0])).toEqual([1, 1, 1]);
+  });
+
+  it("returns no swatches for a fully transparent image", () => {
+    expect(extractPalette(new Uint8ClampedArray(40))).toEqual([]);
+  });
+});
+
 describe("valueLevels", () => {
   it("quantises lightness into equal bands", () => {
     expect(valueLevels([0, 0.2, 0.5, 0.8, 1], 3)).toEqual([0, 0, 1, 2, 2]);

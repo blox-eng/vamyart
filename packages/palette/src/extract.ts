@@ -131,10 +131,14 @@ export function extractPalette(rgba: Uint8ClampedArray, { k = 6, keepAccent = tr
 
 // Per-channel gains (linear light) that turn the tapped reference neutral grey
 // while keeping its brightness — corrects a phone photo's colour cast.
+// Tapping a dark or strongly coloured spot would ask for gains of 100× and blow out
+// the photo; a real colour cast never needs more than this either way.
+const MAX_GAIN = 2;
+
 export function whiteBalanceGains([r, g, b]: [number, number, number]): [number, number, number] {
   const lin = [r, g, b].map(srgbToLinear);
   const grey = (lin[0] + lin[1] + lin[2]) / 3;
-  return lin.map((c) => (c > 0 ? grey / c : 1)) as [number, number, number];
+  return lin.map((c) => (c > 0 && grey > 0 ? Math.min(MAX_GAIN, Math.max(1 / MAX_GAIN, grey / c)) : 1)) as [number, number, number];
 }
 
 export function applyGains(rgba: Uint8ClampedArray, gains: [number, number, number]): Uint8ClampedArray {

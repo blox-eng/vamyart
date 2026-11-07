@@ -768,7 +768,7 @@
     margin-top: 4px;
 }
 .paint-splashes:not([hidden]) {
-    animation: paint-palette-in 320ms var(--ease) both;
+    animation: paint-palette-in var(--dur-deliberate) var(--ease) both;
 }
 @keyframes paint-palette-in {
     from {
@@ -800,7 +800,8 @@
     outline-offset: 2px;
 }
 .paint-splash-note {
-    min-height: 3.2em;
+    /* A serif name line plus two recipe lines, so hovering never shifts the page. */
+    min-height: 4.25rem;
     margin-top: 8px;
     font-size: 12px;
     line-height: 1.5;

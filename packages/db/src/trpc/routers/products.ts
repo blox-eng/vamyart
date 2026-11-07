@@ -6,6 +6,7 @@ import { publicProducts } from "../../services/public-products";
 import { router, publicProcedure, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { products, productVariants, artworks, orders, auctions, certificates } from "../../schema";
+import { withoutPalette } from "../../services/public-palette";
 
 // Orders and auctions reference a variant with RESTRICT — deleting a variant they
 // point at would orphan financial/auction history, so block it (deactivate instead).
@@ -34,8 +35,8 @@ export const productsRouter = router({
       with: { artwork: true, variants: true },
     });
     // A trashed (soft-deleted) artwork must never surface on the public homepage hero.
-    if (product?.artwork?.deletedAt) return null;
-    return product;
+    if (!product || product.artwork?.deletedAt) return null;
+    return { ...product, artwork: product.artwork && withoutPalette(product.artwork) };
   }),
 
   getByArtworkSlug: publicProcedure
@@ -50,7 +51,7 @@ export const productsRouter = router({
         with: { variants: true },
       });
       if (!product) return null;
-      return { ...product, artwork };
+      return { ...product, artwork: withoutPalette(artwork) };
     }),
 
   setFeatured: protectedProcedure

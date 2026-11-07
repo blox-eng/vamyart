@@ -52,9 +52,23 @@ describe("requestCritique", () => {
     expect(await requestCritique({ ...input, fetchImpl })).toEqual({ read, costUsd: 0.0012 });
   });
 
-  it("asks for one name per swatch, in order", async () => {
-    const fetchImpl = fakeFetch({ choices: [{ message: { content: JSON.stringify({ ...read, swatchNames: ["only one"] }) } }] });
-    await expect(requestCritique({ ...input, fetchImpl })).rejects.toThrow(/swatch names/);
+  it("keeps a paid read when the model returns the wrong number of swatch names", async () => {
+    const few = fakeFetch({ choices: [{ message: { content: JSON.stringify({ ...read, swatchNames: ["only one"] }) } }] });
+    expect((await requestCritique({ ...input, fetchImpl: few })).read.swatchNames).toEqual(["only one", ""]);
+    const many = fakeFetch({ choices: [{ message: { content: JSON.stringify({ ...read, swatchNames: ["a", "b", "c"] }) } }] });
+    expect((await requestCritique({ ...input, fetchImpl: many })).read.swatchNames).toEqual(["a", "b"]);
+  });
+
+  it("cleans swatch names to what the palette editor can save", async () => {
+    const long = "x".repeat(200);
+    const messy = fakeFetch({ choices: [{ message: { content: JSON.stringify({ ...read, swatchNames: [`  ${long}  `, 42] }) } }] });
+    const { read: cleaned } = await requestCritique({ ...input, fetchImpl: messy });
+    expect(cleaned.swatchNames).toEqual(["x".repeat(80), ""]);
+  });
+
+  it("surfaces non-JSON provider errors", async () => {
+    const fetchImpl = vi.fn(async () => new Response("<html>Bad Gateway</html>", { status: 502, statusText: "Bad Gateway" }));
+    await expect(requestCritique({ ...input, fetchImpl })).rejects.toThrow(/502.*Bad Gateway/);
   });
 
   it("accepts JSON wrapped in a markdown fence", async () => {

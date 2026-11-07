@@ -4,3 +4,4 @@ export { extractPalette, whiteBalanceGains, applyGains, lightnessAndChroma, valu
 export { solveRecipe, mixParts } from "./mix";
 export { measure, describeMeasurements, PLACES, MAP, type Measurements } from "./measure";
 export { splashShape, recipeText, isPale } from "./display";
+export { pigmentCodes, PIGMENT_CODE } from "./pigments";

@@ -43,34 +43,50 @@ function percentile(sorted: Float32Array, p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
 }
 
+// Index of the extreme value among cells that hold pixels; empty cells (tiny or
+// mostly transparent images) say nothing about the picture.
+function extreme(values: number[], cells: { count: number }[], pick: (a: number, b: number) => boolean): number {
+  let best = -1;
+  values.forEach((v, i) => {
+    if (cells[i].count && (best < 0 || pick(v, values[best]))) best = i;
+  });
+  return Math.max(0, best);
+}
+
 export function measure(rgba: Uint8ClampedArray, width: number): Measurements {
-  const n = rgba.length / 4;
-  const height = n / width;
-  const L = new Float32Array(n);
-  const C = new Float32Array(n);
-  const warmth = new Float32Array(n);
+  const pixels = rgba.length / 4;
+  const height = pixels / width;
+  const L: number[] = [];
+  const C: number[] = [];
+  const warmth: number[] = [];
   const cells = Array.from({ length: GRID * GRID }, () => ({ sum: 0, sq: 0, chroma: 0, warmth: 0, count: 0 }));
   const map = Array.from({ length: MAP * MAP }, () => ({ sum: 0, count: 0 }));
 
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < pixels; i++) {
+    // Transparent pixels arrive from a canvas as 0,0,0,0; they are not black paint.
+    if (rgba[i * 4 + 3] < 128) continue;
     const [l, a, b] = oklab(rgba[i * 4], rgba[i * 4 + 1], rgba[i * 4 + 2]);
-    L[i] = l;
-    C[i] = Math.hypot(a, b);
-    warmth[i] = a * WARM_AXIS[0] + b * WARM_AXIS[1];
+    const chroma = Math.hypot(a, b);
+    const w = a * WARM_AXIS[0] + b * WARM_AXIS[1];
+    L.push(l);
+    C.push(chroma);
+    warmth.push(w);
     const fy = Math.floor(i / width) / height;
     const fx = (i % width) / width;
     const c = cells[Math.min(GRID - 1, Math.floor(fy * GRID)) * GRID + Math.min(GRID - 1, Math.floor(fx * GRID))];
     c.sum += l;
     c.sq += l * l;
-    c.chroma += C[i];
-    c.warmth += warmth[i];
+    c.chroma += chroma;
+    c.warmth += w;
     c.count++;
     const m = map[Math.min(MAP - 1, Math.floor(fy * MAP)) * MAP + Math.min(MAP - 1, Math.floor(fx * MAP))];
     m.sum += l;
     m.count++;
   }
 
-  const sortedL = L.slice().sort();
+  const n = Math.max(1, L.length);
+  const sortedL = Float32Array.from(L).sort();
+  const meanL = L.reduce((s, v) => s + v, 0) / n;
   const shares: [number, number, number] = [0, 0, 0];
   for (const l of L) shares[Math.min(2, Math.floor(l * 3))]++;
 
@@ -78,7 +94,7 @@ export function measure(rgba: Uint8ClampedArray, width: number): Measurements {
   const spread = cells.map((c) => (c.count ? c.sq / c.count - (c.sum / c.count) ** 2 : 0));
   const cellChroma = cells.map((c) => (c.count ? c.chroma / c.count : 0));
   const meanChroma = C.reduce((s, v) => s + v, 0) / n;
-  const strongest = cellChroma.indexOf(Math.max(...cellChroma));
+  const strongest = extreme(cellChroma, cells, (a, b) => a > b);
 
   let chromatic = 0;
   let tinted = 0;
@@ -89,7 +105,7 @@ export function measure(rgba: Uint8ClampedArray, width: number): Measurements {
   let darks = 0;
   const darkBelow = percentile(sortedL, 1 / 3);
   const lightAbove = percentile(sortedL, 2 / 3);
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < L.length; i++) {
     if (C[i] >= NEUTRAL_CHROMA) chromatic++;
     if (C[i] >= TINT_CHROMA) {
       tinted++;
@@ -99,24 +115,25 @@ export function measure(rgba: Uint8ClampedArray, width: number): Measurements {
     if (L[i] <= darkBelow) { darkWarmth += warmth[i]; darks++; }
   }
   const cellWarmth = cells.map((c) => (c.count ? c.warmth / c.count : 0));
-  const warmest = cellWarmth.indexOf(Math.max(...cellWarmth));
-  const coolest = cellWarmth.indexOf(Math.min(...cellWarmth));
+  const warmest = extreme(cellWarmth, cells, (a, b) => a > b);
+  const coolest = extreme(cellWarmth, cells, (a, b) => a < b);
   const temperatureVaries = cellWarmth[warmest] - cellWarmth[coolest] > SAME_TEMPERATURE;
   const warmthGap = lightWarmth / Math.max(1, lights) - darkWarmth / Math.max(1, darks);
 
   return {
     value: {
-      mean: round(sortedL.reduce((s, v) => s + v, 0) / n),
-      low: round(percentile(sortedL, 0.05)),
-      high: round(percentile(sortedL, 0.95)),
+      mean: round(meanL),
+      low: round(percentile(sortedL, 0.05) ?? 0),
+      high: round(percentile(sortedL, 0.95) ?? 0),
       shares: shares.map((s) => round(s / n)) as [number, number, number],
+      // An empty map cell takes the picture's mean rather than reading as black.
       grid: Array.from({ length: MAP }, (_, r) =>
         Array.from({ length: MAP }, (_, c) => {
           const x = map[r * MAP + c];
-          return x.count ? Math.round((100 * x.sum) / x.count) : 0;
+          return Math.round(100 * (x.count ? x.sum / x.count : meanL));
         })
       ),
-      contrastAt: place(spread.indexOf(Math.max(...spread))),
+      contrastAt: place(extreme(spread, cells, (a, b) => a > b)),
     },
     chroma: {
       mean: round(meanChroma, 3),
@@ -141,7 +158,7 @@ export function describeMeasurements(m: Measurements): string {
   const [dark, mid, light] = m.value.shares;
   return [
     `Value: ${key}; lightness runs ${Math.round(m.value.low * 100)}–${Math.round(m.value.high * 100)} on a 0 (black) to 100 (white) scale. Darks ${pct(dark)}, mid-tones ${pct(mid)}, lights ${pct(light)} of the canvas.`,
-    `Value map, mean lightness in a 5×5 grid, rows top to bottom: ${m.value.grid.map((row) => row.join(" ")).join(" / ")}.`,
+    `Value map, mean lightness in a ${MAP}×${MAP} grid, rows top to bottom: ${m.value.grid.map((row) => row.join(" ")).join(" / ")}.`,
     `Strongest value contrast: ${m.value.contrastAt}.`,
     `Chroma: ${chroma}; ${pct(m.chroma.neutralShare)} of the canvas is near-neutral.${m.chroma.strongestAt ? ` Colour concentrates ${m.chroma.strongestAt === "centre" ? "in the centre" : `at the ${m.chroma.strongestAt}`}.` : ""}`,
     m.temperature.warmShare === null

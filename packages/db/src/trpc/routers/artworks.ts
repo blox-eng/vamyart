@@ -8,6 +8,7 @@ import { isPieceSold, pieceSoldAt } from "../../services/variant-sold";
 import { orientationOf, parseDimensionsCm } from "../../services/dimensions";
 import { publicProducts } from "../../services/public-products";
 import { artworks, products, productVariants, orders, auctions } from "../../schema";
+import { publicPalette } from "../../services/public-palette";
 
 export function slugify(input: string): string {
   return input
@@ -273,7 +274,7 @@ export const artworksRouter = router({
         description: a.description,
         seoTitle: a.seoTitle,
         seoDescription: a.seoDescription,
-        palette: a.showPalette ? a.palette : null,
+        palette: publicPalette(a.palette, a.showPalette),
         updatedAt: a.updatedAt.toISOString(),
         primaryImage: primary
           ? {

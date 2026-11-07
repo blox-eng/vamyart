@@ -3,6 +3,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { router, protectedProcedure } from "../index";
 import { db } from "../../client";
 import { paints } from "../../schema";
+import { PIGMENT_CODE } from "@vamy/palette";
 
 export const paintsRouter = router({
   list: protectedProcedure.query(() =>
@@ -20,7 +21,7 @@ export const paintsRouter = router({
     .input(z.object({
       brand: z.string().trim().min(1).max(80),
       name: z.string().trim().min(1).max(80),
-      pigments: z.array(z.string().trim().regex(/^P[A-Z]{1,2}\d+(:\d+)?$/)).max(4),
+      pigments: z.array(z.string().trim().regex(PIGMENT_CODE)).max(4),
       hex: z.string().regex(/^#[0-9a-f]{6}$/),
     }))
     .mutation(async ({ input }) => {

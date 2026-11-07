@@ -53,3 +53,11 @@ describe('PaintSplashes', () => {
         expect(renderToString(<PaintSplashes palette={palette} />)).not.toContain('color-mix');
     });
 });
+
+describe('PaintSplashes sizes', () => {
+    it('never draws a smear past the largest size, even when every area is tiny', () => {
+        const tiny = { swatches: [{ hex: '#1f2b7a', name: 'a', area: 0.001, recipe: null }, { hex: '#c4963d', name: 'b', area: 0, recipe: null }] };
+        const widths = [...renderToString(<PaintSplashes palette={tiny} />).matchAll(/<svg width="([\d.]+)"/g)].map((m) => Number(m[1]));
+        expect(Math.max(...widths)).toBeLessThanOrEqual(2.4 * 19 + 0.001);
+    });
+});

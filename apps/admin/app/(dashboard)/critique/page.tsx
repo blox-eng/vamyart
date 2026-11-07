@@ -6,9 +6,14 @@ import { NewCritique } from "./NewCritique";
 import { PaintsPanel } from "./PaintsPanel";
 import { RunView } from "./RunView";
 
+const LIST_POLL_MS = 5000;
+
 export default function CritiquePage() {
   const utils = trpc.useUtils();
-  const { data: runs } = trpc.critique.list.useQuery();
+  // Keep the list's statuses current while any run is still working.
+  const { data: runs } = trpc.critique.list.useQuery(undefined, {
+    refetchInterval: (q) => (q.state.data?.some((r) => r.status === "queued" || r.status === "running") ? LIST_POLL_MS : false),
+  });
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
@@ -35,8 +40,8 @@ export default function CritiquePage() {
                 <button
                   type="button"
                   onClick={() => setSelected(r.id)}
-                  aria-current={selected === r.id}
-                  className="flex w-full items-center gap-3 p-3 text-left hover:bg-hover"
+                  aria-current={selected === r.id ? "true" : undefined}
+                  className={`flex w-full items-center gap-3 p-3 text-left hover:bg-hover ${selected === r.id ? "bg-accent-wash" : ""}`}
                 >
                   <span className="flex h-5 w-24 shrink-0 overflow-hidden rounded" aria-hidden>
                     {r.palette.swatches.map((s, i) => (
@@ -44,7 +49,7 @@ export default function CritiquePage() {
                     ))}
                   </span>
                   <span className="flex-1 min-w-0 truncate text-sm">{r.prompt || "No question"}</span>
-                  <span className="text-xs text-faint">
+                  <span className="text-xs text-muted">
                     {r.status === "done" ? new Date(r.createdAt).toLocaleDateString() : r.status}
                   </span>
                 </button>

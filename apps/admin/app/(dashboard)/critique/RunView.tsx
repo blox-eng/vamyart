@@ -14,7 +14,7 @@ export function RunView({ id }: { id: string }) {
   );
 
   if (error) return <p className="text-sm text-neg">{error.message}</p>;
-  if (!run) return <p className="text-sm text-faint">Loading…</p>;
+  if (!run) return <p className="text-sm text-muted">Loading…</p>;
 
   const names = run.result?.swatchNames ?? [];
   const swatches = run.palette.swatches.map((s, i) => ({ ...s, name: s.name || names[i] || "" }));
@@ -33,12 +33,12 @@ export function RunView({ id }: { id: string }) {
           <dl className="space-y-3 text-sm">
             {(["colour", "value", "composition"] as const).map((k) => (
               <div key={k}>
-                <dt className="text-xs uppercase tracking-widest text-faint">{k}</dt>
+                <dt className="text-xs uppercase tracking-widest text-muted">{k}</dt>
                 <dd className="mt-1">{run.result![k]}</dd>
               </div>
             ))}
           </dl>
-          <p className="text-xs text-faint">
+          <p className="text-xs text-muted">
             {run.model}
             {run.costUsd && ` · $${Number(run.costUsd).toFixed(4)}`}
           </p>
@@ -64,10 +64,16 @@ const STUDIES: { label: string; draw: (c: HTMLCanvasElement, px: Pixels) => void
 function Studies({ imageUrl, gains }: { imageUrl: string; gains: [number, number, number] | null }) {
   const canvases = useRef<(HTMLCanvasElement | null)[]>([]);
   const [failed, setFailed] = useState(false);
+  // Every poll signs a new URL for the same photo; keep the first one so the
+  // image isn't downloaded again every two seconds.
+  const path = imageUrl.split("?")[0];
+  const signed = useRef({ path, url: imageUrl });
+  if (signed.current.path !== path) signed.current = { path, url: imageUrl };
+  const url = signed.current.url;
 
   useEffect(() => {
     let cancelled = false;
-    loadPixels(imageUrl)
+    loadPixels(url)
       .then((raw) => {
         if (cancelled) return;
         const px = withWhiteBalance(raw, gains);
@@ -75,15 +81,13 @@ function Studies({ imageUrl, gains }: { imageUrl: string; gains: [number, number
       })
       .catch(() => setFailed(true));
     return () => { cancelled = true; };
-    // The signed URL changes on every refetch; the image behind it doesn't.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imageUrl.split("?")[0], gains]);
+  }, [url, gains]);
 
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-light">Studies</h2>
       {failed && <p className="text-sm text-neg">Could not load the photo for the studies.</p>}
-      <img src={imageUrl} alt="The painting" className="max-h-[60vh] w-auto" />
+      <img src={url} alt="The painting" className="max-h-[60vh] w-auto" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {STUDIES.map((s, i) => (
           <figure key={s.label}>

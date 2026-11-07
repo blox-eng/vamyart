@@ -1,5 +1,3 @@
-import type { Recipe } from "./types";
-
 // Kept free of culori and spectral.js: the website bundles this file.
 
 const STEPS = 9;
@@ -58,7 +56,7 @@ export function isPale(hex: string): boolean {
 }
 
 // "3 parts Titanium White, 1 part Yellow Ochre and a touch of Ivory Black".
-export function recipeText(recipe: Recipe): string {
+export function recipeText(recipe: { parts: { name: string; parts: number }[] }): string {
   const [first, ...rest] = recipe.parts;
   if (!first) return "";
   if (rest.length === 0) return `${first.name}, straight from the tube`;

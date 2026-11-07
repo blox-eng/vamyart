@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@vamy/db/trpc";
+import { pigmentCodes } from "@vamy/palette";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/components/ui/toast";
 
@@ -17,7 +18,10 @@ export function PaintsPanel() {
   const toast = useToast();
   const utils = trpc.useUtils();
   const { data: paints } = trpc.paints.list.useQuery();
-  const setOwned = trpc.paints.setOwned.useMutation({ onSuccess: () => utils.paints.list.invalidate() });
+  const setOwned = trpc.paints.setOwned.useMutation({
+    onSuccess: () => utils.paints.list.invalidate(),
+    onError: (e) => toast(`Couldn't update your tubes: ${e.message}`, "error"),
+  });
   const create = trpc.paints.create.useMutation({
     onSuccess: () => {
       utils.paints.list.invalidate();
@@ -45,6 +49,7 @@ export function PaintsPanel() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by name, brand or pigment (PB29)"
+        aria-label="Search your paints"
         className="mt-3 w-full border px-3 py-2 rounded text-sm"
       />
       <ul className="mt-3 max-h-80 overflow-y-auto divide-y">
@@ -52,12 +57,13 @@ export function PaintsPanel() {
           <li key={p.id} className="flex items-center gap-3 py-2">
             <span className="h-6 w-6 shrink-0 rounded-full border" style={{ background: p.hex }} aria-hidden />
             <span className="flex-1 min-w-0 text-sm">
-              {p.name} <span className="text-xs text-faint">{p.brand} · {p.pigments.join(", ")}</span>
+              {p.name} <span className="text-xs text-muted">{p.brand} · {p.pigments.join(", ")}</span>
             </span>
             <label className="flex items-center gap-2 text-xs">
               <input
                 type="checkbox"
                 checked={p.owned}
+                disabled={setOwned.isPending && setOwned.variables?.id === p.id}
                 onChange={(e) => setOwned.mutate({ id: p.id, owned: e.target.checked })}
               />
               I own it
@@ -73,14 +79,14 @@ export function PaintsPanel() {
           create.mutate({
             brand: draft.brand,
             name: draft.name,
-            pigments: draft.pigments.split(/[\s,]+/).filter(Boolean).map((p) => p.toUpperCase()),
+            pigments: pigmentCodes(draft.pigments),
             hex: draft.hex,
           });
         }}
       >
-        <input required placeholder="Brand" value={draft.brand} onChange={(e) => setDraft({ ...draft, brand: e.target.value })} className="border px-3 py-2 rounded text-sm" />
-        <input required placeholder="Colour name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border px-3 py-2 rounded text-sm" />
-        <input placeholder="Pigments" value={draft.pigments} onChange={(e) => setDraft({ ...draft, pigments: e.target.value })} className="border px-3 py-2 rounded text-sm" />
+        <input required placeholder="Brand" aria-label="Brand" value={draft.brand} onChange={(e) => setDraft({ ...draft, brand: e.target.value })} className="border px-3 py-2 rounded text-sm" />
+        <input required placeholder="Colour name" aria-label="Colour name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border px-3 py-2 rounded text-sm" />
+        <input placeholder="Pigments, e.g. PB29 PBk9" aria-label="Pigment codes" value={draft.pigments} onChange={(e) => setDraft({ ...draft, pigments: e.target.value })} className="border px-3 py-2 rounded text-sm" />
         <input type="color" aria-label="Tube colour" value={draft.hex} onChange={(e) => setDraft({ ...draft, hex: e.target.value })} className="h-10 w-full rounded border" />
         <button type="submit" disabled={create.isPending} className="border px-3 min-h-10 rounded text-sm disabled:opacity-50">Add tube</button>
       </form>

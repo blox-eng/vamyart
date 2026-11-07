@@ -18,8 +18,9 @@ export async function loadPixels(source: Blob | string): Promise<Pixels> {
     bitmap = await createImageBitmap(source, { imageOrientation: "from-image" });
   }
   const scale = Math.min(1, ANALYSIS_EDGE / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
+  // At least one pixel each way: a sliver-thin image would otherwise round to 0.
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -38,8 +39,13 @@ function paint(canvas: HTMLCanvasElement, px: Pixels, shade: (i: number) => [num
   canvas.height = px.height;
   const ctx = canvas.getContext("2d")!;
   const out = ctx.createImageData(px.width, px.height);
+  const d = out.data;
   for (let i = 0; i < px.width * px.height; i++) {
-    out.data.set([...shade(i), 255], i * 4);
+    const [r, g, b] = shade(i);
+    d[i * 4] = r;
+    d[i * 4 + 1] = g;
+    d[i * 4 + 2] = b;
+    d[i * 4 + 3] = 255;
   }
   ctx.putImageData(out, 0, 0);
 }

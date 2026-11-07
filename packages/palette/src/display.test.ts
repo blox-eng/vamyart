@@ -39,7 +39,7 @@ describe("recipeText", () => {
   });
 
   it("says when a colour comes straight from the tube", () => {
-    expect(recipeText({ hex: "#000000", deltaE: 0, parts: [part("Ivory Black", 1)] })).toBe("Ivory Black, straight from the tube");
+    expect(recipeText({ parts: [part("Ivory Black", 1)] })).toBe("Ivory Black, straight from the tube");
   });
 });
 

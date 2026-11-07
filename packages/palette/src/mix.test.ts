@@ -36,6 +36,13 @@ describe("solveRecipe", () => {
     expect(r.deltaE).toBeLessThan(4);
   });
 
+  it("keeps three-tube recipes within four parts per tube", () => {
+    for (const target of ["#5a6b3c", "#8a5a44", "#3d4a5e", "#b8a27a"]) {
+      const r = solveRecipe(target, paints)!;
+      expect(Math.max(...r.parts.map((p) => p.parts))).toBeLessThanOrEqual(4);
+    }
+  });
+
   it("returns null with no paints to mix from", () => {
     expect(solveRecipe("#123456", [])).toBeNull();
   });

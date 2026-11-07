@@ -59,3 +59,27 @@ describe("describeMeasurements", () => {
     expect(text).toContain("100% leans warm");
   });
 });
+
+describe("measure edge cases", () => {
+  it("ignores transparent pixels instead of counting them as black", () => {
+    const rgba = paint(10, 10, () => "#cccccc");
+    for (let i = 0; i < 50; i++) rgba[i * 4 + 3] = 0; // top half transparent (0,0,0,0 from a canvas)
+    rgba.fill(0, 0, 50 * 4);
+    const m = measure(rgba, 10);
+    expect(m.value.low).toBeGreaterThan(0.7);
+    expect(m.value.shares[0]).toBe(0);
+  });
+
+  it("leaves cells with no pixels out of the map and the places", () => {
+    const m = measure(paint(1, 1, () => "#7d8a8f"), 1);
+    expect(m.value.contrastAt).toBe("top left");
+    expect(m.temperature.coolestAt).toBeNull();
+    expect(m.value.grid.flat().every(Number.isFinite)).toBe(true);
+  });
+
+  it("returns finite numbers for an empty or fully transparent image", () => {
+    const m = measure(new Uint8ClampedArray(16), 2);
+    expect(JSON.stringify(m)).not.toContain("null,\"high");
+    expect([m.value.mean, m.value.low, m.value.high, m.chroma.mean, m.chroma.neutralShare].every(Number.isFinite)).toBe(true);
+  });
+});

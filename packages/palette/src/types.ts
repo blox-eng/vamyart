@@ -27,3 +27,13 @@ export type Swatch = {
 };
 
 export type Palette = { swatches: Swatch[] };
+
+// What the public site gets: no paint ids or ΔE, which are studio internals.
+export type PublicSwatch = {
+  hex: string;
+  name: string;
+  area: number;
+  recipe: { parts: Pick<RecipePart, "name" | "pigments" | "parts">[] } | null;
+};
+
+export type PublicPalette = { swatches: PublicSwatch[] };
