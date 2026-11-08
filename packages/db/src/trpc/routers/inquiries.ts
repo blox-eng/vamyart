@@ -7,6 +7,8 @@ import { upsertContact } from "../../services/upsert-contact";
 import { trackEvent } from "../../services/umami";
 import { Resend } from "resend";
 import { escapeHtml } from "../../utils/escape-html";
+import { subscribeToButtondown } from "../../services/buttondown";
+import { assertHuman } from "../human";
 
 export const inquiriesRouter = router({
   create: publicProcedure
@@ -16,11 +18,16 @@ export const inquiriesRouter = router({
         email: z.string().email(),
         pieceInterest: z.string().min(1),
         message: z.string().optional(),
+        newsletterOptIn: z.boolean().optional(),
+        locale: z.string().optional(),
+        turnstileToken: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      await assertHuman(input.turnstileToken, ctx.clientIp);
+      const { newsletterOptIn, locale, turnstileToken: _token, ...inquiry } = input;
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await db.insert(inquiries).values(input);
+      await db.insert(inquiries).values(inquiry);
       void trackEvent("inquiry.submitted", { piece: input.pieceInterest });
       try {
         await upsertContact(db, { email: input.email, name: input.name });
@@ -46,6 +53,14 @@ export const inquiriesRouter = router({
         subject: "We received your inquiry",
         html: `<p>Hi ${escapeHtml(input.name)}, thank you for reaching out. We'll be in touch soon.</p>`,
       });
+
+      if (newsletterOptIn) {
+        try {
+          await subscribeToButtondown({ email: input.email, source: "inquiry", locale, ipAddress: ctx.clientIp });
+        } catch (err) {
+          console.error("[inquiries] newsletter opt-in failed", err);
+        }
+      }
 
       return { success: true };
     }),

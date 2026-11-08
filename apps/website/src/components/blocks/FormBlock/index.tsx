@@ -6,6 +6,7 @@ import { getComponent } from '../../components-registry';
 import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to-class-names';
 import SubmitButtonFormControl from './SubmitButtonFormControl';
 import { trpc } from '../../../lib/trpc';
+import { Turnstile } from '../../atoms/Turnstile';
 
 export default function FormBlock(props) {
     const formRef = React.createRef<HTMLFormElement>();
@@ -14,9 +15,11 @@ export default function FormBlock(props) {
     const { fields = [], elementId, submitButton, className, styles = {}, 'data-sb-field-path': fieldPath } = props;
 
     const createInquiry = trpc.inquiries.create.useMutation();
-    const subscribeNewsletter = trpc.newsletter.subscribe.useMutation();
     const router = useRouter();
     const [marketingOptIn, setMarketingOptIn] = React.useState(false);
+    const [token, setToken] = React.useState('');
+    const [attempt, setAttempt] = React.useState(0);
+    const [errorMessage, setErrorMessage] = React.useState('');
 
     // Pre-fill form fields from URL parameters
     React.useEffect(() => {
@@ -34,6 +37,11 @@ export default function FormBlock(props) {
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (!token) {
+            setSubmitStatus('error');
+            setErrorMessage("Still checking you're not a bot. Try again in a moment.");
+            return;
+        }
         setIsSubmitting(true);
         setSubmitStatus('idle');
 
@@ -45,21 +53,18 @@ export default function FormBlock(props) {
                 email: String(data.get('email') ?? ''),
                 pieceInterest: String(data.get('Piece') ?? ''),
                 message: String(data.get('message') ?? '') || undefined,
+                newsletterOptIn: marketingOptIn,
+                locale: router.locale ?? 'en',
+                turnstileToken: token,
             });
-            if (marketingOptIn) {
-                void subscribeNewsletter
-                    .mutateAsync({
-                        email: String(data.get('email') ?? ''),
-                        source: 'inquiry',
-                        locale: router.locale ?? 'en',
-                    })
-                    .catch((err) => console.error('[inquiry] newsletter opt-in failed', err));
-            }
             setSubmitStatus('success');
             formRef.current?.reset();
-        } catch {
+        } catch (err) {
             setSubmitStatus('error');
+            setErrorMessage(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
         } finally {
+            setToken('');
+            setAttempt((n) => n + 1);
             setIsSubmitting(false);
         }
     }
@@ -95,7 +100,7 @@ export default function FormBlock(props) {
             )}
             {submitStatus === 'error' && (
                 <div className="mb-6 p-4 bg-neg/10 text-neg">
-                    Something went wrong. Please try again.
+                    {errorMessage}
                 </div>
             )}
             <div
@@ -122,6 +127,7 @@ export default function FormBlock(props) {
                     <span className="text-muted">Unsubscribe anytime. We won&apos;t share your email.</span>
                 </span>
             </label>
+            <Turnstile key={attempt} onToken={setToken} />
             {submitButton && (
                 <div className={classNames('mt-8', 'flex', mapStyles({ justifyContent: styles?.self?.justifyContent ?? 'flex-start' }))}>
                     <SubmitButtonFormControl {...submitButton} disabled={isSubmitting} {...(fieldPath && { 'data-sb-field-path': '.submitButton' })} />

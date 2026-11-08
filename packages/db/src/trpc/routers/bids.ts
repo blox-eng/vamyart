@@ -7,6 +7,8 @@ import { upsertContact } from "../../services/upsert-contact";
 import { trackEvent } from "../../services/umami";
 import { Resend } from "resend";
 import { escapeHtml } from "../../utils/escape-html";
+import { subscribeToButtondown } from "../../services/buttondown";
+import { assertHuman } from "../human";
 
 export function validateBid({
   amount,
@@ -39,10 +41,14 @@ export const bidsRouter = router({
         bidderName: z.string().min(1),
         bidderEmail: z.string().email(),
         amount: z.number().positive(),
-        ipAddress: z.string().optional(),
+        newsletterOptIn: z.boolean().optional(),
+        locale: z.string().optional(),
+        turnstileToken: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      await assertHuman(input.turnstileToken, ctx.clientIp);
+
       // Get previous highest bidder before the transaction (read-only, no lock needed)
       const previousTopBid = await db.query.bids.findFirst({
         where: eq(bids.auctionId, input.auctionId),
@@ -80,7 +86,7 @@ export const bidsRouter = router({
             bidderName: input.bidderName,
             bidderEmail: input.bidderEmail,
             amount: String(input.amount),
-            ipAddress: input.ipAddress,
+            ipAddress: ctx.clientIp,
           })
           .returning();
 
@@ -120,15 +126,19 @@ export const bidsRouter = router({
         html: `<p><strong>${escapeHtml(input.bidderName)}</strong> bid €${input.amount}. Total bids: ${auction.bidCount + 1}.</p>`,
       });
 
-      return { success: true, bidId: newBid.id };
-    }),
+      if (input.newsletterOptIn) {
+        try {
+          await subscribeToButtondown({
+            email: input.bidderEmail,
+            source: "bid",
+            locale: input.locale,
+            ipAddress: ctx.clientIp,
+          });
+        } catch (err) {
+          console.error("[bids] newsletter opt-in failed", err);
+        }
+      }
 
-  listByAuction: publicProcedure
-    .input(z.object({ auctionId: z.string().uuid() }))
-    .query(async ({ input }) => {
-      return db.query.bids.findMany({
-        where: eq(bids.auctionId, input.auctionId),
-        orderBy: [desc(bids.amount)],
-      });
+      return { success: true, bidId: newBid.id };
     }),
 });

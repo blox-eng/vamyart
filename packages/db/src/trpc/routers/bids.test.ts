@@ -1,13 +1,16 @@
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("../../client", () => ({ db: {} }));
+vi.mock("../../services/turnstile", () => ({ verifyHuman: vi.fn() }));
 vi.mock("resend", () => ({
   Resend: vi.fn().mockImplementation(() => ({
     emails: { send: vi.fn() },
   })),
 }));
 
-import { validateBid } from "./bids";
+import { validateBid, bidsRouter } from "./bids";
+import { verifyHuman } from "../../services/turnstile";
+import { createCaller } from "../root";
 
 describe("bid validation", () => {
   const future = new Date(Date.now() + 1000 * 60 * 60); // 1 hour from now
@@ -67,5 +70,30 @@ describe("bid validation", () => {
       deadline: future,
     });
     expect(result.valid).toBe(true);
+  });
+});
+
+describe("bids.place bot check (#61)", () => {
+  it("refuses a bot before reading the auction or emailing the outbid bidder", async () => {
+    vi.mocked(verifyHuman).mockResolvedValue(false);
+    const caller = createCaller({ db: {} as never, userId: null, clientIp: "198.51.100.1" });
+
+    await expect(
+      caller.bids.place({
+        auctionId: "00000000-0000-4000-8000-000000000000",
+        bidderName: "Bot",
+        bidderEmail: "victim@example.com",
+        amount: 5000,
+        turnstileToken: "forged",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(verifyHuman).toHaveBeenCalledWith("forged", "198.51.100.1");
+  });
+});
+
+describe("bids router privacy", () => {
+  it("exposes no public way to read bids, which hold bidder emails and IPs", () => {
+    const procedures = Object.keys(bidsRouter._def.procedures);
+    expect(procedures).toEqual(["place"]);
   });
 });

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { trpc } from '../../../lib/trpc';
+import { Turnstile } from '../../atoms/Turnstile';
 
 export function BidModal({
     auctionId,
@@ -24,27 +25,33 @@ export function BidModal({
     const [error, setError] = useState('');
 
     const placeBid = trpc.bids.place.useMutation();
-    const subscribeNewsletter = trpc.newsletter.subscribe.useMutation();
     const router = useRouter();
     const [marketingOptIn, setMarketingOptIn] = useState(false);
+    const [token, setToken] = useState('');
+    const [attempt, setAttempt] = useState(0);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
+        if (!token) {
+            setError("Still checking you're not a bot. Try again in a moment.");
+            return;
+        }
         try {
-            await placeBid.mutateAsync({ auctionId, bidderName: name, bidderEmail: email, amount });
-            if (marketingOptIn) {
-                void subscribeNewsletter
-                    .mutateAsync({
-                        email,
-                        source: 'bid',
-                        locale: router.locale ?? 'en',
-                    })
-                    .catch((err) => console.error('[bid] newsletter opt-in failed', err));
-            }
+            await placeBid.mutateAsync({
+                auctionId,
+                bidderName: name,
+                bidderEmail: email,
+                amount,
+                newsletterOptIn: marketingOptIn,
+                locale: router.locale ?? 'en',
+                turnstileToken: token,
+            });
             onSuccess();
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Something went wrong');
+            setToken('');
+            setAttempt((n) => n + 1);
         }
     }
 
@@ -69,6 +76,7 @@ export function BidModal({
                             <span className="text-muted">Unsubscribe anytime.</span>
                         </span>
                     </label>
+                    <Turnstile key={attempt} onToken={setToken} />
                     {error && <p className="text-sm text-neg">{error}</p>}
                     <div className="flex gap-3 pt-2">
                         <button type="button" onClick={onClose} className="flex-1 border px-4 py-2 text-sm">Cancel</button>
