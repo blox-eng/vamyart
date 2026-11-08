@@ -141,13 +141,4 @@ export const bidsRouter = router({
 
       return { success: true, bidId: newBid.id };
     }),
-
-  listByAuction: publicProcedure
-    .input(z.object({ auctionId: z.string().uuid() }))
-    .query(async ({ input }) => {
-      return db.query.bids.findMany({
-        where: eq(bids.auctionId, input.auctionId),
-        orderBy: [desc(bids.amount)],
-      });
-    }),
 });

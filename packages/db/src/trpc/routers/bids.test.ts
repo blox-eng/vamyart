@@ -8,7 +8,7 @@ vi.mock("resend", () => ({
   })),
 }));
 
-import { validateBid } from "./bids";
+import { validateBid, bidsRouter } from "./bids";
 import { verifyHuman } from "../../services/turnstile";
 import { createCaller } from "../root";
 
@@ -88,5 +88,12 @@ describe("bids.place bot check (#61)", () => {
       }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(verifyHuman).toHaveBeenCalledWith("forged", "198.51.100.1");
+  });
+});
+
+describe("bids router privacy", () => {
+  it("exposes no public way to read bids, which hold bidder emails and IPs", () => {
+    const procedures = Object.keys(bidsRouter._def.procedures);
+    expect(procedures).toEqual(["place"]);
   });
 });
