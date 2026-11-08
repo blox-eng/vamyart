@@ -9,6 +9,7 @@ export interface SubscribeInput {
   email: string;
   source: NewsletterSource;
   locale?: string;
+  ipAddress?: string | null;
 }
 
 export interface SubscribeResult {
@@ -17,7 +18,7 @@ export interface SubscribeResult {
 
 export async function subscribeToButtondown(input: SubscribeInput): Promise<SubscribeResult> {
   const email = input.email.trim().toLowerCase();
-  const { source, locale } = input;
+  const { source, locale, ipAddress } = input;
 
   await db
     .insert(newsletterSubscribers)
@@ -55,6 +56,7 @@ export async function subscribeToButtondown(input: SubscribeInput): Promise<Subs
         email_address: email,
         tags: [source],
         metadata: { source, ...(locale ? { locale } : {}) },
+        ...(ipAddress ? { ip_address: ipAddress } : {}),
       }),
     });
 

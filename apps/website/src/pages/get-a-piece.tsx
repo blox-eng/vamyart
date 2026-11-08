@@ -9,6 +9,7 @@ import LazyImage from '../components/atoms/LazyImage';
 import { absoluteUrl, resolveSiteUrl } from '../utils/seo-utils';
 import { buildCommissionServiceJsonLd } from '../utils/structured-data';
 import JsonLd from '../components/atoms/JsonLd';
+import { Turnstile } from '../components/atoms/Turnstile';
 
 const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
@@ -43,6 +44,9 @@ export default function GetAPiece({ site }: { site: any }) {
     const [message, setMessage] = React.useState('');
     const [terms, setTerms] = React.useState(false);
     const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = React.useState('');
+    const [token, setToken] = React.useState('');
+    const [attempt, setAttempt] = React.useState(0);
 
     // Pre-fill piece field with artwork title when data arrives
     React.useEffect(() => {
@@ -61,12 +65,26 @@ export default function GetAPiece({ site }: { site: any }) {
             form.reportValidity();
             return;
         }
+        if (!token) {
+            setStatus('error');
+            setErrorMessage("Still checking you're not a bot. Try again in a moment.");
+            return;
+        }
         setStatus('idle');
         try {
-            await createInquiry.mutateAsync({ name, email, pieceInterest: piece, message: message || undefined });
+            await createInquiry.mutateAsync({
+                name,
+                email,
+                pieceInterest: piece,
+                message: message || undefined,
+                turnstileToken: token,
+            });
             setStatus('success');
-        } catch {
+        } catch (err) {
             setStatus('error');
+            setErrorMessage(err instanceof Error ? err.message : 'Something went wrong — please try again.');
+            setToken('');
+            setAttempt((n) => n + 1);
         }
     }
 
@@ -261,9 +279,11 @@ export default function GetAPiece({ site }: { site: any }) {
                                             </span>
                                         </label>
 
+                                        <Turnstile key={attempt} onToken={setToken} />
+
                                         {status === 'error' && (
                                             <div className="text-sm text-neg bg-neg/10 px-4 py-3 flex items-center justify-between gap-4">
-                                                <span>Something went wrong — please try again.</span>
+                                                <span>{errorMessage}</span>
                                                 <button
                                                     type="submit"
                                                     disabled={createInquiry.isPending || !terms}

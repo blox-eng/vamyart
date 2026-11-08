@@ -1,6 +1,8 @@
-import { describe, it, expect, afterAll } from "vitest";
+import { describe, it, expect, vi, afterAll } from "vitest";
 import { eq, inArray } from "drizzle-orm";
 import { createCaller } from "../root";
+
+vi.mock("../../services/turnstile", () => ({ verifyHuman: async () => true }));
 import { db } from "../../client";
 import { contacts, inquiries, newsletterSubscribers } from "../../schema";
 
@@ -21,6 +23,7 @@ describe("contact sync on touchpoints", () => {
     emails.push(email);
     const caller = createCaller(ctx);
     await caller.inquiries.create({
+      turnstileToken: "test",
       name: "Inq Person",
       email,
       pieceInterest: "Whispers",
@@ -35,7 +38,7 @@ describe("contact sync on touchpoints", () => {
     const email = `news-${Date.now()}-${Math.random()}@example.com`;
     emails.push(email);
     const caller = createCaller(ctx);
-    await caller.newsletter.subscribe({ email });
+    await caller.newsletter.subscribe({ email, turnstileToken: "test" });
     const [row] = await db.select().from(contacts).where(eq(contacts.email, email));
     expect(row).toBeTruthy();
   });

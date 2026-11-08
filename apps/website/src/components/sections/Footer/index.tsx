@@ -6,6 +6,7 @@ import { mapStylesToClassNames as mapStyles } from '../../../utils/map-styles-to
 import { Social, Action, Link } from '../../atoms';
 import ImageBlock from '../../blocks/ImageBlock';
 import { trpc } from '../../../lib/trpc';
+import { Turnstile } from '../../atoms/Turnstile';
 
 export default function Footer(props) {
     const {
@@ -102,24 +103,37 @@ export default function Footer(props) {
     );
 }
 
+const NOT_READY = "Still checking you're not a bot. Try again in a moment.";
+
 function NewsletterSignup() {
     const router = useRouter();
     const [email, setEmail] = React.useState('');
     const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+    const [error, setError] = React.useState('');
+    const [token, setToken] = React.useState('');
+    const [attempt, setAttempt] = React.useState(0);
     const subscribe = trpc.newsletter.subscribe.useMutation();
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        if (!token) {
+            setStatus('error');
+            setError(NOT_READY);
+            return;
+        }
         try {
             await subscribe.mutateAsync({
                 email,
-                source: 'footer',
                 locale: router.locale ?? 'en',
+                turnstileToken: token,
             });
             setStatus('success');
             setEmail('');
-        } catch {
+        } catch (err) {
             setStatus('error');
+            setError(err instanceof Error ? err.message : 'Something went wrong.');
+            setToken('');
+            setAttempt((n) => n + 1);
         }
     }
 
@@ -148,9 +162,10 @@ function NewsletterSignup() {
                     >
                         {subscribe.isPending ? '...' : 'Subscribe'}
                     </button>
+                    <Turnstile key={attempt} onToken={setToken} />
                 </form>
             )}
-            {status === 'error' && <p className="text-sm text-neg mt-2">Something went wrong.</p>}
+            {status === 'error' && <p className="text-sm text-neg mt-2">{error}</p>}
         </div>
     );
 }

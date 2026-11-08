@@ -7,7 +7,7 @@ async function handler(req: Request) {
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    createContext,
+    createContext: () => createContext({ req }),
   });
 
   // Only cache GET (query) responses — mutations (POST) must not be cached

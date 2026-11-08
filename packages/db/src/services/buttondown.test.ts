@@ -54,6 +54,19 @@ describe("subscribeToButtondown", () => {
     expect(row).toBeTruthy();
   });
 
+  it("forwards the visitor's IP so Buttondown's firewall scores the visitor, not our server", async () => {
+    const email = `ip-${Date.now()}-${Math.random()}@example.com`;
+    emails.push(email);
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ id: "sub_2" }), { status: 201 }),
+    );
+
+    await subscribeToButtondown({ email, source: "footer", ipAddress: "203.0.113.7" });
+
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+    expect(body.ip_address).toBe("203.0.113.7");
+  });
+
   it("defensively treats any 400 as already-subscribed (collision header should make this rare)", async () => {
     const email = `dup-${Date.now()}-${Math.random()}@example.com`;
     emails.push(email);

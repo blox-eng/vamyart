@@ -1,6 +1,8 @@
-import { describe, it, expect, afterAll, beforeAll } from "vitest";
+import { describe, it, expect, vi, afterAll, beforeAll } from "vitest";
 import { eq } from "drizzle-orm";
 import { createCaller } from "../root";
+
+vi.mock("../../services/turnstile", () => ({ verifyHuman: async () => true }));
 import { db } from "../../client";
 import { contacts, inquiries, bids, auctions, artworks } from "../../schema";
 
@@ -13,6 +15,7 @@ let auctionId: string;
 beforeAll(async () => {
   const caller = createCaller(ctx);
   await caller.inquiries.create({
+    turnstileToken: "test",
     name: "Timeline Tester",
     email,
     pieceInterest: "Aurora",
@@ -99,6 +102,7 @@ describe("contacts.get with mixed-case source email", () => {
     const caller = createCaller(ctx);
     // Public inquiry stores the email as-typed (mixed case); upsertContact lowercases the contact.
     await caller.inquiries.create({
+      turnstileToken: "test",
       name: "Casing Tester",
       email: mixed,
       pieceInterest: "Casing Piece",

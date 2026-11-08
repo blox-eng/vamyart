@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { trpc } from '../../../lib/trpc';
 import { COMMISSION_OPTION, OTHER_OPTION } from '../../../lib/artworks';
+import { Turnstile } from '../../atoms/Turnstile';
 
 const INPUT_CLASS =
     'w-full border border-hair px-4 py-3 text-sm focus:outline-none focus:border-accent focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 transition-colors';
@@ -12,6 +13,9 @@ export default function ReachOutBlock() {
     const [message, setMessage] = React.useState('');
     const [terms, setTerms] = React.useState(false);
     const [status, setStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = React.useState('');
+    const [token, setToken] = React.useState('');
+    const [attempt, setAttempt] = React.useState(0);
 
     const createInquiry = trpc.inquiries.create.useMutation();
     // Published pieces drive the dropdown (DB-backed) — no hardcoded list.
@@ -19,6 +23,11 @@ export default function ReachOutBlock() {
     const pieces = artworksQuery.data ?? [];
 
     async function submit() {
+        if (!token) {
+            setStatus('error');
+            setErrorMessage("Still checking you're not a bot. Try again in a moment.");
+            return;
+        }
         setStatus('idle');
         try {
             await createInquiry.mutateAsync({
@@ -26,10 +35,16 @@ export default function ReachOutBlock() {
                 email,
                 pieceInterest: interest || 'General inquiry',
                 message: message || undefined,
+                turnstileToken: token,
             });
             setStatus('success');
-        } catch {
+        } catch (err) {
             setStatus('error');
+            setErrorMessage(
+                err instanceof Error ? `${err.message} Or email maeve@vamy.art directly.` : 'Something went wrong. Please try again or email directly.',
+            );
+            setToken('');
+            setAttempt((n) => n + 1);
         }
     }
 
@@ -56,7 +71,7 @@ export default function ReachOutBlock() {
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {status === 'error' && (
                 <div className="text-sm text-neg bg-neg/10 px-4 py-3 flex items-center justify-between gap-4">
-                    <span>Something went wrong. Please try again or email directly.</span>
+                    <span>{errorMessage}</span>
                     <button
                         type="button"
                         onClick={submit}
@@ -137,6 +152,8 @@ export default function ReachOutBlock() {
                     <a href="/privacy" className="underline hover:no-underline" target="_blank" rel="noreferrer">Privacy Policy</a>.
                 </span>
             </label>
+
+            <Turnstile key={attempt} onToken={setToken} />
 
             <div className="flex items-center justify-between pt-1">
                 <p className="text-xs text-faint">
