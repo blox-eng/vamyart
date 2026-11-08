@@ -18,3 +18,6 @@ cd apps/admin && pnpm dev    # http://localhost:3001
 
 Same `.env.local` as the website. Additionally:
 - `SUPABASE_SERVICE_ROLE_KEY` — needed for admin-level DB operations
+- `OPENROUTER_API_KEY` — server-only; the Critique page's vision-model call
+- `CRITIQUE_MODEL` — optional OpenRouter model id (default `google/gemini-3.8-flash`)
+- `CRITIQUE_FN_SECRET` — shared secret between the tRPC server and the `critique-run-background` Netlify function. Unset locally: the run then happens in the dev server process.

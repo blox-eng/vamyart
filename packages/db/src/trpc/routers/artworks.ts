@@ -8,6 +8,7 @@ import { isPieceSold, pieceSoldAt } from "../../services/variant-sold";
 import { orientationOf, parseDimensionsCm } from "../../services/dimensions";
 import { publicProducts } from "../../services/public-products";
 import { artworks, products, productVariants, orders, auctions } from "../../schema";
+import { publicPalette } from "../../services/public-palette";
 
 export function slugify(input: string): string {
   return input
@@ -43,6 +44,7 @@ const contentFields = {
   excerpt: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   published: z.boolean().optional(),
+  showPalette: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
   seoTitle: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),
@@ -274,6 +276,7 @@ export const artworksRouter = router({
         description: a.description,
         seoTitle: a.seoTitle,
         seoDescription: a.seoDescription,
+        palette: publicPalette(a.palette, a.showPalette),
         updatedAt: a.updatedAt.toISOString(),
         primaryImage: primary
           ? {

@@ -13,6 +13,7 @@ type Artwork = {
   excerpt: string | null; description: string | null;
   seoTitle: string | null; seoDescription: string | null;
   published: boolean;
+  showPalette: boolean; palette: { swatches: unknown[] } | null;
   collectionIds?: string[];
 };
 
@@ -150,6 +151,13 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
           onChange={(e) => setForm({ ...form, published: e.target.checked })} />
         Published (visible on the public gallery)
       </label>
+      {artwork.palette?.swatches?.length ? (
+        <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
+          <input type="checkbox" checked={form.showPalette}
+            onChange={(e) => setForm({ ...form, showPalette: e.target.checked })} />
+          Show the palette on the piece page
+        </label>
+      ) : null}
       <details className="text-xs text-muted">
         <summary className="cursor-pointer">SEO (optional)</summary>
         <div className="mt-2 space-y-2">
@@ -171,6 +179,7 @@ export function EditPiecePanel({ artwork, primaryImageAlt, onChanged, onDeleted 
             dimensions: form.dimensions, status: form.status as "available" | "bidding" | "sold",
             excerpt: form.excerpt, description: form.description,
             seoTitle: form.seoTitle, seoDescription: form.seoDescription, published: form.published,
+            showPalette: form.showPalette,
           })}
           disabled={update.isPending}
           className="text-sm bg-ink text-paper px-4 py-1.5 rounded disabled:opacity-50">

@@ -1,0 +1,1 @@
+ALTER TABLE "critique_runs" ADD COLUMN "measurements" jsonb;

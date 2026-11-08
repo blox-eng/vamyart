@@ -1,0 +1,63 @@
+import { describe, expect, it } from 'vitest';
+import * as React from 'react';
+import { renderToString } from 'react-dom/server';
+import { PaintSplashes, splashLabel } from './PaintSplashes';
+
+const palette = {
+    swatches: [
+        {
+            hex: '#1f2b7a',
+            name: 'deep night blue',
+            area: 0.6,
+            recipe: {
+                hex: '#1f2b7a',
+                deltaE: 0.4,
+                parts: [
+                    { paintId: 'u', name: 'Ultramarine Blue', pigments: ['PB29'], parts: 3 },
+                    { paintId: 's', name: 'Burnt Sienna', pigments: ['PR101'], parts: 1 },
+                ],
+            },
+        },
+        { hex: '#c4963d', name: '', area: 0.4, recipe: null },
+    ],
+};
+
+describe('splashLabel', () => {
+    it('names the colour and how to mix it', () => {
+        expect(splashLabel(palette.swatches[0])).toBe('deep night blue — 3 parts Ultramarine Blue and 1 part Burnt Sienna');
+    });
+    it('falls back to the colour code when nothing else is known', () => {
+        expect(splashLabel(palette.swatches[1])).toBe('#c4963d');
+    });
+});
+
+describe('PaintSplashes', () => {
+    it('renders one labelled splash per colour, filled with the exact colour', () => {
+        const html = renderToString(<PaintSplashes palette={palette} />);
+        expect(html).toContain('aria-label="Palette"');
+        expect(html).toContain('aria-label="deep night blue — 3 parts Ultramarine Blue and 1 part Burnt Sienna"');
+        expect(html).toContain('fill="#1f2b7a"');
+        expect(html).toContain('fill="#c4963d"');
+        expect(html).not.toMatch(/opacity|filter|shadow/);
+    });
+
+    it('starts closed behind a Palette button', () => {
+        const html = renderToString(<PaintSplashes palette={palette} />);
+        expect(html).toMatch(/<button[^>]*aria-expanded="false"[^>]*>.*Palette/);
+        expect(html).toMatch(/role="group"[^>]*hidden=""|hidden=""[^>]*role="group"/);
+    });
+
+    it('edges pale colours so they show on the white wall', () => {
+        const pale = { swatches: [{ hex: '#f2f0ea', name: 'bone', area: 1, recipe: null }] };
+        expect(renderToString(<PaintSplashes palette={pale} />)).toContain('color-mix(in oklab, #f2f0ea 85%, black)');
+        expect(renderToString(<PaintSplashes palette={palette} />)).not.toContain('color-mix');
+    });
+});
+
+describe('PaintSplashes sizes', () => {
+    it('never draws a smear past the largest size, even when every area is tiny', () => {
+        const tiny = { swatches: [{ hex: '#1f2b7a', name: 'a', area: 0.001, recipe: null }, { hex: '#c4963d', name: 'b', area: 0, recipe: null }] };
+        const widths = [...renderToString(<PaintSplashes palette={tiny} />).matchAll(/<svg width="([\d.]+)"/g)].map((m) => Number(m[1]));
+        expect(Math.max(...widths)).toBeLessThanOrEqual(2.4 * 19 + 0.001);
+    });
+});
