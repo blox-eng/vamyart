@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { trpc, type RouterOutputs } from '../../../lib/trpc';
 import { isVariantSold } from '../../../utils/variant-sold';
 
@@ -9,23 +9,9 @@ type PieceProducts = RouterOutputs['products']['listByArtworkSlug'];
 
 export function ProductSelector({ artworkSlug, initialProducts }: { artworkSlug: string; initialProducts?: PieceProducts }) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-    const [isRedirecting, setIsRedirecting] = useState(false);
-    const [checkoutError, setCheckoutError] = useState<string | null>(null);
-    const [termsAccepted, setTermsAccepted] = useState(false);
     const [notifyForVariantId, setNotifyForVariantId] = useState<string | null>(null);
     const [notifyEmail, setNotifyEmail] = useState('');
     const [notifySubmitted, setNotifySubmitted] = useState<string | null>(null);
-
-    useEffect(() => {
-        function onPageShow(e: PageTransitionEvent) {
-            if (e.persisted) {
-                setIsRedirecting(false);
-                setCheckoutError(null);
-            }
-        }
-        window.addEventListener('pageshow', onPageShow);
-        return () => window.removeEventListener('pageshow', onPageShow);
-    }, []);
 
     const productsQuery = trpc.products.listByArtworkSlug.useQuery(
         { slug: artworkSlug },
@@ -41,7 +27,6 @@ export function ProductSelector({ artworkSlug, initialProducts }: { artworkSlug:
         },
     );
     const { data: productList, isLoading: productsLoading, isError: productsError } = productsQuery;
-    const createSession = trpc.checkout.createSession.useMutation();
     const waitlistSubscribe = trpc.waitlist.subscribe.useMutation();
 
     if (productsLoading) {
@@ -92,26 +77,11 @@ export function ProductSelector({ artworkSlug, initialProducts }: { artworkSlug:
     const shippingDisplay = shippingMethod?.displayText ?? null;
     const shippingClass = shippingMethod?.type === 'free' ? 'text-accent' : 'text-muted';
 
-    async function handleBuy() {
-        if (!selectedVariantId) return;
-        setIsRedirecting(true);
-        setCheckoutError(null);
-        try {
-            const { url } = await createSession.mutateAsync({ variantId: selectedVariantId });
-            window.location.href = url;
-        } catch (err) {
-            const code = (err as { data?: { code?: string } })?.data?.code;
-            const message = err instanceof Error ? err.message : '';
-            if (code === 'PRECONDITION_FAILED' && message === 'OUT_OF_STOCK') {
-                await productsQuery.refetch();
-                setNotifyForVariantId(selectedVariantId);
-                setCheckoutError("This piece just sold. Leave your email below and we’ll notify you once, when it’s available again.");
-            } else {
-                setCheckoutError(message || 'Something went wrong. Please try again.');
-            }
-            setIsRedirecting(false);
-        }
-    }
+    // Sales go by invoice and bank transfer, never by card on the site (Н-18, #63).
+    const askToBuyHref = `/get-a-piece?${new URLSearchParams({
+        piece: artworkSlug,
+        ...(selectedVariant ? { variant: selectedVariant.name } : {}),
+    })}`;
 
     async function handleNotifySubmit(e: FormEvent) {
         e.preventDefault();
@@ -153,7 +123,7 @@ export function ProductSelector({ artworkSlug, initialProducts }: { artworkSlug:
                                         value={v.id}
                                         disabled={disabled}
                                         checked={selectedVariantId === v.id}
-                                        onChange={() => { setSelectedVariantId(v.id); setCheckoutError(null); }}
+                                        onChange={() => setSelectedVariantId(v.id)}
                                         className="sr-only"
                                     />
                                     <div>
@@ -221,44 +191,20 @@ export function ProductSelector({ artworkSlug, initialProducts }: { artworkSlug:
                     {shippingDisplay}
                 </p>
             )}
-            {checkoutError && (
-                <p className="text-sm text-neg mb-3">{checkoutError}</p>
-            )}
-            <label className="flex items-start gap-3 cursor-pointer mt-4 mb-3">
-                <input
-                    type="checkbox"
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-0.5 shrink-0 focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2"
-                />
-                <span className="text-xs text-muted">
-                    I have read and accept the{' '}
-                    <a href="/terms" target="_blank" rel="noreferrer" className="underline hover:no-underline">Terms</a>
-                    {' '}and{' '}
-                    <a href="/privacy" target="_blank" rel="noreferrer" className="underline hover:no-underline">Privacy Policy</a>.
-                </span>
-            </label>
-            <p className="text-xs text-muted mb-3 leading-relaxed">
-                Final price · shipping at checkout. You have a 14-day right of withdrawal after delivery —{' '}
+            <p className="text-xs text-muted mt-4 mb-3 leading-relaxed">
+                Final price · shipping confirmed with your invoice. You have a 14-day right of withdrawal after delivery —{' '}
                 <a href="/terms#withdrawal" className="underline hover:no-underline" target="_blank" rel="noreferrer">
                     details
                 </a>.
             </p>
-            <button
-                onClick={handleBuy}
-                disabled={!selectedVariantId || !termsAccepted || isRedirecting}
-                className="w-full bg-ink text-paper py-3 text-sm tracking-wide hover:bg-ink/90 transition-colors disabled:opacity-60"
+            <a
+                href={askToBuyHref}
+                className="block w-full bg-ink text-paper py-3 text-sm tracking-wide text-center hover:bg-ink/90 transition-colors"
             >
-                {isRedirecting
-                    ? 'Redirecting to payment…'
-                    : !selectedVariantId
-                        ? 'Select a piece to buy'
-                        : !termsAccepted
-                            ? 'Accept terms to continue'
-                            : `Buy — pay ${priceLabel}`}
-            </button>
+                {selectedVariant ? `Ask to buy — ${priceLabel}` : 'Ask to buy'}
+            </a>
             <p className="text-xs text-muted mt-3 text-center">
-                Secure checkout via Stripe. Card, Apple Pay, Google Pay.
+                Maeve confirms the piece and sends an invoice. You pay by bank transfer.
             </p>
         </div>
     );

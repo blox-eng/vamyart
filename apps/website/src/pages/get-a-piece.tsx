@@ -15,7 +15,7 @@ const STEPS = [
     { n: '01', label: 'Send your inquiry', text: 'Fill in the form — takes under a minute.' },
     { n: '02', label: 'Maeve gets back to you', text: 'Personally, within 2 working days.' },
     { n: '03', label: 'Discuss the details', text: 'Shipping, insurance, payment — all sorted together.' },
-    { n: '04', label: 'Secure payment', text: 'Via Stripe link — card, Apple Pay, Google Pay.' },
+    { n: '04', label: 'Invoice and bank transfer', text: 'Maeve sends an invoice; you pay by bank transfer.' },
     { n: '05', label: 'Packed with care', text: 'Museum-grade packaging, fully insured, dispatched within 30 days.' },
     { n: '06', label: 'Tracked shipping', text: 'Maeve will email tracking details once your piece is on its way.' },
     { n: '07', label: 'Certificate included', text: 'Signed certificate of authenticity and provenance documentation.' },
@@ -25,6 +25,7 @@ const STEPS = [
 export default function GetAPiece({ site }: { site: any }) {
     const router = useRouter();
     const pieceSlug = typeof router.query.piece === 'string' ? router.query.piece : '';
+    const variantName = typeof router.query.variant === 'string' ? router.query.variant : '';
 
     const { data: product, isLoading: isProductLoading } = trpc.products.getByArtworkSlug.useQuery(
         { slug: pieceSlug },
@@ -52,6 +53,11 @@ export default function GetAPiece({ site }: { site: any }) {
     React.useEffect(() => {
         if (artwork?.title && !piece) setPiece(artwork.title);
     }, [artwork?.title]);
+
+    // "Ask to buy" on a piece page names the size or edition the buyer picked.
+    React.useEffect(() => {
+        if (variantName && !message) setMessage(`I'd like to buy: ${variantName}.`);
+    }, [variantName]);
 
     const createInquiry = trpc.inquiries.create.useMutation();
     // Published pieces drive the dropdown (DB-backed) — no hardcoded list.

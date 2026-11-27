@@ -9,7 +9,7 @@ sections:
       color: text-dark
     subtitle: ''
     text: >
-      **Last Updated: 25.05.2025**
+      **Last Updated: 27.11.2026**
 
 
       These Terms and Conditions govern the purchase of 
@@ -49,13 +49,13 @@ sections:
       *   Detailed photographs
 
 
-      *   Price in EUR. The price shown is the final price you pay for the piece; no VAT or tax is added at checkout. Shipping is shown at checkout. Import duties outside the EU may apply and are the buyer's responsibility.
+      *   Price in EUR. The price shown is the final price you pay for the piece. Maeve Vamy EOOD is not registered for VAT, so no VAT is added. Shipping is confirmed on your invoice. Import duties outside the EU may apply and are the buyer's responsibility.
 
 
       *   Authenticity guarantee
 
 
-      Prices are subject to change without notice until payment is confirmed.
+      Prices are subject to change without notice until we send the invoice.
 
 
       ## **Ordering and Payment**
@@ -68,13 +68,12 @@ sections:
 
 
 
-      **Payment Methods:** We accept credit and debit card payments via Stripe. Payment must be completed before artwork shipment.
+      **Payment Methods:** Payment is by bank transfer only. When you ask to buy a piece, Maeve Vamy EOOD sends you an invoice with its bank details. Please quote the invoice number as the payment reference. We do not accept card or cash payments. Maeve Vamy EOOD is not registered for VAT, so the invoice carries no VAT. The piece ships after the payment reaches our account.
 
 
 
 
-      **Order Confirmation:** You will receive email confirmation of your order
-      and payment. This constitutes acceptance of your purchase.
+      **Order Confirmation:** We confirm your order by email and send you the invoice. The invoice is our acceptance of your purchase. We confirm by email when your payment arrives.
 
 
       ## Right of withdrawal
@@ -83,9 +82,9 @@ sections:
 
       Under EU Consumer Rights Directive 2011/83/EU, you have the right to withdraw from this purchase within 14 days of receiving the piece, without giving any reason.
 
-      **How to exercise the right:** Send an unequivocal statement of your decision to withdraw — by email to maeve@vamy.art with your order number, or by post to the address on file — before the 14-day period expires. You may use the model withdrawal form below, though it is not obligatory.
+      **How to exercise the right:** Send an unequivocal statement of your decision to withdraw — by email to maeve@vamy.art with your order number, or by post to Мейв Вами ЕООД, ул. „Хаджи Димитър Асенов“ № 119, ет. 6, ап. 17, 6000 Stara Zagora, Bulgaria — before the 14-day period expires. You may use the model withdrawal form below, though it is not obligatory.
 
-      **Effects of withdrawal:** We will reimburse all payments received from you, including the standard delivery cost, no later than 14 days after we receive the returned piece (or evidence that you have sent it back). Reimbursement will use the same means of payment you used, unless we agree otherwise. We may withhold reimbursement until we have received the piece back. You must send the piece back without undue delay and in any event no later than 14 days from the day you communicate your withdrawal. Return shipping costs are your responsibility unless the piece arrived damaged. You are only liable for any diminished value of the piece resulting from handling other than what is necessary to establish its nature, characteristics and functioning.
+      **Effects of withdrawal:** We will reimburse all payments received from you, including the standard delivery cost, no later than 14 days after we receive the returned piece (or evidence that you have sent it back). Reimbursement is by bank transfer to the account you paid from, unless we agree otherwise. We may withhold reimbursement until we have received the piece back. You must send the piece back without undue delay and in any event no later than 14 days from the day you communicate your withdrawal. Return shipping costs are your responsibility unless the piece arrived damaged. You are only liable for any diminished value of the piece resulting from handling other than what is necessary to establish its nature, characteristics and functioning.
 
       **Model withdrawal form** (complete and return only if you wish to withdraw):
 
@@ -212,7 +211,7 @@ sections:
 
       communication. We do not share customer data with third parties except 
 
-      as required for shipping and payment processing.
+      as required for shipping, invoicing and our legal accounting obligations.
 
 
       ## **Force Majeure**

@@ -38,7 +38,13 @@ describe('ProductSelector on the server', () => {
     });
     it('calls the price final instead of talking about VAT', () => {
         const html = serverRender();
-        expect(html).toContain('Final price · shipping at checkout.');
+        expect(html).toContain('Final price · shipping confirmed with your invoice.');
         expect(html).not.toContain('VAT');
+    });
+    it('sends a buyer to the inquiry form and offers no card payment (#63)', () => {
+        const html = serverRender();
+        expect(html).toContain('href="/get-a-piece?piece=never"');
+        expect(html).toContain('bank transfer');
+        expect(html).not.toMatch(/stripe|card|apple pay|google pay/i);
     });
 });
