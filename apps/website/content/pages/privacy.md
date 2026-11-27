@@ -9,7 +9,7 @@ sections:
       color: text-dark
     subtitle: ''
     text: >
-      **Last Updated: 06.03.2026**
+      **Last Updated: 27.11.2026**
 
 
       **Data Controller:** Мейв Вами ЕООД (Maeve Vamy EOOD), EIK 208627302,
@@ -21,8 +21,7 @@ sections:
 
       When you make a purchase or place a bid, we collect: your name, email
       address, and shipping address. Bids also record your IP address for
-      fraud prevention. We do not store payment card details — these are
-      handled by Stripe.
+      fraud prevention. We do not take card payments. For each sale we issue an invoice with your name and address. Our bank shows us the name and account of the payer.
 
 
       ## How We Use It
@@ -36,19 +35,22 @@ sections:
       ## Third-Party Processors
 
 
-      *   **Stripe** — payment processing (stripe.com/privacy)
-
-
       *   **Resend** — transactional email delivery
 
 
       *   **Supabase** — database hosting (EU region)
 
 
+      *   **Blox** — bookkeeping and invoicing (bloxng.com)
+
+
+      UniCredit Bulbank processes your bank transfer as an independent controller.
+
+
       ## Retention
 
 
-      Order data is retained for 7 years per Bulgarian accounting law. Bid
+      We keep invoices and payment records for 10 years, as the Bulgarian Accountancy Act requires. Bid
       data is retained for 2 years. You may request deletion of personal data
       not required for legal compliance by emailing maeve@vamy.art.
 
@@ -63,8 +65,7 @@ sections:
       ## Cookies
 
 
-      This website does not use tracking cookies. Stripe's checkout page
-      (stripe.com) uses cookies governed by their own privacy policy.
+      This website does not use tracking cookies.
     actions: []
     colors: bg-light-fg-dark
     styles:
