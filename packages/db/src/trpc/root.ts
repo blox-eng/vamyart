@@ -4,7 +4,6 @@ import { newsletterRouter } from "./routers/newsletter";
 import { auctionsRouter } from "./routers/auctions";
 import { bidsRouter } from "./routers/bids";
 import { productsRouter } from "./routers/products";
-import { checkoutRouter } from "./routers/checkout";
 import { ordersRouter } from "./routers/orders";
 import { artworksRouter } from "./routers/artworks";
 import { shippingMethodsRouter } from "./routers/shippingMethods";
@@ -16,13 +15,13 @@ import { certificatesRouter } from "./routers/certificates";
 import { collectionsRouter } from "./routers/collections";
 import { galleryRouter } from "./routers/gallery";
 
+// No checkout router: sales go by invoice and bank transfer, since card payments need a fiscal device (Н-18, #63).
 export const appRouter = router({
   inquiries: inquiriesRouter,
   newsletter: newsletterRouter,
   auctions: auctionsRouter,
   bids: bidsRouter,
   products: productsRouter,
-  checkout: checkoutRouter,
   orders: ordersRouter,
   artworks: artworksRouter,
   collections: collectionsRouter,

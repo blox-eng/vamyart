@@ -1,8 +1,11 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { inArray } from "drizzle-orm";
-import { createCaller } from "../root";
+import { checkoutRouter } from "./checkout";
 import { db } from "../../client";
 import { productVariants, products, artworks } from "../../schema";
+
+// Not mounted on the public API (#63); called directly so its rules stay tested.
+const createCaller = checkoutRouter.createCaller;
 
 const ctx = { db, userId: null } as const;
 
@@ -54,7 +57,7 @@ describe("checkout.createSession — sold rejection", () => {
 
     const caller = createCaller(ctx);
     await expect(
-      caller.checkout.createSession({ variantId: v.id }),
+      caller.createSession({ variantId: v.id }),
     ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
   });
 
@@ -76,7 +79,7 @@ describe("checkout.createSession — sold rejection", () => {
 
     const caller = createCaller(ctx);
     await expect(
-      caller.checkout.createSession({ variantId: v.id }),
+      caller.createSession({ variantId: v.id }),
     ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
   });
 });
