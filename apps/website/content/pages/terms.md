@@ -49,7 +49,7 @@ sections:
       *   Detailed photographs
 
 
-      *   Price in EUR. The price shown is the final price you pay for the piece; no VAT or tax is added at checkout. Shipping is shown at checkout. Import duties outside the EU may apply and are the buyer's responsibility.
+      *   Price in EUR. The price shown is the final price you pay for the piece. Maeve Vamy EOOD is not registered for VAT, so no VAT is added. Shipping is confirmed on your invoice. Import duties outside the EU may apply and are the buyer's responsibility.
 
 
       *   Authenticity guarantee
